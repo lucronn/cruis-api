@@ -47,85 +47,85 @@ async function performAuthentication() {
       const cardNumber = LIBRARY_CARD;
       const correlationId = uuidv4();
       console.log(`\n[AUTH] Starting authentication for card: ${cardNumber} (correlation=${correlationId})`);
-      
+
       let page;
-      
+
       console.log('[AUTH] Using playwright-aws-lambda for Firebase...');
       browser = await playwrightAWSLambda.launchChromium();
       page = await browser.newPage();
       await page.setExtraHTTPHeaders({
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36'
       });
-      
+
       console.log('[AUTH] Navigating to EBSCO login...');
-      
+
       await page.goto('https://search.ebscohost.com/login.aspx?authtype=ip,cpid&custid=s5672256&groupid=main&profile=autorepso', {
         waitUntil: 'networkidle',
         timeout: 30000
       });
-      
+
       console.log('[AUTH] Waiting for card number input...');
-      
+
       const inputSelector = 'input[data-auto="prompt-input"], input#prompt-input';
       await page.waitForSelector(inputSelector, { timeout: 15000 });
       await page.fill(inputSelector, cardNumber);
-      
+
       console.log('[AUTH] Submitting card number...');
-      
+
       await page.click('button[data-auto="login-submit-btn"]');
-      
+
       console.log('[AUTH] Waiting for redirect to Motor...');
-      
+
       let motorCookies = null;
       let attempts = 0;
       const maxAttempts = 30;
-      
+
       while (attempts < maxAttempts && !motorCookies) {
         await new Promise(resolve => setTimeout(resolve, 1000));
         attempts++;
-        
+
         const currentUrl = page.url();
         console.log(`[AUTH] Attempt ${attempts}: ${currentUrl.substring(0, 60)}...`);
-        
+
         if (currentUrl.includes('motor.com')) {
           console.log('[AUTH] ✓ Reached Motor domain!');
-          
+
           const allCookies = await page.context().cookies();
           const motorDomainCookies = allCookies.filter(c => c.domain.includes('motor.com'));
-          
+
           console.log(`[AUTH] Captured ${motorDomainCookies.length} Motor cookies`);
-          
+
           const authCookie = motorDomainCookies.find(c => c.name === 'AuthUserInfo');
-          
+
           if (authCookie) {
             try {
               const decoded = Buffer.from(authCookie.value, 'base64').toString('utf-8');
               const credentials = JSON.parse(decoded);
-              
+
               console.log('[AUTH] ✓ Extracted credentials:');
               console.log(`  PublicKey: ${credentials.PublicKey}`);
               console.log(`  ApiTokenKey: ${credentials.ApiTokenKey}`);
               console.log(`  Expiration: ${credentials.ApiTokenExpiration}`);
-              
+
               const cookieString = motorDomainCookies
                 .map(c => `${c.name}=${c.value}`)
                 .join('; ');
-              
+
               motorCookies = {
                 ...credentials,
                 _cookieString: cookieString,
                 _cookies: motorDomainCookies
               };
-              
+
             } catch (e) {
               console.error('[AUTH] Failed to decode AuthUserInfo:', e.message);
             }
           }
         }
       }
-      
+
       await browser.close();
-      
+
       if (motorCookies) {
         serverSession.credentials = motorCookies;
         serverSession.createdAt = new Date();
@@ -139,7 +139,7 @@ async function performAuthentication() {
         serverSession.isAuthenticating = false;
         return null;
       }
-      
+
     } catch (error) {
       console.error('[AUTH] Error during authentication:', error.message);
       if (browser) {
@@ -166,10 +166,10 @@ async function ensureAuthenticated() {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  const isAuthenticated = serverSession.credentials && 
-                         serverSession.expiresAt && 
-                         new Date() < serverSession.expiresAt;
-  
+  const isAuthenticated = serverSession.credentials &&
+    serverSession.expiresAt &&
+    new Date() < serverSession.expiresAt;
+
   res.json({
     status: 'ok',
     authenticated: isAuthenticated,
@@ -183,20 +183,20 @@ app.get('/health', (req, res) => {
 app.all('/api/motor-proxy/*', async (req, res) => {
   try {
     console.log(`[PROXY] ${req.method} ${req.url}`);
-    
+
     // Ensure we're authenticated
     const credentials = await ensureAuthenticated();
-    
+
     // Extract the target URL (remove /api/motor-proxy prefix)
     const targetPath = req.url.replace('/api/motor-proxy', '');
     const targetUrl = `https://sites.motor.com/m1${targetPath}`;
-    
+
     console.log(`[PROXY] Forwarding to: ${targetUrl}`);
-    
+
     // Check if this is an image/binary request based on path
-    const isImageRequest = targetPath.includes('/graphic/') || 
-                          targetPath.match(/\.(jpg|jpeg|png|gif|svg|webp|bmp)$/i);
-    
+    const isImageRequest = targetPath.includes('/graphic/') ||
+      targetPath.match(/\.(jpg|jpeg|png|gif|svg|webp|bmp)$/i);
+
     // Prepare headers
     const headers = {
       'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
@@ -207,12 +207,12 @@ app.all('/api/motor-proxy/*', async (req, res) => {
       'Cookie': credentials._cookieString,
       'X-Requested-With': 'XMLHttpRequest'
     };
-    
+
     // Copy relevant headers from the original request
     if (req.headers['content-type']) {
       headers['Content-Type'] = req.headers['content-type'];
     }
-    
+
     // Make the request to Motor API
     const response = await axios({
       method: req.method,
@@ -223,12 +223,12 @@ app.all('/api/motor-proxy/*', async (req, res) => {
       responseType: isImageRequest ? 'arraybuffer' : 'json', // Handle binary data for images
       validateStatus: () => true // Don't throw on HTTP error status codes
     });
-    
+
     console.log(`[PROXY] Response: ${response.status} ${response.statusText} (${isImageRequest ? 'binary' : 'json'})`);
-    
+
     // Forward the response with proper CORS headers
     res.status(response.status);
-    
+
     // Copy safe headers from response
     const safeHeaders = ['content-type', 'content-encoding', 'content-length', 'cache-control', 'etag', 'last-modified'];
     safeHeaders.forEach(header => {
@@ -236,25 +236,80 @@ app.all('/api/motor-proxy/*', async (req, res) => {
         res.set(header, response.headers[header]);
       }
     });
-    
+
     // Set CORS headers
     res.set('Access-Control-Allow-Origin', '*');
     res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    
+
     // Send binary data as buffer for images, otherwise as JSON
     if (isImageRequest) {
       res.send(Buffer.from(response.data));
     } else {
       res.send(response.data);
     }
-    
+
   } catch (error) {
     console.error('[PROXY] Error:', error.message);
     res.status(500).json({
       error: 'Proxy error',
       message: error.message
     });
+  }
+});
+
+// AI-powered article formatting enhancement endpoint
+const { genkit } = require('genkit');
+const { googleAI, gemini15Flash } = require('@genkit-ai/googleai');
+
+const ai = genkit({
+  plugins: [googleAI()],
+  model: gemini15Flash,
+});
+
+app.post('/api/enhance-article', async (req, res) => {
+  try {
+    const { html } = req.body;
+
+    if (!html) {
+      return res.status(400).json({ error: 'HTML content is required' });
+    }
+
+    console.log('[ENHANCE] Processing article enhancement...');
+
+    const prompt = `You are an expert technical documentation formatter. Enhance this automotive repair manual HTML to be more readable WHILE PRESERVING ALL ORIGINAL CONTENT:
+
+ENHANCEMENT TASKS:
+1. Add <h3> section headings for logical topic breaks
+2. Convert embedded lists ("items: A, B, C") to proper <ul>/<li> HTML
+3. Wrap critical info in <strong>: torque specs, warnings, cautions
+4. Add paragraph breaks where text is too dense
+5. Preserve ALL <img>, <table>, and existing structure tags
+
+CRITICAL RULES:
+- Keep 100% of original content - don't paraphrase
+- Preserve ALL HTML attributes exactly
+- Don't change existing headings or lists
+- Return ONLY valid HTML, no markdown or explanations
+
+Original HTML:
+${html}
+
+Enhanced HTML:`;
+
+    const result = await ai.generate({
+      model: gemini15Flash,
+      prompt,
+      config: {
+        temperature: 0.3,
+        maxOutputTokens: 8192,
+      },
+    });
+
+    res.json({ enhancedHtml: result.text });
+  } catch (error) {
+    console.error('[ENHANCE] Error:', error);
+    res.status(500).json({ error: 'Enhancement failed', message: error.message });
   }
 });
 

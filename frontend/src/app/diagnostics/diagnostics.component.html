@@ -1,0 +1,21 @@
+<div class="diagnostics">
+    <div class="header">
+        <h1 class="glow-text">DIAGNOSTICS</h1>
+        <p class="subtitle">TROUBLE CODES & TESTING</p>
+    </div>
+
+    <div class="coming-soon">
+        <div class="icon">🔧</div>
+        <h2>COMING SOON</h2>
+        <p>Comprehensive diagnostic tools and DTC database</p>
+    </div>
+
+    <div class="categories-grid">
+        <div *ngFor="let category of categories" class="category-card neon-border">
+            <div class="category-icon">{{ category.icon }}</div>
+            <h3>{{ category.name }}</h3>
+            <p>{{ category.description }}</p>
+            <button class="coming-soon-btn" disabled>COMING SOON</button>
+        </div>
+    </div>
+</div>

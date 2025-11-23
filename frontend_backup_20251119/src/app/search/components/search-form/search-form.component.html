@@ -1,0 +1,8 @@
+<form class="search-form" (submit)="searchResultsFacade.search(searchTerm)">
+  <mtr-input [(ngModel)]="searchTerm" name="searchBox" placeholder="Enter search term..." id="searchBox"
+    class="search-input">
+  </mtr-input>
+  <mtr-button type="submit" variant="primary" id="searchButton">
+    Search
+  </mtr-button>
+</form>

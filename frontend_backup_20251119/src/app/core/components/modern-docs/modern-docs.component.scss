@@ -1,0 +1,70 @@
+@import 'styles/modern-variables';
+
+.modern-docs {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: var(--space-4);
+}
+
+.docs-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+
+    .page-title {
+        font-size: var(--font-size-2xl);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text-main);
+        margin: 0;
+    }
+}
+
+.tabs-container {
+    display: flex;
+    gap: var(--space-2);
+    overflow-x: auto;
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+
+    // Hide scrollbar
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    .tab-btn {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-4);
+        background: none;
+        border: none;
+        border-radius: var(--radius-full);
+        color: var(--color-text-secondary);
+        font-weight: var(--font-weight-medium);
+        white-space: nowrap;
+        transition: all 0.2s;
+
+        &:hover {
+            background-color: var(--neutral-100);
+            color: var(--color-text-main);
+        }
+
+        &.active {
+            background-color: var(--primary-50);
+            color: var(--color-primary);
+        }
+
+        [class^="icon-"] {
+            font-size: 1.1rem;
+        }
+    }
+}
+
+.docs-content {
+    flex: 1;
+    // Ensure the search results panel takes up available space
+}

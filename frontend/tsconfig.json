@@ -21,9 +21,15 @@
       "dom"
     ],
     "paths": {
-      "~/*": ["src/app/*"],
-      "~/environment": ["src/environments/environment"],
-      "~/generated/*": ["src/app/generated/*"]
+      "~/*": [
+        "src/app/*"
+      ],
+      "~/environment": [
+        "src/environments/environment"
+      ],
+      "~/generated/*": [
+        "src/generated/*"
+      ]
     }
   },
   "angularCompilerOptions": {

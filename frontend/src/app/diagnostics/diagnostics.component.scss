@@ -1,0 +1,125 @@
+@import 'styles/variables';
+
+.diagnostics {
+    min-height: 100vh;
+    padding: $space-8;
+    background: linear-gradient(135deg, $color-bg-primary 0%, #0d0d15 100%);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: $space-12;
+
+    h1 {
+        font-size: 3rem;
+        color: $color-primary;
+        text-shadow: $glow-primary;
+        margin-bottom: $space-2;
+    }
+
+    .subtitle {
+        color: $color-text-secondary;
+        font-family: $font-mono;
+        letter-spacing: 0.2em;
+    }
+}
+
+.coming-soon {
+    text-align: center;
+    margin-bottom: $space-12;
+
+    .icon {
+        font-size: 5rem;
+        margin-bottom: $space-4;
+        animation: pulse 2s infinite;
+    }
+
+    h2 {
+        color: $color-secondary;
+        font-size: 2rem;
+        margin-bottom: $space-3;
+        text-shadow: $glow-secondary;
+    }
+
+    p {
+        color: $color-text-secondary;
+        font-size: 1.1rem;
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: $space-4;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.category-card {
+    padding: $space-8;
+    background: rgba(26, 26, 40, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: $radius-lg;
+    text-align: center;
+    transition: all 0.3s;
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: $glow-primary;
+        background: rgba(26, 26, 40, 0.8);
+    }
+
+    .category-icon {
+        font-size: 3.5rem;
+        margin-bottom: $space-4;
+    }
+
+    h3 {
+        color: $color-text-primary;
+        font-size: 1.3rem;
+        margin-bottom: $space-3;
+    }
+
+    p {
+        color: $color-text-secondary;
+        font-size: 0.95rem;
+        margin-bottom: $space-4;
+    }
+
+    .coming-soon-btn {
+        background: none;
+        border: 1px solid $color-text-muted;
+        color: $color-text-muted;
+        padding: $space-2 $space-4;
+        border-radius: $radius-md;
+        font-family: $font-mono;
+        font-size: 0.85rem;
+        cursor: not-allowed;
+    }
+}
+
+@media (max-width: $screen-md) {
+    .diagnostics {
+        padding: $space-4;
+    }
+
+    .header h1 {
+        font-size: 2rem;
+    }
+
+    .categories-grid {
+        grid-template-columns: 1fr;
+    }
+}

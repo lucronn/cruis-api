@@ -1,0 +1,54 @@
+// Minimal Banner - flattened, neutral
+
+:host {
+  display: block;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-light);
+  position: relative;
+  z-index: 2;
+}
+
+::ng-deep {
+  & > div {
+    padding: var(--space-md) var(--space-xl);
+
+    @media (max-width: 768px) {
+      padding: var(--space-sm) var(--space-lg);
+    }
+    @media (max-width: 576px) {
+      padding: var(--space-sm);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text-primary);
+      margin: 0;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    /* Hide the specific asset image if present inside the banner */
+    img[src*='/api/asset/a99274b9-6d81-419f-8f14-d5b913cd1a56'] {
+      display: none !important;
+    }
+
+    a {
+      color: var(--primary-700);
+      text-decoration: underline;
+      &:hover {
+        color: var(--primary-800);
+      }
+    }
+
+    p {
+      color: var(--text-secondary);
+      margin: var(--space-xs) 0 0 0;
+    }
+  }
+}
+
+@media print {
+  :host {
+    display: none;
+  }
+}

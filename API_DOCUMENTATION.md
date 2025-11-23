@@ -225,54 +225,80 @@ Get all vehicle models for a specific make and year.
 
 **Path Parameters:**
 - `year` (integer, required): Vehicle model year
-- `make` (string, required): Vehicle make (e.g., "Toyota")
+- `make` (string, required): Vehicle make (e.g., "BMW")
 
 **Response:**
 ```json
 {
   "header": {
     "messages": [],
-    "date": "Wed, 19 Nov 2025 06:22:20 GMT",
+    "date": "Wed, 19 Nov 2025 18:18:53 GMT",
     "status": "OK",
     "statusCode": 200
   },
   "body": {
-    "contentSource": "Toyota",
+    "contentSource": "MOTOR",
     "models": [
       {
-        "model": "4Runner",
-        "id": "2024:Toyota:4Runner:"
+        "model": "228i Gran Coupe Base",
+        "id": "249901",
+        "engines": [
+          {
+            "id": "249901:11366",
+            "name": "2.0L L4 (B46A20B) Turbocharged GAS Electronic"
+          }
+        ]
       },
       {
-        "model": "86",
-        "id": "2024:Toyota:86:"
+        "model": "330i Base",
+        "id": "240531",
+        "engines": [
+          {
+            "id": "240531:14983",
+            "name": "2.0L L4 (B46B20O0) Turbocharged GAS Electronic"
+          }
+        ]
       },
       {
-        "model": "Avanza",
-        "id": "2024:Toyota:Avanza:"
+        "model": "M3 Competition",
+        "id": "241152",
+        "engines": [
+          {
+            "id": "241152:13900",
+            "name": "3.0L L6 (S58B30T0) Turbocharged GAS Electronic"
+          }
+        ]
       },
       {
-        "model": "Camry",
-        "id": "2024:Toyota:Camry:"
-      },
-      {
-        "model": "Camry HV",
-        "id": "2024:Toyota:Camry HV:"
-      },
-      {
-        "model": "Corolla",
-        "id": "2024:Toyota:Corolla:"
+        "model": "X5 xDrive40i",
+        "id": "243227",
+        "engines": [
+          {
+            "id": "243227:15593",
+            "name": "3.0L L6 (B58B30M0) Turbocharged MILD HYBRID EV-GAS (MHEV) Electronic"
+          }
+        ]
       }
     ]
   }
 }
 ```
 
-**Note:** The response includes a `header` object and a `body` object containing `contentSource` and a `models` array. Each model has a `model` name and an `id` (vehicle identifier). Access models via `response.body.models`. The `id` field is the vehicle identifier used in subsequent API calls.
+**Note:** 
+- The response includes a `header` object and a `body` object containing `contentSource` and a `models` array
+- Each model has:
+  - `model` (string): Model name including trim level
+  - `id` (string): **Vehicle identifier** - this is the primary vehicle ID used in subsequent API calls
+  - `engines` (array): Available engines for this model
+    - `id` (string): Engine-specific vehicle ID (format: `{vehicleId}:{engineId}`)
+    - `name` (string): Engine description with displacement, configuration, and fuel type
+- Access models via `response.body.models`
+- The `id` field is the vehicle identifier used in documentation, parts, and other vehicle-specific endpoints
+- For vehicles with multiple engines, you may need to select a specific `engines[].id` for engine-specific content
 
 **Example:**
 ```bash
-curl https://motorproxy-erohrfg7qa-uc.a.run.app/api/motor-proxy/api/year/2024/make/Toyota/models
+curl https://motorproxy-erohrfg7qa-uc.a.run.app/api/motor-proxy/api/year/2024/make/BMW/models
 ```
 
 ---

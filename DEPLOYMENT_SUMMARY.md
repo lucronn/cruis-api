@@ -1,6 +1,6 @@
 # YourCar M1 Application - UI/UX Rewrite Deployment Summary
 
-**Deployment Date:** November 14, 2025  
+**Deployment Date:** November 23, 2025  
 **Deployment URL:** https://studio-534897447-7a1e7.web.app  
 **Status:** ✅ Successfully Deployed
 
@@ -473,3 +473,13 @@ For questions, issues, or feedback on the new UI:
 **Deployment completed successfully! 🎉**  
 **Enjoy the new YourCar M1 Application experience!**
 
+
+## Deployment - November 23, 2025
+
+### 🔧 Fixes & Updates
+- **Dependency Resolution:** Fixed `npm ci` conflict with running dev server by switching to `npm install` and manually handling the build process.
+- **Build Configuration:** Increased SCSS budget in `angular.json` to accommodate the comprehensive design system (Warning: 50kb, Error: 100kb).
+- **Deployment:** Successfully deployed to Firebase Hosting.
+
+### 🔗 URLs
+- **Frontend:** https://studio-534897447-7a1e7.web.app

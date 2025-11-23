@@ -1,0 +1,48 @@
+<div class="search">
+    <div class="header">
+        <h1 class="glow-text">SEARCH</h1>
+        <p class="subtitle">FIND PROCEDURES, PARTS & SPECS</p>
+    </div>
+
+    <div class="search-box">
+        <input type="text" class="search-input" placeholder="Enter search term..." [(ngModel)]="searchTerm"
+            (keyup.enter)="search()">
+        <button class="search-btn" (click)="search()" [disabled]="!searchTerm.trim()">
+            <span *ngIf="!loading">SEARCH</span>
+            <span *ngIf="loading">...</span>
+        </button>
+        <button class="clear-btn" (click)="clearSearch()" *ngIf="searchTerm">
+            CLEAR
+        </button>
+    </div>
+
+    <div *ngIf="!vehicleId" class="warning-message">
+        <p>⚠️ No vehicle selected. Please select a vehicle first.</p>
+        <button class="select-vehicle-btn" routerLink="/vehicles">SELECT VEHICLE</button>
+    </div>
+
+    <div *ngIf="loading" class="loading">
+        <div class="spinner"></div>
+        <p>SEARCHING...</p>
+    </div>
+
+    <div *ngIf="!loading && searched && results.length > 0" class="results">
+        <h2>RESULTS ({{ results.length }})</h2>
+        <div class="results-list">
+            <div *ngFor="let result of results" class="result-card neon-border">
+                <div class="result-icon">📄</div>
+                <div class="result-info">
+                    <h3>{{ result.title }}</h3>
+                    <p class="description" *ngIf="result.description">{{ result.description }}</p>
+                    <span class="category" *ngIf="result.category">{{ result.category }}</span>
+                </div>
+                <button class="view-btn">VIEW →</button>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="!loading && searched && results.length === 0" class="no-results">
+        <p>No results found for "{{ searchTerm }}"</p>
+        <p class="hint">Try a different search term</p>
+    </div>
+</div>

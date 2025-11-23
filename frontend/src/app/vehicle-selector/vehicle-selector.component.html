@@ -1,0 +1,64 @@
+<div class="vehicle-selector">
+    <div class="header">
+        <button *ngIf="step !== 'year'" class="back-btn" (click)="goBack()">
+            ← BACK
+        </button>
+        <h1 class="glow-text">SELECT VEHICLE</h1>
+    </div>
+
+    <div class="breadcrumb">
+        <span [class.active]="step === 'year'">{{ selectedYear || 'YEAR' }}</span>
+        <span class="separator">&rsaquo;</span>
+        <span [class.active]="step === 'make'" [class.dim]="!selectedYear">{{ selectedMake || 'MAKE' }}</span>
+        <span class="separator">&rsaquo;</span>
+        <span [class.active]="step === 'model'" [class.dim]="!selectedMake">{{ selectedModel || 'MODEL' }}</span>
+        <span *ngIf="engines.length > 1" class="separator">&rsaquo;</span>
+        <span *ngIf="engines.length > 1" [class.active]="step === 'engine'" [class.dim]="!selectedModel">{{
+            selectedEngine || 'ENGINE' }}</span>
+    </div>
+
+    <div *ngIf="error" class="error-message">{{ error }}</div>
+
+    <div *ngIf="loading" class="loading">
+        <div class="spinner"></div>
+        <p>LOADING...</p>
+    </div>
+
+    <div class="options-grid" *ngIf="!loading">
+        <!-- Year Selection -->
+        <button *ngFor="let year of years" class="option-card neon-border" [class.hidden]="step !== 'year'"
+            (click)="selectYear(year)">
+            <div class="option-content">
+                <div class="option-label">{{ year.label }}</div>
+                <div class="arrow">→</div>
+            </div>
+        </button>
+
+        <!-- Make Selection -->
+        <button *ngFor="let make of makes" class="option-card neon-border" [class.hidden]="step !== 'make'"
+            (click)="selectMake(make)">
+            <div class="option-content">
+                <div class="option-label">{{ make.label }}</div>
+                <div class="arrow">→</div>
+            </div>
+        </button>
+
+        <!-- Model Selection -->
+        <button *ngFor="let model of models" class="option-card neon-border" [class.hidden]="step !== 'model'"
+            (click)="selectModel(model)">
+            <div class="option-content">
+                <div class="option-label">{{ model.label }}</div>
+                <div class="arrow">→</div>
+            </div>
+        </button>
+
+        <!-- Engine Selection -->
+        <button *ngFor="let engine of engines" class="option-card neon-border engine-card"
+            [class.hidden]="step !== 'engine'" (click)="selectEngine(engine)">
+            <div class="option-content">
+                <div class="option-label">{{ engine.name }}</div>
+                <div class="checkmark">✓</div>
+            </div>
+        </button>
+    </div>
+</div>

@@ -1,0 +1,58 @@
+<div class="dashboard">
+    <div class="hero">
+        <h1 class="glow-text">VEHICLEAPI</h1>
+        <p class="subtitle">TECHNICAL DOCUMENTATION SYSTEM</p>
+        <div class="stats" *ngIf="!loading">
+            <div class="stat">
+                <span class="stat-value">{{ availableYearsCount }}</span>
+                <span class="stat-label">MODEL YEARS</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value">{{ recentVehicles.length }}</span>
+                <span class="stat-label">RECENT VEHICLES</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="recent-vehicles" *ngIf="recentVehicles.length > 0">
+        <h2>RECENT VEHICLES</h2>
+        <div class="vehicles-list">
+            <button *ngFor="let vehicle of recentVehicles" class="vehicle-card neon-border"
+                (click)="navigateToVehicle(vehicle)">
+                <div class="vehicle-icon">🚗</div>
+                <div class="vehicle-info">
+                    <h3>{{ vehicle.vehicleName || (vehicle.year + ' ' + vehicle.make + ' ' + vehicle.model) }}</h3>
+                    <p class="vehicle-id">ID: {{ vehicle.vehicleId }}</p>
+                </div>
+                <div class="arrow">→</div>
+            </button>
+        </div>
+    </div>
+
+    <h2>QUICK ACCESS</h2>
+    <div class="grid">
+        <a routerLink="/vehicles" class="card neon-border">
+            <div class="card-icon">🚗</div>
+            <h2>Select Vehicle</h2>
+            <p>Choose your vehicle to access documentation</p>
+        </a>
+
+        <a routerLink="/search" class="card neon-border">
+            <div class="card-icon">🔍</div>
+            <h2>Search</h2>
+            <p>Find parts, procedures, and specs</p>
+        </a>
+
+        <a routerLink="/docs" class="card neon-border">
+            <div class="card-icon">📚</div>
+            <h2>Documentation</h2>
+            <p>Access repair procedures and diagrams</p>
+        </a>
+
+        <a routerLink="/diagnostics" class="card neon-border">
+            <div class="card-icon">⚙️</div>
+            <h2>Diagnostics</h2>
+            <p>Trouble codes and testing procedures</p>
+        </a>
+    </div>
+</div>

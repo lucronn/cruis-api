@@ -1,0 +1,8 @@
+{
+    "/api": {
+        "target": "https://studio-534897447-7a1e7.web.app",
+        "secure": true,
+        "changeOrigin": true,
+        "logLevel": "debug"
+    }
+}

@@ -1,0 +1,17 @@
+<div class="modern-docs">
+    <div class="docs-header">
+        <h1 class="page-title">Documentation</h1>
+        <div class="tabs-container">
+            <button *ngFor="let tab of tabs" class="tab-btn" [class.active]="(activeTab$ | async) === tab.id"
+                (click)="onTabChange(tab.id)">
+                <span [class]="tab.icon"></span>
+                {{ tab.label }}
+            </button>
+        </div>
+    </div>
+
+    <div class="docs-content">
+        <!-- Reuse existing search results panel for now, or rebuild it -->
+        <mtr-search-results-panel></mtr-search-results-panel>
+    </div>
+</div>
