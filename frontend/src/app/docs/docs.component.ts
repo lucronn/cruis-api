@@ -1,10 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { MotorApiService } from '../services/motor-api.service';
 import { catchError, switchMap, map } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 
 interface ArticleCategory {
     name: string;
@@ -19,7 +22,8 @@ interface ArticleCategory {
     templateUrl: './docs.component.html',
     styleUrls: ['./docs.component.scss']
 })
-export class DocsComponent implements OnInit {
+export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
+    @ViewChild('miniCarContainer') miniCarContainer!: ElementRef;
     vehicleId: string = '';
     contentSource: string = 'MOTOR';
     vehicleName: string = '';
@@ -48,10 +52,16 @@ export class DocsComponent implements OnInit {
 
     loading = true;
     loadingName = true;
+    error: string = '';
 
+    // Mini 3D car
+    private miniScene!: THREE.Scene;
+    private miniCamera!: THREE.PerspectiveCamera;
+    private miniRenderer!: THREE.WebGLRenderer;
+    private miniCarGroup!: THREE.Group;
+    private miniFrameId: number = 0;
     // Labor Data
     laborData: any = null;
-    error: string | null = null;
 
     // Maintenance Schedule properties
     maintenanceSchedule = {
@@ -77,12 +87,45 @@ export class DocsComponent implements OnInit {
 
     ngOnInit() {
         this.route.queryParams.subscribe(params => {
-            this.vehicleId = params['vehicleId'] || '';
-            this.contentSource = params['contentSource'] || 'MOTOR';
+            const vid = params['vehicleId'];
 
-            if (this.vehicleId) {
+            if (vid) {
+                // Loaded from URL - update state
+                this.vehicleId = vid;
+                this.contentSource = params['contentSource'] || 'MOTOR';
+
+                // Persist this session
+                localStorage.setItem('currentVehicle', JSON.stringify({
+                    vehicleId: this.vehicleId,
+                    contentSource: this.contentSource,
+                    year: params['year'],
+                    make: params['make'],
+                    model: params['model']
+                }));
+
                 this.loadVehicleName();
                 this.loadArticles();
+            } else {
+                // No params - check storage
+                const stored = localStorage.getItem('currentVehicle');
+                if (stored) {
+                    try {
+                        const vehicleParams = JSON.parse(stored);
+                        if (vehicleParams.vehicleId) {
+                            // Redirect to self with params
+                            this.router.navigate([], {
+                                relativeTo: this.route,
+                                queryParams: vehicleParams,
+                                replaceUrl: true
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Error parsing stored vehicle session', e);
+                    }
+                } else {
+                    // No session - redirect to selector
+                    this.router.navigate(['/vehicles']);
+                }
             }
         });
     }
@@ -443,17 +486,50 @@ export class DocsComponent implements OnInit {
         html = html.replace(/style="[^"]*display:block;[^"]*"/gi, 'style="display:block; max-width:100%; margin:20px auto; text-align:center;"');
         html = html.replace(/width:\s*500px;?/gi, 'max-width:100%;');
 
-        // Programmatic Thumbnailing - wrap images in clickable thumbnail figures
-        // Use a more sophisticated approach to avoid double-wrapping
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
 
+        // Fix Figure Links: Convert span.internal-link to clickable anchors
+        const internalLinks = doc.querySelectorAll('span.internal-link');
+        internalLinks.forEach(span => {
+            const id = span.getAttribute('id');
+            if (id) {
+                const anchor = doc.createElement('a');
+                anchor.className = 'internal-link scroll-to-figure';
+                anchor.setAttribute('data-target-id', id);
+                anchor.innerHTML = span.innerHTML;
+                // Remove ID from the link to avoid duplicates with the target figure
+                // span.removeAttribute('id'); // We are replacing the span, so this is implicit
+                span.replaceWith(anchor);
+            }
+        });
+
+        // Programmatic Thumbnailing - wrap images in clickable thumbnail figures
         // Find all img tags that are NOT already inside a figure.thumbnail
         const images = doc.querySelectorAll('img');
         images.forEach(img => {
             // Check if already wrapped in a figure
             if (img.parentElement?.tagName === 'FIGURE') {
                 return; // Skip if already in a figure
+            }
+
+            // Skip icons and small images
+            if (img.classList.contains('burret_img') ||
+                img.closest('.button_webout_print') ||
+                img.closest('.buret')) {
+                return;
+            }
+
+            // Skip very small images (likely icons)
+            const width = parseInt(img.getAttribute('width') || '0', 10);
+            const height = parseInt(img.getAttribute('height') || '0', 10);
+            // Check style width/height as well if attributes are missing
+            const styleWidth = img.style.width ? parseInt(img.style.width, 10) : 0;
+            const styleHeight = img.style.height ? parseInt(img.style.height, 10) : 0;
+
+            if ((width > 0 && width < 50) || (height > 0 && height < 50) ||
+                (styleWidth > 0 && styleWidth < 50) || (styleHeight > 0 && styleHeight < 50)) {
+                return;
             }
 
             // Create thumbnail wrapper
@@ -480,6 +556,33 @@ export class DocsComponent implements OnInit {
         html = doc.body.innerHTML;
 
         return html;
+    }
+
+    handleArticleClick(event: MouseEvent) {
+        const target = event.target as HTMLElement;
+        const link = target.closest('.scroll-to-figure');
+
+        if (link) {
+            event.preventDefault();
+            const targetId = link.getAttribute('data-target-id');
+            if (targetId) {
+                // Look for the element with this ID within the article content
+                // Note: We use querySelector on the document because the ID should be unique in the DOM
+                // However, since we might have duplicate IDs if the original HTML was malformed, 
+                // we try to find the one that IS NOT the link itself (which we removed the ID from, but just in case)
+                const targetElement = document.getElementById(targetId);
+
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                    // Add a highlight effect
+                    targetElement.classList.add('highlight-target');
+                    setTimeout(() => targetElement.classList.remove('highlight-target'), 2000);
+                } else {
+                    console.warn(`Target element with ID ${targetId} not found.`);
+                }
+            }
+        }
     }
 
     closeArticle() {
@@ -580,5 +683,94 @@ export class DocsComponent implements OnInit {
 
     changeVehicle() {
         this.router.navigate(['/vehicles']);
+    }
+
+    ngAfterViewInit() {
+        if (this.miniCarContainer) {
+            this.initMiniCar();
+        }
+    }
+
+    ngOnDestroy() {
+        if (this.miniFrameId) {
+            cancelAnimationFrame(this.miniFrameId);
+        }
+        if (this.miniRenderer) {
+            this.miniRenderer.dispose();
+        }
+    }
+
+    initMiniCar() {
+        const width = 80;
+        const height = 80;
+
+        this.miniScene = new THREE.Scene();
+        this.miniCamera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+        this.miniCamera.position.set(3, 2, 3);
+        this.miniCamera.lookAt(0, 0, 0);
+
+        this.miniRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        this.miniRenderer.setSize(width, height);
+        this.miniRenderer.setPixelRatio(window.devicePixelRatio);
+        this.miniCarContainer.nativeElement.appendChild(this.miniRenderer.domElement);
+
+        this.miniCarGroup = new THREE.Group();
+        this.miniScene.add(this.miniCarGroup);
+
+        const loader = new GLTFLoader();
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath('assets/draco/');
+        loader.setDRACOLoader(dracoLoader);
+
+        loader.load('assets/ferrari.glb', (gltf) => {
+            const carModel = gltf.scene;
+
+            const bodyMaterial = new THREE.MeshPhysicalMaterial({
+                color: 0x88ddff,
+                metalness: 0.9,
+                roughness: 0.2,
+                emissive: 0x00ddff,
+                emissiveIntensity: 1.0
+            });
+
+            const trimMaterial = new THREE.MeshPhysicalMaterial({
+                color: 0x8800ff,
+                metalness: 0.9,
+                roughness: 0.2,
+                emissive: 0x6600cc,
+                emissiveIntensity: 1.5
+            });
+
+            carModel.traverse((child) => {
+                if ((child as THREE.Mesh).isMesh) {
+                    const mesh = child as THREE.Mesh;
+                    const name = mesh.name.toLowerCase();
+
+                    if (name.includes('trim') || name.includes('grille') || name.includes('badge')) {
+                        mesh.material = trimMaterial;
+                    } else {
+                        mesh.material = bodyMaterial;
+                    }
+                }
+            });
+
+            carModel.scale.set(0.8, 0.8, 0.8);
+            this.miniCarGroup.add(carModel);
+        });
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+        this.miniScene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 2);
+        pointLight.position.set(5, 5, 5);
+        this.miniScene.add(pointLight);
+
+        this.animateMiniCar();
+    }
+
+    animateMiniCar() {
+        this.miniFrameId = requestAnimationFrame(() => this.animateMiniCar());
+        this.miniCarGroup.rotation.y += 0.01;
+        this.miniRenderer.render(this.miniScene, this.miniCamera);
     }
 }

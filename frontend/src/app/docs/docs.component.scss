@@ -1,10 +1,17 @@
 @import 'styles/variables';
 
+* {
+    box-sizing: border-box;
+}
+
 .docs {
     min-height: 100vh;
     padding: $space-8;
     background: linear-gradient(135deg, $color-bg-primary 0%, #0d0d15 100%);
     position: relative;
+    overflow-x: hidden;
+    max-width: 100vw;
+    width: 100%;
 }
 
 // Article Viewer Modal
@@ -17,8 +24,10 @@
     background: $color-bg-primary;
     z-index: 1000;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: $space-8;
     animation: slideIn 0.3s ease-out;
+    max-width: 100vw;
 
     .article-header {
         display: flex;
@@ -26,6 +35,7 @@
         gap: $space-4;
         margin-bottom: $space-8;
         flex-wrap: wrap;
+        max-width: 100%;
 
         .back-btn {
             background: none;
@@ -79,6 +89,7 @@
             color: $color-primary;
             font-size: 1.5rem;
             text-shadow: $glow-primary;
+            word-break: break-word; // Prevent long titles from overflowing
         }
 
         .close-btn {
@@ -102,6 +113,7 @@
     .article-body {
         max-width: 1200px;
         margin: 0 auto;
+        width: 100%;
 
         .article-html {
             background: rgba(26, 26, 40, 0.6);
@@ -111,412 +123,448 @@
             color: $color-text-primary;
             line-height: 1.8;
             font-size: 1.05rem;
+            max-width: 100%;
+            overflow-x: hidden;
 
             // Force light colors for readability
-            * {
-                color: inherit !important;
-                background-color: transparent !important;
-            }
-
-            h1,
-            h2,
-            h3,
-            h4,
-            h5,
-            h6 {
-                color: $color-primary !important;
-                margin-top: $space-8;
-                margin-bottom: $space-4;
-                font-weight: 700;
-                letter-spacing: 0.02em;
-            }
-
-            h1 {
-                font-size: 2rem;
-            }
-
-            h2 {
-                font-size: 1.75rem;
-            }
-
-            h3 {
-                font-size: 1.5rem;
-            }
-
-            p {
-                margin-bottom: $space-4;
-                line-height: 1.8;
-                color: $color-text-primary !important;
-            }
-
-            ul,
-            ol {
-                margin-left: $space-6;
-                margin-bottom: $space-4;
-                line-height: 1.9;
-
-                li {
-                    color: $color-text-primary !important;
-                    margin-bottom: $space-3;
-                    padding-left: $space-2;
-                }
-            }
-
-            img {
-                max-width: 100% !important;
-                height: auto;
-                border-radius: $radius-md;
-                margin: $space-6 auto;
-                background: white !important;
-                padding: $space-2;
-                display: block;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            }
-
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: $space-6 0;
-                background: rgba(255, 255, 255, 0.05) !important;
-                font-size: 0.95rem;
-
-                th,
-                td {
-                    border: 1px solid rgba(0, 243, 255, 0.3) !important;
-                    padding: $space-4;
-                    text-align: left;
-                    color: $color-text-primary !important;
+            ::ng-deep {
+                * {
+                    color: inherit !important;
                     background-color: transparent !important;
+                    max-width: 100% !important;
+                    box-sizing: border-box !important;
                 }
 
-                th {
-                    background: rgba(0, 243, 255, 0.15) !important;
+                h1,
+                h2,
+                h3,
+                h4,
+                h5,
+                h6 {
                     color: $color-primary !important;
-                    font-weight: 600;
-                    text-transform: uppercase;
-                    font-size: 0.85rem;
-                    letter-spacing: 0.05em;
+                    margin-top: $space-8;
+                    margin-bottom: $space-4;
+                    font-weight: 700;
+                    letter-spacing: 0.02em;
                 }
 
-                tr:nth-child(even) {
-                    background: rgba(255, 255, 255, 0.03) !important;
+                h1 {
+                    font-size: 2rem;
                 }
-            }
 
-            b,
-            strong {
-                color: $color-primary !important;
-                font-weight: 700;
-            }
-
-            a {
-                color: $color-secondary !important;
-                text-decoration: underline;
-
-                &:hover {
-                    color: $color-primary !important;
+                h2 {
+                    font-size: 1.75rem;
                 }
-            }
 
-            // Code blocks
-            code,
-            pre {
-                background: rgba(0, 0, 0, 0.3) !important;
-                color: $color-primary !important;
-                padding: $space-1 $space-2;
-                border-radius: $radius-sm;
-                font-family: $font-mono;
-            }
-
-            // Image containers and figures
-            div[style*="display:block"] {
-                display: block !important;
-                max-width: 100% !important;
-                margin: $space-6 auto !important;
-                text-align: center !important;
-                padding: $space-3 !important;
-            }
-
-            // Warnings and notes - make them stand out
-            p:has(b:first-child) {
-                padding: $space-4;
-                background: rgba(255, 193, 7, 0.1) !important;
-                border-left: 4px solid #ffc107;
-                border-radius: $radius-md;
-
-                b {
-                    color: #ffc107 !important;
+                h3 {
+                    font-size: 1.5rem;
                 }
-            }
 
-            // Thumbnail Images
-            figure.thumbnail {
-                margin: $space-4;
-                display: inline-block;
-                float: right; // Float to the right of text
-                width: 250px !important; // Force fixed width
-                max-width: 40% !important; // But don't overflow on small screens
-                background: rgba(0, 0, 0, 0.2);
-                padding: $space-2;
-                border-radius: $radius-md;
-                border: 1px solid $color-border;
-                transition: all 0.3s ease;
-                cursor: zoom-in; // Show zoom cursor
-                clear: right; // Prevent stacking weirdly
-                position: relative; // For z-index context
-                z-index: 1;
+                p {
+                    margin-bottom: $space-4;
+                    line-height: 1.8;
+                    color: $color-text-primary !important;
+                }
+
+                ul,
+                ol {
+                    margin-left: $space-6;
+                    margin-bottom: $space-4;
+                    line-height: 1.9;
+
+                    li {
+                        color: $color-text-primary !important;
+                        margin-bottom: $space-3;
+                        padding-left: $space-2;
+                    }
+                }
 
                 img {
-                    margin: 0 !important;
-                    padding: 0 !important; // Override bootstrap img-thumbnail padding
-                    width: 100% !important;
-                    height: auto !important;
-                    max-height: 200px !important; // Limit height in thumbnail view
-                    object-fit: cover;
-                    border-radius: $radius-sm;
-                    border: none !important; // Override bootstrap
-                }
-
-                figcaption {
-                    font-size: 0.8rem;
-                    color: $color-text-secondary;
-                    text-align: center;
-                    margin-top: $space-2;
-                    font-family: $font-mono;
-                }
-
-                &:hover {
-                    transform: scale(1.05); // Slight zoom on hover
-                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-                    background: $color-bg-secondary;
-                    border-color: $color-primary;
-                }
-
-                // Expanded State (Lightbox-ish)
-                &.expanded {
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%) scale(1) !important;
-                    width: 90vw !important;
-                    max-width: 1200px !important;
+                    max-width: 100% !important;
                     height: auto;
-                    max-height: 90vh;
-                    z-index: 9999;
-                    background: $color-bg-primary;
-                    box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.8); // Dark overlay
-                    padding: $space-4;
-                    border: 2px solid $color-primary;
-                    float: none;
-                    cursor: zoom-out;
-                    overflow: auto;
-
-                    img {
-                        width: auto !important;
-                        height: auto !important;
-                        max-width: 100% !important;
-                        max-height: 80vh !important;
-                        object-fit: contain;
-                        margin: 0 auto !important;
-                        display: block;
-                    }
-
-                    figcaption {
-                        font-size: 1rem;
-                        color: $color-primary;
-                        margin-top: $space-4;
-                    }
-                }
-            }
-
-            // Clearfix for floated images
-            &::after {
-                content: "";
-                display: table;
-                clear: both;
-            }
-
-            // Labor View Styles
-            .labor-view {
-                padding: $space-4;
-                color: $color-text-primary;
-
-                .labor-header {
-                    margin-bottom: $space-6;
-                    border-bottom: 1px solid $color-border;
-                    padding-bottom: $space-4;
-
-                    h3 {
-                        color: $color-primary;
-                        margin-bottom: $space-2;
-                    }
-
-                    .subtitle {
-                        color: $color-text-secondary;
-                        font-style: italic;
-                    }
+                    border-radius: $radius-md;
+                    margin: $space-6 auto;
+                    background: white !important;
+                    padding: $space-2;
+                    display: block;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
                 }
 
-                .labor-table {
+                table {
                     width: 100%;
                     border-collapse: collapse;
-                    margin-bottom: $space-6;
-                    background: rgba(0, 0, 0, 0.2);
-                    border-radius: $radius-md;
-                    overflow: hidden;
+                    margin: $space-6 0;
+                    background: rgba(255, 255, 255, 0.05) !important;
+                    font-size: 0.95rem;
 
                     th,
                     td {
-                        padding: $space-3;
-                        border-bottom: 1px solid $color-border;
-                        vertical-align: top;
+                        border: 1px solid rgba(0, 243, 255, 0.3) !important;
+                        padding: $space-4;
+                        text-align: left;
+                        color: $color-text-primary !important;
+                        background-color: transparent !important;
                     }
 
                     th {
-                        background: rgba(255, 255, 255, 0.05);
+                        background: rgba(0, 243, 255, 0.15) !important;
+                        color: $color-primary !important;
                         font-weight: 600;
-                        color: $color-primary;
                         text-transform: uppercase;
                         font-size: 0.85rem;
                         letter-spacing: 0.05em;
                     }
 
+                    tr:nth-child(even) {
+                        background: rgba(255, 255, 255, 0.03) !important;
+                    }
+                }
+
+                b,
+                strong {
+                    color: $color-primary !important;
+                    font-weight: 700;
+                }
+
+                a {
+                    color: $color-secondary !important;
+                    text-decoration: underline;
+
+                    &:hover {
+                        color: $color-primary !important;
+                    }
+
+                    &.internal-link {
+                        cursor: pointer;
+                        color: $color-secondary;
+                        border-bottom: 1px dashed $color-secondary;
+                        text-decoration: none;
+                        transition: all 0.2s;
+
+                        &:hover {
+                            color: $color-primary;
+                            border-bottom-color: $color-primary;
+                            background: rgba($color-secondary, 0.1);
+                        }
+                    }
+                }
+
+                .highlight-target {
+                    animation: highlightPulse 2s ease-out;
+                }
+
+                @keyframes highlightPulse {
+                    0% {
+                        background-color: rgba($color-primary, 0.3);
+                        box-shadow: 0 0 20px rgba($color-primary, 0.5);
+                    }
+
+                    100% {
+                        background-color: transparent;
+                        box-shadow: none;
+                    }
+                }
+
+                // Code blocks
+                code,
+                pre {
+                    background: rgba(0, 0, 0, 0.3) !important;
+                    color: $color-primary !important;
+                    padding: $space-1 $space-2;
+                    border-radius: $radius-sm;
+                    font-family: $font-mono;
+                }
+
+                // Image containers and figures
+                div[style*="display:block"] {
+                    display: block !important;
+                    max-width: 100% !important;
+                    margin: $space-6 auto !important;
+                    text-align: center !important;
+                    padding: $space-3 !important;
+                }
+
+                // Warnings and notes - make them stand out
+                p:has(b:first-child) {
+                    padding: $space-4;
+                    background: rgba(255, 193, 7, 0.1) !important;
+                    border-left: 4px solid #ffc107;
+                    border-radius: $radius-md;
+
+                    b {
+                        color: #ffc107 !important;
+                    }
+                }
+
+                // Thumbnail Images
+                figure.thumbnail {
+                    margin: $space-4;
+                    display: inline-block;
+                    float: left; // Float to the left of text
+                    width: 250px !important; // Force fixed width
+                    max-width: 40% !important; // But don't overflow on small screens
+                    background: rgba(0, 0, 0, 0.2);
+                    padding: $space-2;
+                    border-radius: $radius-md;
+                    border: 1px solid $color-border;
+                    transition: all 0.3s ease;
+                    cursor: zoom-in; // Show zoom cursor
+                    clear: left; // Prevent stacking weirdly
+                    position: relative; // For z-index context
+                    z-index: 1;
+
+                    img {
+                        margin: 0 !important;
+                        padding: 0 !important; // Override bootstrap img-thumbnail padding
+                        width: 100% !important;
+                        height: auto !important;
+                        max-height: 200px !important; // Limit height in thumbnail view
+                        object-fit: cover;
+                        border-radius: $radius-sm;
+                        border: none !important; // Override bootstrap
+                    }
+
+                    figcaption {
+                        font-size: 0.8rem;
+                        color: $color-text-secondary;
+                        text-align: center;
+                        margin-top: $space-2;
+                        font-family: $font-mono;
+                    }
+
+                    &:hover {
+                        transform: scale(1.05); // Slight zoom on hover
+                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+                        background: $color-bg-secondary;
+                        border-color: $color-primary;
+                    }
+
+                    // Expanded State (Lightbox-ish)
+                    &.expanded {
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%) scale(1) !important;
+                        width: 90vw !important;
+                        max-width: 1200px !important;
+                        height: auto;
+                        max-height: 90vh;
+                        z-index: 9999;
+                        background: $color-bg-primary;
+                        box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.8); // Dark overlay
+                        padding: $space-4;
+                        border: 2px solid $color-primary;
+                        float: none;
+                        cursor: zoom-out;
+                        overflow: auto;
+
+                        img {
+                            width: auto !important;
+                            height: auto !important;
+                            max-width: 100% !important;
+                            max-height: 80vh !important;
+                            object-fit: contain;
+                            margin: 0 auto !important;
+                            display: block;
+                        }
+
+                        figcaption {
+                            font-size: 1rem;
+                            color: $color-primary;
+                            margin-top: $space-4;
+                        }
+                    }
+                }
+
+                // Clearfix for floated images
+                &::after {
+                    content: "";
+                    display: table;
+                    clear: both;
+                }
+            }
+        }
+
+        // Labor View Styles
+        .labor-view {
+            padding: $space-4;
+            color: $color-text-primary;
+
+            .labor-header {
+                margin-bottom: $space-6;
+                border-bottom: 1px solid $color-border;
+                padding-bottom: $space-4;
+
+                h3 {
+                    color: $color-primary;
+                    margin-bottom: $space-2;
+                }
+
+                .subtitle {
+                    color: $color-text-secondary;
+                    font-style: italic;
+                }
+            }
+
+            .labor-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: $space-6;
+                background: rgba(0, 0, 0, 0.2);
+                border-radius: $radius-md;
+                overflow: hidden;
+
+                th,
+                td {
+                    padding: $space-3;
+                    border-bottom: 1px solid $color-border;
+                    vertical-align: top;
+                }
+
+                th {
+                    background: rgba(255, 255, 255, 0.05);
+                    font-weight: 600;
+                    color: $color-primary;
+                    text-transform: uppercase;
+                    font-size: 0.85rem;
+                    letter-spacing: 0.05em;
+                }
+
+                .align-right {
+                    text-align: right;
+                }
+
+                .align-left {
+                    text-align: left;
+                }
+
+                .indent {
+                    margin-left: $space-4;
+                    color: $color-text-secondary;
+                    font-size: 0.9em;
+                }
+            }
+
+            .labor-parts {
+                margin: $space-6 0;
+                color: $color-text-primary;
+
+                strong {
+                    color: $color-primary;
+                    display: block;
+                    margin-bottom: $space-3;
+                }
+
+                .parts-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    background: rgba(0, 0, 0, 0.2);
+
+                    th {
+                        background: rgba($color-primary, 0.15);
+                        color: $color-primary;
+                        padding: $space-3 $space-4;
+                        text-align: left;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        font-size: 0.85rem;
+                    }
+
+                    td {
+                        padding: $space-3 $space-4;
+                        border-top: 1px solid rgba($color-border, 0.3);
+
+                        strong {
+                            color: $color-secondary;
+                            font-family: $font-mono;
+                            display: inline;
+                            margin: 0;
+                        }
+                    }
+
+                    .align-center {
+                        text-align: center;
+                    }
+
                     .align-right {
                         text-align: right;
-                    }
-
-                    .align-left {
-                        text-align: left;
-                    }
-
-                    .indent {
-                        margin-left: $space-4;
-                        color: $color-text-secondary;
-                        font-size: 0.9em;
-                    }
-                }
-
-                .labor-parts {
-                    margin: $space-6 0;
-                    color: $color-text-primary;
-
-                    strong {
-                        color: $color-primary;
-                        display: block;
-                        margin-bottom: $space-3;
-                    }
-
-                    .parts-table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        background: rgba(0, 0, 0, 0.2);
-
-                        th {
-                            background: rgba($color-primary, 0.15);
-                            color: $color-primary;
-                            padding: $space-3 $space-4;
-                            text-align: left;
-                            font-weight: 700;
-                            text-transform: uppercase;
-                            font-size: 0.85rem;
-                        }
-
-                        td {
-                            padding: $space-3 $space-4;
-                            border-top: 1px solid rgba($color-border, 0.3);
-
-                            strong {
-                                color: $color-secondary;
-                                font-family: $font-mono;
-                                display: inline;
-                                margin: 0;
-                            }
-                        }
-
-                        .align-center {
-                            text-align: center;
-                        }
-
-                        .align-right {
-                            text-align: right;
-                        }
-                    }
-                }
-
-                .labor-notes {
-                    background: rgba(255, 193, 7, 0.1);
-                    border-left: 4px solid #ffc107;
-                    padding: $space-4;
-                    border-radius: $radius-md;
-                    margin-bottom: $space-6;
-
-                    strong {
-                        color: #ffc107;
-                        display: block;
-                        margin-bottom: $space-2;
-                    }
-
-                    ul {
-                        margin: 0;
-                        padding-left: $space-4;
-                    }
-
-                    li {
-                        margin-bottom: $space-1;
-                    }
-                }
-
-                .optional-ops {
-                    h4 {
-                        color: $color-secondary;
-                        margin-bottom: $space-4;
-                        margin-top: $space-6;
-                        border-bottom: 1px solid $color-border;
-                        padding-bottom: $space-2;
-                        display: inline-block;
                     }
                 }
             }
 
-            // PDF Viewer Styles
-            .pdf-viewer {
+            .labor-notes {
+                background: rgba(255, 193, 7, 0.1);
+                border-left: 4px solid #ffc107;
                 padding: $space-4;
+                border-radius: $radius-md;
+                margin-bottom: $space-6;
 
-                .pdf-info {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: $space-4;
-                    background: rgba(0, 243, 255, 0.1);
-                    border: 1px solid $color-primary;
-                    border-radius: $radius-md;
+                strong {
+                    color: #ffc107;
+                    display: block;
+                    margin-bottom: $space-2;
+                }
+
+                ul {
+                    margin: 0;
+                    padding-left: $space-4;
+                }
+
+                li {
+                    margin-bottom: $space-1;
+                }
+            }
+
+            .optional-ops {
+                h4 {
+                    color: $color-secondary;
                     margin-bottom: $space-4;
+                    margin-top: $space-6;
+                    border-bottom: 1px solid $color-border;
+                    padding-bottom: $space-2;
+                    display: inline-block;
+                }
+            }
+        }
 
-                    p {
-                        margin: 0;
-                        color: $color-text-primary !important;
+        // PDF Viewer Styles
+        .pdf-viewer {
+            padding: $space-4;
 
-                        strong {
-                            color: $color-primary !important;
-                        }
+            .pdf-info {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: $space-4;
+                background: rgba(0, 243, 255, 0.1);
+                border: 1px solid $color-primary;
+                border-radius: $radius-md;
+                margin-bottom: $space-4;
+
+                p {
+                    margin: 0;
+                    color: $color-text-primary !important;
+
+                    strong {
+                        color: $color-primary !important;
                     }
+                }
 
-                    .download-btn {
-                        background: $color-primary;
-                        color: $color-bg-primary !important;
-                        padding: $space-2 $space-4;
-                        border-radius: $radius-md;
-                        text-decoration: none !important;
-                        font-family: $font-mono;
-                        font-weight: 600;
-                        transition: all 0.3s;
-                        display: inline-block;
+                .download-btn {
+                    background: $color-primary;
+                    color: $color-bg-primary !important;
+                    padding: $space-2 $space-4;
+                    border-radius: $radius-md;
+                    text-decoration: none !important;
+                    font-family: $font-mono;
+                    font-weight: 600;
+                    transition: all 0.3s;
+                    display: inline-block;
 
-                        &:hover {
-                            background: $color-secondary;
-                            box-shadow: $glow-secondary;
-                            transform: translateY(-2px);
-                        }
+                    &:hover {
+                        background: $color-secondary;
+                        box-shadow: $glow-secondary;
+                        transform: translateY(-2px);
                     }
                 }
             }
@@ -1154,5 +1202,170 @@
         text-align: center;
         padding: $space-8;
         color: $color-text-secondary;
+    }
+}
+
+// Mobile Responsive Styles (Small Screens)
+@media (max-width: 480px) {
+    .docs {
+        padding: $space-2;
+        overflow-x: hidden;
+        width: 100%;
+    }
+
+    .article-viewer {
+        padding: $space-2;
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
+
+        .article-header {
+            gap: $space-2;
+            margin-bottom: $space-4;
+            width: 100%;
+
+            h2 {
+                font-size: 1.2rem;
+                width: 100%;
+                order: 3;
+                margin-top: $space-2;
+                word-wrap: break-word;
+            }
+
+            .back-btn,
+            .ai-toggle-btn {
+                padding: $space-1 $space-3;
+                font-size: 0.85rem;
+            }
+        }
+
+        .article-body {
+            width: 100%;
+
+            .article-html {
+                padding: $space-4;
+                font-size: 0.95rem;
+                width: 100%;
+                overflow-x: hidden;
+
+                ::ng-deep {
+                    h1 {
+                        font-size: 1.5rem;
+                    }
+
+                    h2 {
+                        font-size: 1.3rem;
+                    }
+
+                    h3 {
+                        font-size: 1.2rem;
+                    }
+
+                    // Make tables scrollable
+                    table {
+                        display: block;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        overflow-x: auto;
+                        -webkit-overflow-scrolling: touch;
+                        white-space: nowrap;
+                    }
+
+                    // Reset floated thumbnails
+                    figure.thumbnail {
+                        float: none;
+                        display: block;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        margin: $space-4 0;
+                        box-sizing: border-box;
+
+                        img {
+                            max-height: none !important;
+                            width: 100% !important;
+                            max-width: 100% !important;
+                            height: auto !important;
+                        }
+                    }
+
+                    // Adjust lists
+                    ul,
+                    ol {
+                        margin-left: $space-4;
+                        max-width: 100%;
+                    }
+
+                    // Ensure all images are constrained
+                    img {
+                        max-width: 100% !important;
+                        height: auto !important;
+                    }
+
+                    // Constrain divs
+                    div {
+                        max-width: 100% !important;
+                        box-sizing: border-box !important;
+                    }
+                }
+            }
+
+            // Labor View Mobile
+            .labor-view {
+                padding: $space-2;
+
+                .labor-table,
+                .parts-table {
+                    display: block;
+                    width: 100%;
+                    overflow-x: auto;
+                }
+            }
+        }
+    }
+
+    // Main View Mobile
+    .header {
+        .vehicle-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: $space-2;
+
+            .icon {
+                font-size: 2rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+
+        .change-vehicle {
+            width: 100%;
+            text-align: center;
+            padding: $space-2;
+        }
+    }
+
+    .controls-bar {
+        .search-box {
+            min-width: 0;
+        }
+    }
+
+    .maintenance-search {
+        padding: $space-2;
+
+        .search-form {
+            padding: $space-4;
+
+            .form-row {
+                flex-direction: column;
+                align-items: stretch;
+
+                .interval-input {
+                    min-width: 0;
+                }
+            }
+        }
     }
 }

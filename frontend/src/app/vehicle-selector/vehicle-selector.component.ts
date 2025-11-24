@@ -148,14 +148,18 @@ export class VehicleSelectorComponent implements OnInit {
         // Save to session storage for recent vehicles
         this.saveToRecentVehicles(vehicleId, model);
 
+        // Save current vehicle to local storage for persistence
+        const vehicleParams = {
+            year: this.selectedYear,
+            make: this.selectedMake,
+            model: this.selectedModel,
+            vehicleId: vehicleId,
+            contentSource: this.selectedContentSource
+        };
+        localStorage.setItem('currentVehicle', JSON.stringify(vehicleParams));
+
         this.router.navigate(['/docs'], {
-            queryParams: {
-                year: this.selectedYear,
-                make: this.selectedMake,
-                model: this.selectedModel,
-                vehicleId: vehicleId,
-                contentSource: this.selectedContentSource // Use the API-provided contentSource
-            }
+            queryParams: vehicleParams
         });
     }
 

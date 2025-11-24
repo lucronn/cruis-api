@@ -56,17 +56,17 @@ fi
 
 if command -v firebase >/dev/null 2>&1; then
 	if [ "$AUTH_METHOD" = "token" ]; then
-		firebase deploy --only hosting,functions --token "$FIREBASE_TOKEN"
+		firebase deploy --only hosting:autolib,functions --project studio-534897447-7a1e7 --token "$FIREBASE_TOKEN"
 	else
 		# GOOGLE_APPLICATION_CREDENTIALS is automatically used by Firebase CLI
-		firebase deploy --only hosting,functions
+		firebase deploy --only hosting:autolib,functions --project studio-534897447-7a1e7
 	fi
 elif command -v npx >/dev/null 2>&1; then
 	if [ "$AUTH_METHOD" = "token" ]; then
-		npx firebase-tools deploy --only hosting,functions --token "$FIREBASE_TOKEN"
+		npx firebase-tools deploy --only hosting:autolib,functions --project studio-534897447-7a1e7 --token "$FIREBASE_TOKEN"
 	else
 		# GOOGLE_APPLICATION_CREDENTIALS is automatically used by Firebase CLI
-		npx firebase-tools deploy --only hosting,functions
+		npx firebase-tools deploy --only hosting:autolib,functions --project studio-534897447-7a1e7
 	fi
 else
 	echo "❌ Firebase CLI not found. Install it (npm i -g firebase-tools) or ensure npx is available."
@@ -74,6 +74,6 @@ else
 fi
 
 echo "✅ Deployment complete!"
-echo "🌐 Frontend: https://studio-534897447-7a1e7.web.app"
+echo "🌐 Frontend: https://autolib.web.app"
 echo "⚡ Backend: https://motorproxy-erohrfg7qa-uc.a.run.app"
 
