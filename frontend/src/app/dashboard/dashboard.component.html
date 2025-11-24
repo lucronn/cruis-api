@@ -2,13 +2,15 @@
     <!-- WebGL Background -->
     <div class="webgl-container" #rendererContainer></div>
 
-    <div class="content-overlay">
-        <div class="metrics-grid" *ngIf="!selectorActive" [@slideOut]>
-            <div class="metric-card" *ngFor="let metric of metrics">
-                <div class="metric-value">{{ formatNumber(metric.value) }}{{ metric.suffix }}</div>
-                <div class="metric-label">{{ metric.label }}</div>
-            </div>
+    <!-- Metrics Header Bar -->
+    <div class="metrics-header" *ngIf="!selectorActive">
+        <div class="metric-item" *ngFor="let metric of metrics">
+            <span class="metric-value">{{ formatNumber(metric.value) }}{{ metric.suffix }}</span>
+            <span class="metric-label">{{ metric.label }}</span>
         </div>
+    </div>
+
+    <div class="content-overlay">
 
         <div class="main-actions">
             <!-- Main Hero Content (Visible when selector is NOT active) -->

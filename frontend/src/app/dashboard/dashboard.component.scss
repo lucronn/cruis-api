@@ -19,14 +19,49 @@
 
 .content-overlay {
     position: relative;
-    z-index: 2;
-    padding: $space-8;
-    max-width: 1400px;
-    margin: 0 auto;
+    z-index: 10;
+    padding: 2rem;
+    padding-top: 5rem; // Space for metrics header
     display: flex;
     flex-direction: column;
     align-items: center;
     min-height: 100vh;
+}
+
+.metrics-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba($color-primary, 0.2);
+    padding: 0.5rem 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+
+    .metric-item {
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+
+        .metric-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+            font-family: $font-heading;
+        }
+
+        .metric-label {
+            color: $color-primary;
+            font-size: 0.65rem;
+            font-family: $font-mono;
+            letter-spacing: 0.1em;
+            opacity: 0.8;
+        }
+    }
 }
 
 .hero-section {
@@ -321,52 +356,6 @@
     }
 }
 
-.metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: $space-4;
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    margin-bottom: $space-8;
-
-    .metric-card {
-        text-align: center;
-        padding: $space-4;
-        background: rgba(0, 0, 0, 0.5);
-        border: 1px solid rgba($color-primary, 0.3);
-        border-radius: $radius-lg;
-        backdrop-filter: blur(5px);
-        transition: transform 0.3s;
-        aspect-ratio: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-
-        &:hover {
-            transform: translateY(-5px);
-            border-color: $color-primary;
-            box-shadow: 0 0 15px rgba($color-primary, 0.2);
-        }
-
-        .metric-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #fff;
-            font-family: $font-heading;
-            margin-bottom: $space-1;
-        }
-
-        .metric-label {
-            color: $color-primary;
-            font-size: 0.7rem;
-            font-family: $font-mono;
-            letter-spacing: 0.1em;
-        }
-    }
-}
-
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -458,17 +447,18 @@
         }
     }
 
-    .metrics-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: $space-3;
+    .metrics-header {
+        padding: 0.5rem 1rem;
+        gap: 1rem;
+        flex-wrap: wrap;
 
-        .metric-card {
+        .metric-item {
             .metric-value {
-                font-size: 1.5rem;
+                font-size: 1rem;
             }
 
             .metric-label {
-                font-size: 0.6rem;
+                font-size: 0.55rem;
             }
         }
     }
