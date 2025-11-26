@@ -654,7 +654,7 @@
         background: rgba(5, 5, 10, 0.85); // Deep dark glass
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        padding: 0.5rem 1rem;
+        padding: 0.6rem 1rem;
         z-index: 200;
         position: relative;
         height: 60px;
@@ -689,7 +689,7 @@
         }
 
         .change-vehicle-btn {
-            padding: 0.4rem 0.8rem;
+            padding: 0.5rem 0.9rem;
             background: rgba($color-secondary, 0.1);
             border: 1px solid rgba($color-secondary, 0.3);
             border-radius: 100px;
@@ -706,14 +706,21 @@
 
         .vehicle-info-header {
             gap: 0.8rem;
+            flex: 1;
+            justify-content: center;
+            max-width: 60%; // Prevent overflow
 
             .info-text {
                 h1 {
-                    font-size: 0.95rem;
-                    font-weight: 600;
-                    letter-spacing: 0.02em;
+                    font-size: 1.05rem; // Increased for readability
+                    font-weight: 700; // Bolder
+                    letter-spacing: -0.01em; // Tighter for better fit
                     color: #fff;
-                    text-shadow: 0 0 15px rgba($color-primary, 0.4);
+                    text-shadow: 0 0 10px rgba($color-primary, 0.2); // Subtle glow
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    max-width: 100%;
                 }
 
                 .subtitle {
@@ -724,7 +731,8 @@
             .mini-car-icon {
                 width: 50px;
                 height: 25px;
-                filter: drop-shadow(0 0 8px rgba($color-primary, 0.3));
+                filter: drop-shadow(0 0 6px rgba($color-primary, 0.2)); // Reduced glow
+                flex-shrink: 0;
             }
         }
     }
@@ -773,7 +781,7 @@
                 &:focus {
                     background: rgba(255, 255, 255, 0.12);
                     border-color: $color-primary;
-                    box-shadow: 0 0 0 2px rgba($color-primary, 0.2);
+                    box-shadow: 0 0 0 1px rgba($color-primary, 0.3); // Reduced glow
                 }
 
                 &::placeholder {
@@ -1002,9 +1010,10 @@
                         border-radius: 16px;
                         padding: 1.2rem;
                         display: flex;
-                        flex-direction: row; // Horizontal layout on mobile
+                        flex-direction: row; // Horizontal layout
                         align-items: center;
                         gap: 1rem;
+                        min-height: 60px; // Consistent height
 
                         &:active {
                             transform: scale(0.98);
@@ -1025,15 +1034,25 @@
                         }
 
                         .card-info {
+                            flex: 1;
+                            min-width: 0; // Allow text to shrink
+
                             h3 {
                                 font-size: 1rem;
                                 font-weight: 600;
-                                margin-bottom: 0.2rem;
+                                margin: 0 0 0.2rem 0;
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
                             }
 
                             p {
                                 font-size: 0.8rem;
                                 opacity: 0.6;
+                                margin: 0;
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
                             }
                         }
 
@@ -1045,6 +1064,7 @@
                             content: '→';
                             color: rgba(255, 255, 255, 0.3);
                             font-size: 1.2rem;
+                            flex-shrink: 0;
                         }
                     }
                 }
