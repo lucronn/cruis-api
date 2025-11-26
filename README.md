@@ -5,7 +5,7 @@
 
 Modern, responsive vehicle service and maintenance information system powered by Angular and Firebase.
 
-**🌐 Live Application:** [https://studio-534897447-7a1e7.web.app](https://studio-534897447-7a1e7.web.app)
+**🌐 Live Application:** [https://autolib.web.app](https://autolib.web.app)
 
 ## 📁 Project Structure
 
@@ -81,7 +81,7 @@ firebase deploy --only functions
 ```
 
 **Live URLs:**
-- **Frontend**: https://studio-534897447-7a1e7.web.app
+- **Frontend**: https://autolib.web.app
 - **Backend**: https://motorproxy-erohrfg7qa-uc.a.run.app
 
 ## 🔐 Authentication

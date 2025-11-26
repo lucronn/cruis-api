@@ -37,12 +37,12 @@ The workflow is located at `.github/workflows/deploy-firebase.yml`
 
 **Build Steps:**
 1. ✅ Checkout code
-2. ✅ Setup Node.js 18
+2. ✅ Setup Node.js 22
 3. ✅ Cache dependencies
 4. ✅ Install frontend dependencies
 5. ✅ Build Angular application
 6. ✅ Copy build to motorproxy directory
-7. ✅ Deploy to Firebase Hosting
+7. ✅ Deploy frontend only to autolib.web.app (Firebase Hosting)
 
 ### 🔧 Manual Deployment
 
@@ -58,9 +58,12 @@ This script will:
 - Copy files to motorproxy
 - Deploy to Firebase (hosting + functions)
 
+**Note:** The GitHub Actions workflow only deploys the frontend to `autolib.web.app`. To deploy functions, use the manual `deploy.sh` script.
+
 ### 🌐 Deployment URLs
 
-- **Frontend:** https://studio-534897447-7a1e7.web.app
+- **Frontend (GitHub Actions):** https://autolib.web.app
+- **Frontend (Manual):** https://autolib.web.app
 - **Backend:** https://motorproxy-erohrfg7qa-uc.a.run.app
 - **Firebase Console:** https://console.firebase.google.com/project/studio-534897447-7a1e7/overview
 

@@ -3,47 +3,74 @@
 .diagnostics {
     min-height: 100vh;
     padding: $space-8;
-    background: linear-gradient(135deg, $color-bg-primary 0%, #0d0d15 100%);
+    background: #000; // Match dashboard
+    position: relative;
+    overflow: hidden;
+
+    // Background glow
+    &::before {
+        content: '';
+        position: absolute;
+        top: -20%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80%;
+        height: 60%;
+        background: radial-gradient(circle, rgba($color-secondary, 0.1) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 0;
+    }
 }
 
 .header {
     text-align: center;
     margin-bottom: $space-12;
+    position: relative;
+    z-index: 1;
 
     h1 {
         font-size: 3rem;
-        color: $color-primary;
-        text-shadow: $glow-primary;
+        color: #fff;
+        text-shadow: 0 0 20px rgba($color-secondary, 0.5);
         margin-bottom: $space-2;
+        font-family: $font-heading;
+        letter-spacing: 0.1em;
     }
 
     .subtitle {
-        color: $color-text-secondary;
+        color: rgba(255, 255, 255, 0.6);
         font-family: $font-mono;
-        letter-spacing: 0.2em;
+        letter-spacing: 0.3em;
+        font-size: 0.9rem;
     }
 }
 
 .coming-soon {
     text-align: center;
     margin-bottom: $space-12;
+    position: relative;
+    z-index: 1;
 
     .icon {
         font-size: 5rem;
         margin-bottom: $space-4;
         animation: pulse 2s infinite;
+        filter: drop-shadow(0 0 20px rgba($color-secondary, 0.5));
     }
 
     h2 {
         color: $color-secondary;
         font-size: 2rem;
         margin-bottom: $space-3;
-        text-shadow: $glow-secondary;
+        text-shadow: 0 0 15px rgba($color-secondary, 0.5);
+        font-family: $font-heading;
+        letter-spacing: 0.1em;
     }
 
     p {
-        color: $color-text-secondary;
+        color: rgba(255, 255, 255, 0.7);
         font-size: 1.1rem;
+        font-family: $font-mono;
     }
 }
 
@@ -52,61 +79,85 @@
     0%,
     100% {
         opacity: 1;
+        transform: scale(1);
     }
 
     50% {
-        opacity: 0.5;
+        opacity: 0.7;
+        transform: scale(0.95);
     }
 }
 
 .categories-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: $space-4;
+    gap: $space-6;
     max-width: 1200px;
     margin: 0 auto;
+    position: relative;
+    z-index: 1;
 }
 
 .category-card {
     padding: $space-8;
-    background: rgba(26, 26, 40, 0.6);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
     border-radius: $radius-lg;
     text-align: center;
     transition: all 0.3s;
+    cursor: default;
 
     &:hover {
         transform: translateY(-4px);
-        box-shadow: $glow-primary;
-        background: rgba(26, 26, 40, 0.8);
+        background: rgba($color-secondary, 0.05);
+        border-color: rgba($color-secondary, 0.3);
+        box-shadow: 0 0 20px rgba($color-secondary, 0.1);
+
+        .category-icon {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 10px rgba($color-secondary, 0.5));
+        }
     }
 
     .category-icon {
         font-size: 3.5rem;
         margin-bottom: $space-4;
+        transition: all 0.3s;
+        display: inline-block;
     }
 
     h3 {
-        color: $color-text-primary;
+        color: #fff;
         font-size: 1.3rem;
         margin-bottom: $space-3;
+        font-family: $font-heading;
+        letter-spacing: 0.05em;
     }
 
     p {
-        color: $color-text-secondary;
+        color: rgba(255, 255, 255, 0.6);
         font-size: 0.95rem;
-        margin-bottom: $space-4;
+        margin-bottom: $space-6;
+        line-height: 1.5;
     }
 
     .coming-soon-btn {
-        background: none;
-        border: 1px solid $color-text-muted;
-        color: $color-text-muted;
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.3);
         padding: $space-2 $space-4;
-        border-radius: $radius-md;
+        border-radius: 100px;
         font-family: $font-mono;
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         cursor: not-allowed;
+        letter-spacing: 0.1em;
+        transition: all 0.3s;
+
+        &:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.5);
+        }
     }
 }
 

@@ -88,6 +88,7 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     ngOnInit() {
         this.route.queryParams.subscribe(params => {
             const vid = params['vehicleId'];
+            const aid = params['articleId'];
 
             if (vid) {
                 // Loaded from URL - update state
@@ -105,6 +106,16 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
                 this.loadVehicleName();
                 this.loadArticles();
+
+                // If article ID is present, load it
+                if (aid) {
+                    // We need to wait for articles to load to find the article object? 
+                    // Or just load content directly? Loading content directly is faster.
+                    // But we might want the article metadata (title etc) for the view.
+                    // For now, let's just load the content.
+                    this.loadArticleContent(aid);
+                    // We can also try to find the article object in the list once loaded
+                }
             } else {
                 // No params - check storage
                 const stored = localStorage.getItem('currentVehicle');
@@ -165,6 +176,13 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.groupArticlesByCategory();
 
                 this.loading = false;
+
+                // If we loaded an article content directly from URL, try to match it here
+                // to set the viewingArticle object (for title, etc)
+                const aid = this.route.snapshot.queryParams['articleId'];
+                if (aid && !this.viewingArticle) {
+                    this.viewingArticle = this.articles.find(a => a.id === aid);
+                }
             });
     }
 
@@ -725,32 +743,29 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         loader.load('assets/ferrari.glb', (gltf) => {
             const carModel = gltf.scene;
 
-            const bodyMaterial = new THREE.MeshPhysicalMaterial({
-                color: 0x88ddff,
-                metalness: 0.9,
-                roughness: 0.2,
-                emissive: 0x00ddff,
-                emissiveIntensity: 1.0
-            });
+            // Materials for glowing lines
+            const bodyLineMat = new THREE.LineBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.8 });
+            const trimLineMat = new THREE.LineBasicMaterial({ color: 0xff00ff, transparent: true, opacity: 1.0 });
 
-            const trimMaterial = new THREE.MeshPhysicalMaterial({
-                color: 0x8800ff,
-                metalness: 0.9,
-                roughness: 0.2,
-                emissive: 0x6600cc,
-                emissiveIntensity: 1.5
-            });
+            // Dark solid material
+            const solidMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.8 });
 
             carModel.traverse((child) => {
                 if ((child as THREE.Mesh).isMesh) {
                     const mesh = child as THREE.Mesh;
                     const name = mesh.name.toLowerCase();
 
+                    const edges = new THREE.EdgesGeometry(mesh.geometry, 15);
+                    let lineMat = bodyLineMat;
+
                     if (name.includes('trim') || name.includes('grille') || name.includes('badge')) {
-                        mesh.material = trimMaterial;
-                    } else {
-                        mesh.material = bodyMaterial;
+                        lineMat = trimLineMat;
                     }
+
+                    const lines = new THREE.LineSegments(edges, lineMat);
+                    mesh.add(lines);
+
+                    mesh.material = solidMat;
                 }
             });
 

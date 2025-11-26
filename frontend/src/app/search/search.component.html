@@ -6,14 +6,24 @@
 
     <div class="search-box">
         <input type="text" class="search-input" placeholder="Enter search term..." [(ngModel)]="searchTerm"
-            (keyup.enter)="search()">
-        <button class="search-btn" (click)="search()" [disabled]="!searchTerm.trim()">
+            (keyup.enter)="search()" [disabled]="advancedMode">
+
+        <button class="search-btn" (click)="search()" [disabled]="!searchTerm.trim() && !advancedMode">
             <span *ngIf="!loading">SEARCH</span>
             <span *ngIf="loading">...</span>
         </button>
-        <button class="clear-btn" (click)="clearSearch()" *ngIf="searchTerm">
+
+        <button class="clear-btn" (click)="clearSearch()" *ngIf="searchTerm || (advancedMode && searched)">
             CLEAR
         </button>
+    </div>
+
+    <div class="advanced-toggle">
+        <label class="switch">
+            <input type="checkbox" [(ngModel)]="advancedMode" (ngModelChange)="toggleAdvancedMode()">
+            <span class="slider round"></span>
+        </label>
+        <span class="label-text">SHOW ALL ARTICLES</span>
     </div>
 
     <div *ngIf="!vehicleId" class="warning-message">
@@ -28,15 +38,26 @@
 
     <div *ngIf="!loading && searched && results.length > 0" class="results">
         <h2>RESULTS ({{ results.length }})</h2>
+
         <div class="results-list">
-            <div *ngFor="let result of results" class="result-card neon-border">
-                <div class="result-icon">📄</div>
-                <div class="result-info">
-                    <h3>{{ result.title }}</h3>
-                    <p class="description" *ngIf="result.description">{{ result.description }}</p>
-                    <span class="category" *ngIf="result.category">{{ result.category }}</span>
+            <div *ngFor="let group of groupedResults" class="category-group">
+                <div class="category-header" (click)="toggleCategory(group)" [class.expanded]="group.expanded">
+                    <h3>{{ group.category }}</h3>
+                    <span class="count">{{ group.articles.length }}</span>
+                    <span class="arrow">▼</span>
                 </div>
-                <button class="view-btn">VIEW →</button>
+
+                <div class="category-articles" *ngIf="group.expanded">
+                    <div *ngFor="let result of group.articles" class="result-card neon-border"
+                        (click)="viewArticle(result)">
+                        <div class="result-icon">📄</div>
+                        <div class="result-info">
+                            <h3>{{ result.title }}</h3>
+                            <p class="description" *ngIf="result.description">{{ result.description }}</p>
+                        </div>
+                        <button class="view-btn">VIEW →</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
