@@ -478,14 +478,83 @@
 
     h1,
     h2,
-    h3 {
+    h3,
+    h4,
+    h5,
+    h6 {
         color: #fff;
         margin-top: 2rem;
         margin-bottom: 1rem;
+        font-weight: 600;
     }
 
     p {
         margin-bottom: 1rem;
+    }
+
+    ul,
+    ol {
+        margin-bottom: 1rem;
+        padding-left: 1.5rem;
+
+        li {
+            margin-bottom: 0.5rem;
+            color: #e0e0e0;
+        }
+    }
+
+    strong,
+    b {
+        color: #fff;
+        font-weight: 700;
+    }
+
+    em,
+    i {
+        font-style: italic;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    blockquote {
+        border-left: 4px solid $color-primary;
+        margin: 1.5rem 0;
+        padding: 1rem;
+        background: rgba($color-primary, 0.1);
+        color: rgba(255, 255, 255, 0.9);
+        font-style: italic;
+    }
+
+    pre,
+    code {
+        font-family: $font-mono;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        color: $color-secondary;
+    }
+
+    pre {
+        padding: 1rem;
+        overflow-x: auto;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+
+        code {
+            background: transparent;
+            padding: 0;
+            color: inherit;
+        }
+    }
+
+    a {
+        color: $color-primary;
+        text-decoration: none;
+        border-bottom: 1px dotted $color-primary;
+        transition: all 0.2s;
+
+        &:hover {
+            color: #fff;
+            border-bottom-style: solid;
+        }
     }
 
     table {
@@ -498,11 +567,13 @@
         td {
             padding: 1rem;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: left;
         }
 
         th {
             background: rgba($color-primary, 0.1);
             color: $color-primary;
+            font-weight: 600;
         }
     }
 
@@ -517,23 +588,32 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        figcaption {
+            margin-top: 0.5rem;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8rem;
+            font-family: $font-mono;
+        }
+
         &.expanded {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: #000;
+            background: rgba(0, 0, 0, 0.95);
             z-index: 9999;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 2rem;
+            backdrop-filter: blur(10px);
 
             img {
                 max-height: 85vh;
                 object-fit: contain;
+                box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
             }
         }
     }
@@ -555,6 +635,8 @@
     .content-overlay {
         padding: 0;
         height: 100vh;
+        /* Fallback */
+        height: 100dvh;
         max-width: 100%;
         overflow: hidden; // Prevent scrolling on body
     }
@@ -563,8 +645,8 @@
         margin: 0;
         border-radius: 0;
         border: none;
-        background: rgba(0, 0, 0, 0.9); // Darker background to reduce glass artifacts
-        backdrop-filter: blur(10px); // Reduced blur for performance
+        background: rgba(0, 0, 0, 0.95); // More opaque to reduce glass artifacts
+        backdrop-filter: blur(5px); // Reduced blur for performance
         padding: 0.8rem 1rem;
         z-index: 200; // Above everything
         position: relative;
@@ -589,6 +671,8 @@
     .docs-grid {
         gap: 0;
         height: calc(100vh - 80px);
+        /* Fallback */
+        height: calc(100dvh - 80px);
         position: relative;
     }
 

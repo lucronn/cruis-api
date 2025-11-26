@@ -467,6 +467,8 @@
         padding: 0;
         padding-top: 40px; // Space for metrics header
         height: 100vh;
+        /* Fallback */
+        height: 100dvh;
         justify-content: flex-start; // Align to top
     }
 
@@ -533,6 +535,8 @@
         bottom: 0;
         width: 100%;
         height: calc(100vh - 40px);
+        /* Fallback */
+        height: calc(100dvh - 40px);
         margin: 0;
         border-radius: 0;
         border: none;

@@ -2,6 +2,8 @@
 
 .search {
     min-height: 100vh;
+    /* Fallback */
+    min-height: 100dvh;
     padding: $space-8;
     background: #000; // Match dashboard background
     position: relative;
