@@ -41,43 +41,52 @@
     backdrop-filter: blur(20px);
     border: 1px solid rgba(0, 243, 255, 0.2);
     border-radius: 16px;
-    padding: 1rem 2rem;
+    padding: 0.75rem 1.5rem; // Reduced padding
     margin-bottom: 1.5rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 80px;
+    height: auto; // Allow auto height
+    min-height: 60px; // Smaller minimum height
     flex-shrink: 0;
+    gap: 1rem; // Consistent gap
 
     .back-btn {
         background: transparent;
         border: 1px solid rgba(255, 255, 255, 0.2);
         color: rgba(255, 255, 255, 0.8);
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
+        padding: 0.4rem 0.8rem; // Smaller padding
+        border-radius: 6px; // Smaller radius
         cursor: pointer;
         transition: all 0.3s ease;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.4rem;
         font-family: $font-mono;
-        font-size: 0.9rem;
+        font-size: 0.75rem; // Smaller font
+        white-space: nowrap;
 
         &:hover {
             background: rgba(0, 243, 255, 0.1);
             border-color: #00f3ff;
             color: #00f3ff;
         }
+
+        i {
+            font-size: 0.9rem;
+        }
     }
 
     .vehicle-info-header {
         display: flex;
         align-items: center;
-        gap: 1.5rem;
+        gap: 1rem;
+        flex: 1; // Take available space
+        justify-content: center; // Center content
 
         .mini-car-icon {
-            width: 80px;
-            height: 40px;
+            width: 60px; // Slightly smaller
+            height: 30px;
             position: relative;
 
             .mini-car-container {
@@ -89,19 +98,22 @@
         .info-text {
             display: flex;
             flex-direction: column;
+            align-items: center; // Center text
+            text-align: center;
 
             h1 {
-                font-size: 1.2rem;
+                font-size: 1rem; // Smaller title
                 margin: 0;
                 color: #fff;
-                text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+                text-shadow: 0 0 10px rgba(0, 243, 255, 0.3); // Subtle glow
                 line-height: 1.2;
+                font-weight: 600;
             }
 
             .subtitle {
-                font-size: 0.7rem;
+                font-size: 0.65rem;
                 color: rgba(255, 255, 255, 0.5);
-                letter-spacing: 0.2em;
+                letter-spacing: 0.15em;
                 font-family: $font-mono;
             }
         }
@@ -109,19 +121,20 @@
 
     .change-vehicle-btn {
         background: transparent;
-        border: 1px solid $color-secondary;
+        border: 1px solid rgba($color-secondary, 0.5); // More subtle border
         color: $color-secondary;
-        padding: 0.5rem 1.5rem;
-        border-radius: 8px;
+        padding: 0.4rem 0.8rem; // Match back button
+        border-radius: 6px;
         font-family: $font-mono;
-        font-size: 0.8rem;
+        font-size: 0.75rem; // Match back button
         cursor: pointer;
         transition: all 0.3s;
+        white-space: nowrap;
 
         &:hover {
-            background: $color-secondary;
-            color: #000;
-            box-shadow: 0 0 15px rgba($color-secondary, 0.4);
+            background: rgba($color-secondary, 0.1); // Subtle hover
+            color: #fff;
+            box-shadow: 0 0 10px rgba($color-secondary, 0.2);
         }
     }
 }
@@ -647,14 +660,37 @@
         border: none;
         background: rgba(0, 0, 0, 0.95); // More opaque to reduce glass artifacts
         backdrop-filter: blur(5px); // Reduced blur for performance
-        padding: 0.8rem 1rem;
+        padding: 0.5rem 1rem; // Compact padding
         z-index: 200; // Above everything
         position: relative;
+        height: 60px; // Fixed height for mobile header
+
+        .back-btn {
+            padding: 0.3rem 0.6rem;
+            font-size: 0.7rem;
+
+            span {
+                display: none;
+            }
+
+            // Hide text on mobile, keep icon
+            i {
+                margin: 0;
+                font-size: 1rem;
+            }
+        }
+
+        .change-vehicle-btn {
+            padding: 0.3rem 0.6rem;
+            font-size: 0.7rem;
+        }
 
         .vehicle-info-header {
+            gap: 0.5rem;
+
             .info-text {
                 h1 {
-                    font-size: 1rem;
+                    font-size: 0.9rem;
                 }
 
                 .subtitle {
@@ -663,7 +699,8 @@
             }
 
             .mini-car-icon {
-                width: 60px;
+                width: 40px; // Smaller car icon
+                height: 20px;
             }
         }
     }
