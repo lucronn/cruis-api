@@ -1,64 +1,60 @@
 <div class="vehicle-selector">
     <div class="header">
-        <button *ngIf="step !== 'year'" class="back-btn" (click)="goBack()">
-            ← BACK
-        </button>
         <h1 class="glow-text">SELECT VEHICLE</h1>
+        <p class="subtitle">ENTER YEAR, MAKE, AND MODEL</p>
     </div>
 
-    <div class="breadcrumb">
-        <span [class.active]="step === 'year'">{{ selectedYear || 'YEAR' }}</span>
-        <span class="separator">&rsaquo;</span>
-        <span [class.active]="step === 'make'" [class.dim]="!selectedYear">{{ selectedMake || 'MAKE' }}</span>
-        <span class="separator">&rsaquo;</span>
-        <span [class.active]="step === 'model'" [class.dim]="!selectedMake">{{ selectedModel || 'MODEL' }}</span>
-        <span *ngIf="engines.length > 1" class="separator">&rsaquo;</span>
-        <span *ngIf="engines.length > 1" [class.active]="step === 'engine'" [class.dim]="!selectedModel">{{
-            selectedEngine || 'ENGINE' }}</span>
+    <div class="search-container">
+        <div class="search-box">
+            <input type="text" class="search-input" placeholder="e.g. 2015 Ford F-150" [(ngModel)]="searchTerm"
+                (input)="onSearchInput()" autofocus>
+            <div class="search-icon" *ngIf="!loading">🔍</div>
+            <div class="spinner" *ngIf="loading"></div>
+        </div>
+
+        <div class="parsed-badges" *ngIf="parsedYear">
+            <span class="badge year">{{ parsedYear }}</span>
+            <span class="badge make" *ngIf="parsedMake">{{ parsedMake.label }}</span>
+            <span class="badge model" *ngIf="parsedModel">{{ parsedModel.label }}</span>
+        </div>
     </div>
 
-    <div *ngIf="error" class="error-message">{{ error }}</div>
+    <div class="results-container">
+        <div *ngIf="error" class="error-message">
+            ⚠️ {{ error }}
+        </div>
 
-    <div *ngIf="loading" class="loading">
-        <div class="spinner"></div>
-        <p>LOADING...</p>
-    </div>
+        <div class="suggestions-list" *ngIf="suggestions.length > 0">
+            <h3 class="list-header">
+                {{ suggestionType === 'history' ? 'RECENT VEHICLES' :
+                suggestionType === 'year' ? 'SELECT YEAR' :
+                suggestionType === 'make' ? 'SELECT MAKE' :
+                suggestionType === 'model' ? 'SELECT MODEL' : 'SELECT ENGINE' }}
+            </h3>
 
-    <div class="options-grid" *ngIf="!loading">
-        <!-- Year Selection -->
-        <button *ngFor="let year of years" class="option-card neon-border" [class.hidden]="step !== 'year'"
-            (click)="selectYear(year)">
-            <div class="option-content">
-                <div class="option-label">{{ year.label }}</div>
-                <div class="arrow">→</div>
+            <div class="suggestion-item" *ngFor="let item of suggestions"
+                (click)="suggestionType === 'engine' ? selectEngine(item) : selectSuggestion(item)">
+
+                <div class="item-icon">
+                    {{ suggestionType === 'history' ? '🕒' : '🚗' }}
+                </div>
+
+                <div class="item-info">
+                    <div class="item-label">
+                        {{ suggestionType === 'history' ? item.vehicleName : item.label }}
+                    </div>
+                    <div class="item-sub" *ngIf="suggestionType === 'history'">
+                        {{ item.vehicleId }}
+                    </div>
+                </div>
+
+                <div class="item-arrow">→</div>
             </div>
-        </button>
+        </div>
 
-        <!-- Make Selection -->
-        <button *ngFor="let make of makes" class="option-card neon-border" [class.hidden]="step !== 'make'"
-            (click)="selectMake(make)">
-            <div class="option-content">
-                <div class="option-label">{{ make.label }}</div>
-                <div class="arrow">→</div>
-            </div>
-        </button>
-
-        <!-- Model Selection -->
-        <button *ngFor="let model of models" class="option-card neon-border" [class.hidden]="step !== 'model'"
-            (click)="selectModel(model)">
-            <div class="option-content">
-                <div class="option-label">{{ model.label }}</div>
-                <div class="arrow">→</div>
-            </div>
-        </button>
-
-        <!-- Engine Selection -->
-        <button *ngFor="let engine of engines" class="option-card neon-border engine-card"
-            [class.hidden]="step !== 'engine'" (click)="selectEngine(engine)">
-            <div class="option-content">
-                <div class="option-label">{{ engine.name }}</div>
-                <div class="checkmark">✓</div>
-            </div>
-        </button>
+        <div class="empty-state" *ngIf="suggestions.length === 0 && !loading && !error">
+            <p>Start typing to search for a vehicle.</p>
+            <p class="hint">Example: "2020 Toyota Camry"</p>
+        </div>
     </div>
 </div>
