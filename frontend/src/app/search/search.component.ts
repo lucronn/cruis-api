@@ -51,6 +51,8 @@ export class SearchComponent {
         }
     }
 
+    errorMessage: string = '';
+
     search() {
         if (!this.advancedMode && !this.searchTerm.trim()) {
             return;
@@ -65,6 +67,7 @@ export class SearchComponent {
         this.loading = true;
         this.searched = true;
         this.groupedResults = [];
+        this.errorMessage = ''; // Clear previous errors
 
         // If advanced mode, search with empty string to get all
         const term = this.advancedMode ? '' : this.searchTerm;
@@ -73,11 +76,15 @@ export class SearchComponent {
             .pipe(
                 catchError(err => {
                     console.error('Error searching:', err);
+                    this.errorMessage = 'Failed to load articles. Please try again or use a specific search term.';
                     return of({ body: { articleDetails: [], filterTabs: [] } });
                 })
             )
             .subscribe(response => {
                 this.results = response.body?.articleDetails || [];
+                if (this.results.length === 0 && !this.errorMessage) {
+                    // If no results and no error, it's just empty
+                }
                 this.processResults();
                 this.loading = false;
             });

@@ -524,14 +524,32 @@
     }
 
     .result-card {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row; // Keep horizontal
+        align-items: center;
         padding: 1rem;
+        gap: 1rem;
+
+        .result-icon {
+            font-size: 1.2rem; // Slightly smaller icon
+        }
+
+        .result-info {
+            h3 {
+                font-size: 1rem;
+            }
+
+            .description {
+                display: none;
+            }
+
+            // Hide description on mobile to save space
+        }
 
         .view-btn {
-            width: 100%;
-            text-align: center;
-            margin-top: 1rem;
+            width: auto; // Auto width
+            margin-top: 0;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.7rem;
         }
     }
 

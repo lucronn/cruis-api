@@ -62,7 +62,12 @@
         </div>
     </div>
 
-    <div *ngIf="!loading && searched && results.length === 0" class="no-results">
+    <div *ngIf="!loading && errorMessage" class="no-results">
+        <p style="color: #ff4444;">⚠️ {{ errorMessage }}</p>
+        <button class="search-btn" (click)="search()" style="margin-top: 1rem; width: auto;">RETRY</button>
+    </div>
+
+    <div *ngIf="!loading && searched && results.length === 0 && !errorMessage" class="no-results">
         <p>No results found for "{{ searchTerm }}"</p>
         <p class="hint">Try a different search term</p>
     </div>
