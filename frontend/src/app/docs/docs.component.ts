@@ -332,6 +332,15 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             return `<img src='/api/motor-proxy/api/source/${this.contentSource}/graphic/${id}'${extraAttributes}>`;
         });
 
+        // Remove inline styles that conflict with dark theme or responsiveness
+        html = html.replace(/color:\s*black/gi, '');
+        html = html.replace(/background-color:\s*white/gi, '');
+        html = html.replace(/background:\s*white/gi, '');
+
+        // Remove fixed widths
+        html = html.replace(/width:\s*\d+px/gi, '');
+        html = html.replace(/width="\d+"/gi, '');
+
         // Convert non-standard <image> tags to <img> tags
         html = html.replace(/<image\s/gi, '<img ');
         html = html.replace(/<\/image>/gi, '');
