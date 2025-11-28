@@ -511,23 +511,159 @@ $text-secondary: #a0a0a0;
         flex: 1;
         overflow-y: auto;
         padding: 20px;
-        background: #fff; // Articles usually need white bg for readability
-        color: #000;
+        background: $dark-bg; // Dark background for Cyberpunk theme
+        color: $text-primary; // Light text
+
+        .loading-article {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: $text-primary;
+
+            .cyber-spinner {
+                width: 40px;
+                height: 40px;
+                border: 3px solid rgba(0, 243, 255, 0.3);
+                border-radius: 50%;
+                border-top-color: $neon-cyan;
+                animation: spin 1s linear infinite;
+                margin-bottom: 16px;
+            }
+        }
 
         .article-body {
             max-width: 800px;
             margin: 0 auto;
             line-height: 1.6;
+            font-size: 16px;
 
-            img {
-                max-width: 100%;
-                height: auto;
+            // Deep selectors to style injected HTML
+            ::ng-deep {
+                color: $text-primary;
+
+                h1,
+                h2,
+                h3,
+                h4,
+                h5,
+                h6 {
+                    color: $neon-cyan;
+                    margin-top: 1.5em;
+                    margin-bottom: 0.5em;
+                }
+
+                p {
+                    margin-bottom: 1em;
+                }
+
+                a {
+                    color: $neon-cyan;
+                    text-decoration: none;
+
+                    &:hover {
+                        text-decoration: underline;
+                    }
+                }
+
+                ul,
+                ol {
+                    padding-left: 20px;
+                    margin-bottom: 1em;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin: 20px 0;
+                    background: rgba(255, 255, 255, 0.05);
+                    border-radius: 8px;
+                    overflow: hidden;
+
+                    th,
+                    td {
+                        padding: 12px;
+                        text-align: left;
+                        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                    }
+
+                    th {
+                        background-color: rgba(0, 243, 255, 0.1);
+                        color: $neon-cyan;
+                        font-weight: 600;
+                    }
+                }
+
+                img {
+                    max-width: 100%;
+                    height: auto;
+                    border-radius: 8px;
+                    margin: 10px 0;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                }
+            }
+        }
+
+        // Styles for Parts and Locations generated HTML
+        ::ng-deep .parts-container,
+        ::ng-deep .locations-container {
+            h2 {
+                color: $neon-cyan;
+                margin-bottom: 20px;
+                border-bottom: 1px solid $glass-border;
+                padding-bottom: 10px;
+            }
+
+            .cyber-table {
+                width: 100%;
+                border-collapse: collapse;
+
+                th {
+                    text-transform: uppercase;
+                    font-size: 12px;
+                    letter-spacing: 1px;
+                }
+
+                .part-num {
+                    font-family: monospace;
+                    color: $neon-pink;
+                }
+            }
+
+            .locations-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 16px;
+            }
+
+            .location-card {
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid $glass-border;
                 border-radius: 8px;
-                margin: 10px 0;
+                padding: 16px;
+
+                h3 {
+                    font-size: 16px;
+                    margin: 0 0 8px 0;
+                    color: #fff;
+                }
+
+                p {
+                    font-size: 14px;
+                    color: $text-secondary;
+                }
             }
         }
     }
 }
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 
 // AI Toggle Switch
 .switch {
