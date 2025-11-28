@@ -733,6 +733,7 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.miniCarContainer.nativeElement.appendChild(this.miniRenderer.domElement);
 
         this.miniCarGroup = new THREE.Group();
+        this.miniCarGroup.position.y = 0.5; // Move up slightly
         this.miniScene.add(this.miniCarGroup);
 
         const loader = new GLTFLoader();
