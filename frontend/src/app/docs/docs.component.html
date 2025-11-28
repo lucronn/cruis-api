@@ -1,197 +1,148 @@
-<div class="docs-dashboard-template">
-    <!-- Custom Light Beam Background (Matches Dashboard) -->
-    <div class="light-beam-container" #lightBeamContainer></div>
+<div class="docs-container">
+    <!-- HUD Header -->
+    <div class="hud-header">
+        <div class="hud-top-row">
+            <div class="back-btn-circle" (click)="changeVehicle()">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+            <h1 class="vehicle-title">{{ vehicleName }}</h1>
+            <div class="mini-car-wrapper" #miniCarContainer></div>
+        </div>
 
-    <div class="content-overlay">
-        <!-- Header Bar (Floating Glass) -->
-        <div class="docs-header">
-            <button class="back-btn" (click)="closeArticle()" *ngIf="viewingArticle">
-                <i class="fas fa-arrow-left"></i> BACK
-            </button>
-            <button class="back-btn" routerLink="/search" *ngIf="!viewingArticle">
-                <i class="fas fa-arrow-left"></i> BACK TO SEARCH
-            </button>
-
-            <div class="vehicle-info-header">
-                <div class="mini-car-icon">
-                    <div class="mini-car-container" #miniCarContainer></div>
+        <!-- Stat Carousel -->
+        <div class="stat-carousel">
+            <div class="stat-card" *ngFor="let stat of hudStats">
+                <span class="stat-icon">{{ stat.icon }}</span>
+                <div class="stat-info">
+                    <span class="stat-label">{{ stat.label }}</span>
+                    <span class="stat-value">{{ stat.value }}</span>
                 </div>
-                <div class="info-text">
-                    <h1 class="glow-text" *ngIf="!loadingName">{{ vehicleName }}</h1>
-                    <h1 class="glow-text" *ngIf="loadingName">Loading...</h1>
-                    <span class="subtitle">TECHNICAL DOCUMENTATION</span>
+            </div>
+            <!-- Loading State for Stats -->
+            <div class="stat-card loading" *ngIf="loadingHud">
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line short"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thumb Zone Navigation (Pills) -->
+    <div class="pill-nav-container">
+        <div class="pill-scroll-wrapper">
+            <button class="nav-pill" *ngFor="let pill of pillFilters" [class.active]="activePill === pill"
+                (click)="selectPill(pill)">
+                {{ pill }}
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="content-area">
+        <!-- Article List (Accordion Style) -->
+        <div class="article-list" *ngIf="!viewingArticle">
+            <div class="accordion-card" *ngFor="let article of filteredArticles" [class.expanded]="article.expanded">
+                <div class="accordion-header" (click)="toggleAccordion(article)">
+                    <div class="accordion-title-group">
+                        <h3 class="article-title">{{ article.title }}</h3>
+                        <span class="article-subtitle" *ngIf="article.subtitle">{{ article.subtitle }}</span>
+                    </div>
+                    <div class="accordion-meta">
+                        <span class="labor-time" *ngIf="article.laborTime">{{ article.laborTime }} Hr</span>
+                        <i class="fas fa-chevron-down expand-icon"></i>
+                    </div>
+                </div>
+
+                <div class="accordion-body">
+                    <div class="action-buttons">
+                        <button class="action-btn primary" (click)="viewArticle(article)">
+                            <i class="fas fa-file-alt"></i> View Procedure
+                        </button>
+                        <button class="action-btn secondary">
+                            <i class="fas fa-map-marker-alt"></i> Locate Component
+                        </button>
+                        <button class="action-btn secondary">
+                            <i class="fas fa-cogs"></i> Parts List
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <button class="change-vehicle-btn" (click)="changeVehicle()">
-                CHANGE VEHICLE
-            </button>
+            <!-- Empty State -->
+            <div class="empty-state" *ngIf="filteredArticles.length === 0 && !loading">
+                <i class="fas fa-search"></i>
+                <p>No procedures found for "{{ activePill }}"</p>
+            </div>
+
+            <!-- Loading State -->
+            <div class="loading-state" *ngIf="loading">
+                <div class="spinner"></div>
+                <p>Loading vehicle data...</p>
+            </div>
         </div>
 
-        <!-- Main Content Grid -->
-        <div class="docs-grid">
+        <!-- Article Viewer -->
+        <div class="article-viewer" *ngIf="viewingArticle">
+            <div class="viewer-header">
+                <button class="close-btn" (click)="closeArticle()">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </button>
+                <div class="ai-toggle">
+                    <span class="ai-label">AI Enhance</span>
+                    <label class="switch">
+                        <input type="checkbox" [checked]="aiEnhanced" (change)="toggleAiEnhancement()"
+                            [disabled]="enhancing">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
 
-            <!-- Sidebar (Floating Glass Card) -->
-            <aside class="sidebar-card" *ngIf="!viewingArticle">
-                <div class="sidebar-header">
-                    <h2>CATEGORIES</h2>
+            <div class="viewer-content">
+                <div *ngIf="loadingArticle" class="loading-article">
+                    <div class="cyber-spinner"></div>
+                    <p>{{ loadingMessage }}</p>
                 </div>
 
-                <div class="search-box">
-                    <input type="text" class="search-input" placeholder="Filter categories..." [(ngModel)]="searchQuery"
-                        (input)="onSearchChange()">
-                </div>
+                <div *ngIf="!loadingArticle" class="article-body" [innerHTML]="articleContent"
+                    (click)="handleArticleClick($event)"></div>
 
-                <div class="categories-list custom-scrollbar">
-                    <div *ngFor="let category of categories" class="category-group">
-                        <button class="category-btn"
-                            [class.active]="selectedCategory?.name === category.name && !selectedSubCategory"
-                            (click)="selectCategory(category)">
-                            <span class="name">{{ category.name }}</span>
-                            <span class="count">{{ category.count }}</span>
-                        </button>
-
-                        <div *ngIf="category.subCategories && category.expanded" class="sub-categories">
-                            <button *ngFor="let sub of category.subCategories" class="sub-category-btn"
-                                [class.active]="selectedSubCategory?.name === sub.name"
-                                (click)="selectSubCategory(sub, $event)">
-                                <span class="name">{{ sub.name }}</span>
-                                <span class="count">{{ sub.articles.length }}</span>
-                            </button>
+                <!-- Labor Data Display -->
+                <div *ngIf="laborData && !loadingArticle" class="labor-data-panel">
+                    <h3>Labor Operation: {{ laborData.mainOperation.code }}</h3>
+                    <div class="labor-details">
+                        <div class="labor-row">
+                            <span>Description:</span>
+                            <strong>{{ laborData.mainOperation.description }}</strong>
+                        </div>
+                        <div class="labor-row">
+                            <span>Time:</span>
+                            <strong class="highlight-cyan">{{ laborData.mainOperation.time }} Hours</strong>
                         </div>
                     </div>
                 </div>
-            </aside>
-
-            <!-- Articles / Content Area (Floating Glass Card) -->
-            <main class="content-card" [class.full-width]="viewingArticle" [class.category-selected]="selectedCategory">
-
-                <!-- Article Viewer -->
-                <div class="article-viewer" *ngIf="viewingArticle">
-                    <div class="article-header-bar">
-                        <h2>{{ viewingArticle.title }}</h2>
-                        <button class="close-btn" (click)="closeArticle()">✕</button>
-                    </div>
-
-                    <div class="article-body custom-scrollbar">
-                        <div *ngIf="loadingArticle" class="loading-state">
-                            <div class="spinner"></div>
-                            <p>{{ loadingMessage }}</p>
-                        </div>
-
-                        <!-- Labor Data -->
-                        <div *ngIf="laborData && !loadingArticle" class="labor-view">
-                            <!-- (Existing Labor View Code - Simplified for brevity, keeping logic) -->
-                            <div class="labor-header">
-                                <h3>{{ laborData.mainOperation.title }}</h3>
-                                <p class="subtitle">{{ laborData.mainOperation.subtitle }}</p>
-                            </div>
-                            <!-- ... Labor Tables ... -->
-                            <table class="labor-table">
-                                <thead>
-                                    <tr>
-                                        <th>Operation</th>
-                                        <th>Attributes</th>
-                                        <th class="align-right">Hours</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>
-                                            <strong>{{ laborData.mainOperation.title }}</strong>
-                                            <div *ngIf="laborData.includedOperations?.length > 0" class="included-ops">
-                                                <br>+ Included:
-                                                <div *ngFor="let inc of laborData.includedOperations">{{ inc.title }}
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>{{ laborData.vehicleAttributes }}</td>
-                                        <td class="align-right">{{ laborData.mainOperation.laborTime | number: '.1-2' }}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- HTML Content -->
-                        <div *ngIf="!loadingArticle && !laborData" class="article-html" [innerHTML]="articleContent"
-                            (click)="handleArticleClick($event)"></div>
-                    </div>
-                </div>
-
-                <!-- Articles List -->
-                <div class="articles-list-view" *ngIf="!viewingArticle">
-                    <div *ngIf="!selectedCategory" class="empty-state">
-                        <div class="icon">📑</div>
-                        <h2>SELECT A CATEGORY</h2>
-                        <p>Choose a category from the left to view articles</p>
-                    </div>
-
-                    <div *ngIf="selectedCategory" class="category-view">
-                        <div class="category-title-bar">
-                            <h2>
-                                {{ selectedCategory.name }}
-                                <span *ngIf="selectedSubCategory" class="sub-crumb"> > {{ selectedSubCategory.name
-                                    }}</span>
-                            </h2>
-                            <span class="article-count-badge">
-                                {{ selectedSubCategory ? selectedSubCategory.articles.length : selectedCategory.count }}
-                                ARTICLES
-                            </span>
-                        </div>
-
-                        <!-- Maintenance Search Form (Preserved) -->
-                        <div *ngIf="selectedCategory.name === 'Maintenance Schedules'" class="maintenance-search">
-                            <form (ngSubmit)="searchMaintenanceSchedules()" class="search-form">
-                                <div class="form-row">
-                                    <input type="number" class="interval-input"
-                                        [(ngModel)]="maintenanceSchedule.interval" placeholder="Enter interval..."
-                                        [disabled]="maintenanceSchedule.intervalType === 'Indicator'">
-                                    <button type="submit" class="search-btn" [disabled]="maintenanceSchedule.searching">
-                                        {{ maintenanceSchedule.searching ? 'SEARCHING...' : 'SEARCH' }}
-                                    </button>
-                                </div>
-                                <!-- Radio groups preserved but simplified structure -->
-                                <div class="radio-groups">
-                                    <label><input type="radio" name="intervalType" value="Miles"
-                                            [(ngModel)]="maintenanceSchedule.intervalType"> Miles</label>
-                                    <label><input type="radio" name="intervalType" value="Kilometers"
-                                            [(ngModel)]="maintenanceSchedule.intervalType"> Km</label>
-                                    <label><input type="radio" name="intervalType" value="Months"
-                                            [(ngModel)]="maintenanceSchedule.intervalType"> Months</label>
-                                </div>
-                            </form>
-                        </div>
-
-                        <!-- Articles Grid -->
-                        <div class="articles-grid custom-scrollbar">
-                            <ng-container *ngIf="selectedSubCategory">
-                                <div *ngFor="let article of selectedSubCategory.articles" class="article-card"
-                                    (click)="viewArticle(article)">
-                                    <div class="card-icon">📄</div>
-                                    <div class="card-info">
-                                        <h3>{{ article.title || article.id }}</h3>
-                                        <p *ngIf="article.subtitle">{{ article.subtitle }}</p>
-                                    </div>
-                                    <button class="view-btn">VIEW</button>
-                                </div>
-                            </ng-container>
-
-                            <ng-container *ngIf="!selectedSubCategory">
-                                <div *ngFor="let article of selectedCategory.articles" class="article-card"
-                                    (click)="viewArticle(article)">
-                                    <div class="card-icon">📄</div>
-                                    <div class="card-info">
-                                        <h3>{{ article.title || article.id }}</h3>
-                                        <p *ngIf="article.subtitle">{{ article.subtitle }}</p>
-                                    </div>
-                                    <button class="view-btn">VIEW</button>
-                                </div>
-                            </ng-container>
-                        </div>
-                    </div>
-                </div>
-            </main>
+            </div>
         </div>
     </div>
+
+    <!-- FAB Search -->
+    <button class="fab-search" (click)="toggleSearchSheet()">
+        <i class="fas fa-search"></i>
+    </button>
+
+    <!-- Bottom Search Sheet -->
+    <div class="bottom-search-sheet" [class.active]="showSearchSheet">
+        <div class="search-header">
+            <h3>Global Search</h3>
+            <button class="close-sheet" (click)="toggleSearchSheet()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="search-input-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="bottom-search-input" placeholder="Search procedures, parts, specs..."
+                [(ngModel)]="searchQuery" (ngModelChange)="onSearchInput()">
+        </div>
+    </div>
+
+    <!-- Backdrop for Search Sheet -->
+    <div class="sheet-backdrop" *ngIf="showSearchSheet" (click)="toggleSearchSheet()"></div>
 </div>

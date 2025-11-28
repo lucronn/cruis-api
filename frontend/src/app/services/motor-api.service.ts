@@ -122,4 +122,28 @@ export class MotorApiService {
             map(response => response.body)
         );
     }
+
+    getSpecifications(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/specifications`
+        ).pipe(map(response => response.body));
+    }
+
+    getFluids(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/fluids`
+        ).pipe(map(response => response.body));
+    }
+
+    getEstimatedWorkTimes(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/estimated-work-times`
+        ).pipe(map(response => response.body));
+    }
+
+    getComponentLocations(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/component-locations`
+        ).pipe(map(response => response.body));
+    }
 }
