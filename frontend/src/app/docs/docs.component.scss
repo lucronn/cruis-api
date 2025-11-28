@@ -590,7 +590,7 @@ $text-secondary: #a0a0a0;
 
                 ul,
                 ol {
-                    padding-left: 20px;
+                    padding-left: 30px; // Increased from 20px to prevent number cutoff
                     margin-bottom: 1em;
                 }
 
