@@ -21,6 +21,8 @@ export class SearchComponent {
     advancedMode = false;
     groupedResults: { category: string, articles: any[], expanded: boolean }[] = [];
 
+    vehicleLabel: string = '';
+
     constructor(
         private router: Router,
         private motorApi: MotorApiService
@@ -31,7 +33,9 @@ export class SearchComponent {
             try {
                 const vehicles = JSON.parse(stored);
                 if (vehicles.length > 0) {
-                    this.vehicleId = vehicles[0].vehicleId;
+                    const v = vehicles[0];
+                    this.vehicleId = v.vehicleId;
+                    this.vehicleLabel = `${v.year} ${v.make} ${v.model}`;
                 }
             } catch (e) {
                 console.error('Error parsing vehicles');

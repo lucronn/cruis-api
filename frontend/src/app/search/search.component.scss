@@ -28,12 +28,43 @@
     text-align: center;
     margin-bottom: $space-8;
     position: relative;
-    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+
+    .home-btn {
+        position: absolute;
+        left: 0;
+        top: 0;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #fff;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background: $color-primary;
+            color: #000;
+            box-shadow: 0 0 15px rgba($color-primary, 0.5);
+        }
+    }
+
+    .header-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
 
     h1 {
         font-size: 3rem;
-        color: #fff;
-        text-shadow: 0 0 20px rgba($color-primary, 0.5);
+        color: $color-primary;
+        text-shadow: $glow-primary;
         margin-bottom: $space-2;
         font-family: $font-heading;
         letter-spacing: 0.1em;
@@ -42,8 +73,19 @@
     .subtitle {
         color: rgba(255, 255, 255, 0.6);
         font-family: $font-mono;
-        letter-spacing: 0.3em;
+        letter-spacing: 0.2em;
         font-size: 0.9rem;
+    }
+
+    .vehicle-hint {
+        margin-top: $space-2;
+        color: $color-secondary;
+        font-family: $font-mono;
+        font-size: 0.8rem;
+        background: rgba($color-secondary, 0.1);
+        padding: 0.2rem 0.8rem;
+        border-radius: 100px;
+        border: 1px solid rgba($color-secondary, 0.3);
     }
 }
 

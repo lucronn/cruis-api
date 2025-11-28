@@ -1,7 +1,13 @@
 <div class="search">
     <div class="header">
-        <h1 class="glow-text">SEARCH</h1>
-        <p class="subtitle">FIND PROCEDURES, PARTS & SPECS</p>
+        <button class="home-btn" routerLink="/dashboard">
+            <i class="fas fa-home"></i>
+        </button>
+        <div class="header-content">
+            <h1 class="glow-text">SEARCH</h1>
+            <p class="subtitle">FIND PROCEDURES, PARTS & SPECS</p>
+            <p class="vehicle-hint" *ngIf="vehicleLabel">Selected: {{ vehicleLabel }}</p>
+        </div>
     </div>
 
     <div class="search-box">
