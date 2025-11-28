@@ -248,6 +248,121 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loadArticleContent(article.id);
     }
 
+    viewParts(article: any) {
+        this.viewingArticle = article;
+        this.loadingArticle = true;
+        this.loadingMessage = 'Loading parts...';
+        this.articleContent = '';
+
+        this.motorApi.getParts(this.contentSource, this.vehicleId).subscribe(
+            (response: any) => {
+                const parts = response.body || [];
+
+                // Show all parts for now to ensure data is visible
+                const displayParts = parts;
+                const title = `Parts for ${this.vehicleName}`;
+
+                if (displayParts.length === 0) {
+                    this.articleContent = this.sanitizer.bypassSecurityTrustHtml('<div class="empty-state"><i class="fas fa-cogs"></i><p>No parts found for this vehicle.</p></div>');
+                    this.loadingArticle = false;
+                    return;
+                }
+
+                let html = `
+                    <div class="parts-container">
+                        <h2>${title}</h2>
+                        <table class="cyber-table">
+                            <thead>
+                                <tr>
+                                    <th>Part Number</th>
+                                    <th>Description</th>
+                                    <th>Price</th>
+                                    <th>Qty</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                displayParts.forEach((part: any) => {
+                    html += `
+                        <tr>
+                            <td><span class="part-num">${part.partNumber}</span></td>
+                            <td>${part.description}</td>
+                            <td>${part.price || 'N/A'}</td>
+                            <td>${part.quantity || 1}</td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+                this.articleContent = this.sanitizer.bypassSecurityTrustHtml(html);
+                this.loadingArticle = false;
+            },
+            (err) => {
+                console.error('Error loading parts:', err);
+                this.articleContent = this.sanitizer.bypassSecurityTrustHtml('<div class="error-state"><p>Failed to load parts list.</p></div>');
+                this.loadingArticle = false;
+            }
+        );
+    }
+
+    locateComponent(article: any) {
+        this.viewingArticle = article;
+        this.loadingArticle = true;
+        this.loadingMessage = 'Locating components...';
+        this.articleContent = '';
+
+        this.motorApi.getComponentLocations(this.contentSource, this.vehicleId).subscribe(
+            (response: any) => {
+                const locations = response.body || [];
+
+                // Show all locations for now
+                const displayLocations = locations;
+                const title = `Component Locations`;
+
+                if (displayLocations.length === 0) {
+                    this.articleContent = this.sanitizer.bypassSecurityTrustHtml('<div class="empty-state"><i class="fas fa-map-marker-alt"></i><p>No component locations found.</p></div>');
+                    this.loadingArticle = false;
+                    return;
+                }
+
+                let html = `
+                    <div class="locations-container">
+                        <h2>${title}</h2>
+                        <div class="locations-grid">
+                `;
+
+                displayLocations.forEach((loc: any) => {
+                    html += `
+                        <div class="location-card">
+                            <h3>${loc.description}</h3>
+                            <p>${loc.location || 'See diagram'}</p>
+                            ${loc.image ? `<img src="${loc.image}" alt="${loc.description}">` : ''}
+                        </div>
+                    `;
+                });
+
+                html += `
+                        </div>
+                    </div>
+                `;
+
+                this.articleContent = this.sanitizer.bypassSecurityTrustHtml(html);
+                this.loadingArticle = false;
+            },
+            (err) => {
+                console.error('Error loading locations:', err);
+                this.articleContent = this.sanitizer.bypassSecurityTrustHtml('<div class="error-state"><p>Failed to load component locations.</p></div>');
+                this.loadingArticle = false;
+            }
+        );
+    }
+
     loadArticleContent(articleId: string) {
         this.loadingArticle = true;
         this.articleContent = '';
