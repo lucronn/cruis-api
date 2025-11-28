@@ -1,6 +1,5 @@
 import { Component, OnInit, AfterViewInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { MotorApiService } from '../services/motor-api.service';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
@@ -56,45 +55,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         { label: 'PARTS', value: 0, target: 12500000, suffix: '+' }
     ];
 
-    // Vehicle Selector State
-    selectorActive = false;
-    step: 'year' | 'make' | 'model' | 'engine' = 'year';
-    selectedYear: string | null = null;
-    selectedMake: string | null = null;
-    selectedModel: string | null = null;
-    selectedEngine: string | null = null;
-    selectedContentSource: string = 'MOTOR';
-
-    years: any[] = [];
-    makes: any[] = [];
-    models: any[] = [];
-    engines: any[] = [];
-    selectorLoading = false;
-    selectorError: string | null = null;
-    searchQuery: string = '';
-    filteredYears: any[] = [];
-    filteredMakes: any[] = [];
-    filteredModels: any[] = [];
-
     constructor(
-        private router: Router,
-        private motorApi: MotorApiService
+        private router: Router
     ) { }
 
     ngOnInit() {
         this.animateMetrics();
-        this.loadYears();
-    }
-
-    // Helper to construct vehicle object from current selection
-    private getCurrentVehicleObject(id: string): RecentVehicle {
-        return {
-            id: Date.now(),
-            vehicleId: id,
-            year: this.selectedYear!,
-            make: this.selectedMake!,
-            model: this.selectedModel!
-        };
+        this.loadRecentVehicles();
     }
 
     ngAfterViewInit() {
@@ -112,7 +79,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     loadRecentVehicles() {
         try {
-            const stored = localStorage.getItem('recentVehicles');
+            const stored = sessionStorage.getItem('selectedVehicles');
             if (stored) {
                 this.recentVehicles = JSON.parse(stored);
             }
@@ -122,26 +89,17 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loading = false;
     }
 
-    saveRecentVehicle(vehicle: RecentVehicle) {
-        // Remove if exists (to move to top)
-        this.recentVehicles = this.recentVehicles.filter(v => v.vehicleId !== vehicle.vehicleId);
-        // Add to start
-        this.recentVehicles.unshift(vehicle);
-        // Limit to 5
-        if (this.recentVehicles.length > 5) {
-            this.recentVehicles = this.recentVehicles.slice(0, 5);
-        }
-        // Save
-        localStorage.setItem('recentVehicles', JSON.stringify(this.recentVehicles));
-    }
-
     navigateToVehicle(vehicle: RecentVehicle) {
-        // Save as selected vehicle for session
-        sessionStorage.setItem('selectedVehicles', JSON.stringify([vehicle]));
-        // Update recents (moves to top)
-        this.saveRecentVehicle(vehicle);
-
-        this.router.navigate(['/search']);
+        // Just navigate to docs with these params
+        this.router.navigate(['/docs'], {
+            queryParams: {
+                vehicleId: vehicle.vehicleId,
+                year: vehicle.year,
+                make: vehicle.make,
+                model: vehicle.model,
+                contentSource: 'MOTOR' // Default
+            }
+        });
     }
 
     initLightBeam() {
@@ -445,139 +403,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         }
 
         this.renderer.render(this.scene, this.camera);
-    }
-
-    toggleSelector() {
-        this.selectorActive = !this.selectorActive;
-        if (this.selectorActive && this.years.length === 0) {
-            this.loadYears();
-        }
-    }
-
-    loadYears() {
-        const currentYear = new Date().getFullYear();
-        const yearList = [];
-        for (let year = currentYear; year >= 1990; year--) {
-            yearList.push({
-                id: year.toString(),
-                label: year.toString()
-            });
-        }
-        this.years = yearList;
-        this.filteredYears = yearList;
-    }
-
-    onSearchInput() {
-        const query = this.searchQuery.toLowerCase();
-        if (this.step === 'year') {
-            this.filteredYears = this.years.filter(y => y.label.toLowerCase().includes(query));
-        } else if (this.step === 'make') {
-            this.filteredMakes = this.makes.filter(m => m.label.toLowerCase().includes(query));
-        } else if (this.step === 'model') {
-            this.filteredModels = this.models.filter(m => m.label.toLowerCase().includes(query));
-        }
-    }
-
-    selectYear(year: any) {
-        this.selectedYear = year.label;
-        this.step = 'make';
-        this.loadMakes(parseInt(year.id));
-    }
-
-    loadMakes(year: number) {
-        this.selectorLoading = true;
-        this.selectorError = null;
-
-        this.motorApi.getMakes(year).subscribe({
-            next: (response) => {
-                if (response.body && Array.isArray(response.body)) {
-                    this.makes = response.body
-                        .map(m => ({ id: m.makeName, label: m.makeName }))
-                        .sort((a, b) => a.label.localeCompare(b.label));
-                    this.filteredMakes = this.makes;
-                }
-                this.selectorLoading = false;
-                this.searchQuery = '';
-            },
-            error: (err) => {
-                console.error('Error loading makes:', err);
-                this.selectorError = 'Unable to load makes.';
-                this.selectorLoading = false;
-            }
-        });
-    }
-
-    selectMake(make: any) {
-        this.selectedMake = make.label;
-        this.step = 'model';
-        this.loadModels(parseInt(this.selectedYear!), make.label);
-    }
-
-    loadModels(year: number, make: string) {
-        this.selectorLoading = true;
-        this.selectorError = null;
-
-        this.motorApi.getModels(year, make).subscribe({
-            next: (response) => {
-                if (response.body?.contentSource) {
-                    this.selectedContentSource = response.body.contentSource;
-                }
-                const models = response.body?.models || [];
-                this.models = models.map(m => ({
-                    id: m.id,
-                    label: m.model,
-                    engines: m.engines || []
-                }));
-                this.filteredModels = this.models;
-                this.selectorLoading = false;
-                this.searchQuery = '';
-            },
-            error: (err) => {
-                console.error('Error loading models:', err);
-                this.selectorError = 'Unable to load models.';
-                this.selectorLoading = false;
-            }
-        });
-    }
-
-    selectModel(model: any) {
-        this.selectedModel = model.label;
-        if (model.engines && model.engines.length === 1) {
-            // Auto-select engine if only one
-            this.selectedEngine = model.engines[0].name;
-            const vehicle = this.getCurrentVehicleObject(model.engines[0].id);
-            this.navigateToVehicle(vehicle);
-        } else if (!model.engines || model.engines.length === 0) {
-            // No engines, just select model
-            const vehicle = this.getCurrentVehicleObject(model.id);
-            this.navigateToVehicle(vehicle);
-        } else {
-            // Show engines
-            this.engines = model.engines;
-            this.step = 'engine';
-        }
-    }
-
-    selectEngine(engine: any) {
-        this.selectedEngine = engine.name;
-        const currentModel = this.models.find(m => m.name === this.selectedModel);
-        const vehicle = this.getCurrentVehicleObject(engine.id);
-        this.navigateToVehicle(vehicle);
-    }
-
-    goBack() {
-        if (this.step === 'engine') {
-            this.step = 'model';
-            this.selectedEngine = null;
-        } else if (this.step === 'model') {
-            this.step = 'make';
-            this.selectedModel = null;
-        } else if (this.step === 'make') {
-            this.step = 'year';
-            this.selectedMake = null;
-        } else {
-            this.selectorActive = false;
-        }
     }
 
     formatNumber(value: number): string {

@@ -3,7 +3,7 @@
     <div class="light-beam-container" #lightBeamContainer></div>
 
     <!-- Metrics Header Bar -->
-    <div class="metrics-header" *ngIf="!selectorActive">
+    <div class="metrics-header">
         <div class="metric-item" *ngFor="let metric of metrics">
             <span class="metric-value">{{ formatNumber(metric.value) }}{{ metric.suffix }}</span>
             <span class="metric-label">{{ metric.label }}</span>
@@ -13,8 +13,8 @@
     <div class="content-overlay">
 
         <div class="main-actions">
-            <!-- Main Hero Content (Visible when selector is NOT active) -->
-            <div class="hero-section" *ngIf="!selectorActive">
+            <!-- Main Hero Content -->
+            <div class="hero-section">
                 <h1 class="title">
                     <span class="glitch" data-text="NEXT GEN">NEXT GEN</span>
                     <span class="highlight">AUTOMOTIVE</span>
@@ -22,7 +22,7 @@
                 </h1>
 
                 <div class="action-buttons">
-                    <button class="btn-primary glow-effect" (click)="toggleSelector()">
+                    <button class="btn-primary glow-effect" routerLink="/vehicles">
                         SELECT VEHICLE <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
@@ -34,72 +34,6 @@
                             <i class="fas fa-history"></i> {{ v.year }} {{ v.make }} {{ v.model }}
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Vehicle Selector UI (Visible when selector IS active) -->
-            <div class="selector-section" *ngIf="selectorActive">
-                <div class="selector-header">
-                    <button class="back-btn" (click)="goBack()">
-                        <i class="fas fa-arrow-left"></i> BACK
-                    </button>
-                    <h2 class="glow-text">SELECT VEHICLE</h2>
-                </div>
-
-                <div class="selector-search">
-                    <input type="text" placeholder="Filter options..." [(ngModel)]="searchQuery"
-                        (input)="onSearchInput()" class="filter-input">
-                </div>
-
-                <div class="breadcrumb">
-                    <span [class.active]="step === 'year'">{{ selectedYear || 'YEAR' }}</span>
-                    <span class="separator">&rsaquo;</span>
-                    <span [class.active]="step === 'make'" [class.dim]="!selectedYear">{{ selectedMake || 'MAKE'
-                        }}</span>
-                    <span class="separator">&rsaquo;</span>
-                    <span [class.active]="step === 'model'" [class.dim]="!selectedMake">{{ selectedModel || 'MODEL'
-                        }}</span>
-                    <span *ngIf="engines.length > 1" class="separator">&rsaquo;</span>
-                    <span *ngIf="engines.length > 1" [class.active]="step === 'engine'" [class.dim]="!selectedModel">{{
-                        selectedEngine || 'ENGINE' }}</span>
-                </div>
-
-                <div *ngIf="selectorLoading" class="loading-spinner">
-                    <div class="spinner"></div>
-                </div>
-
-                <div class="options-grid" *ngIf="!selectorLoading">
-                    <!-- Year Selection -->
-                    <ng-container *ngIf="step === 'year'">
-                        <button *ngFor="let year of filteredYears" class="option-card" (click)="selectYear(year)">
-                            <span class="label">{{ year.label }}</span>
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </ng-container>
-
-                    <!-- Make Selection -->
-                    <ng-container *ngIf="step === 'make'">
-                        <button *ngFor="let make of filteredMakes" class="option-card" (click)="selectMake(make)">
-                            <span class="label">{{ make.label }}</span>
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </ng-container>
-
-                    <!-- Model Selection -->
-                    <ng-container *ngIf="step === 'model'">
-                        <button *ngFor="let model of filteredModels" class="option-card" (click)="selectModel(model)">
-                            <span class="label">{{ model.label }}</span>
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </ng-container>
-
-                    <!-- Engine Selection -->
-                    <ng-container *ngIf="step === 'engine'">
-                        <button *ngFor="let engine of engines" class="option-card" (click)="selectEngine(engine)">
-                            <span class="label">{{ engine.name }}</span>
-                            <i class="fas fa-check"></i>
-                        </button>
-                    </ng-container>
                 </div>
             </div>
         </div>
