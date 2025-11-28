@@ -244,8 +244,13 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     viewArticle(article: any) {
-        this.viewingArticle = article;
-        this.loadArticleContent(article.id);
+        // Update URL to create history entry
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { articleId: article.id },
+            queryParamsHandling: 'merge'
+        });
+        // The subscription to route params will handle loading the content
     }
 
     viewParts(article: any) {
@@ -258,9 +263,19 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             (response: any) => {
                 const parts = response.body || [];
 
-                // Show all parts for now to ensure data is visible
-                const displayParts = parts;
-                const title = `Parts for ${this.vehicleName}`;
+                // Smart filtering
+                const stopWords = ['remove', 'install', 'r&r', 'replace', 'check', 'inspect', 'the', 'a', 'an', 'for', 'of', 'with', 'and', 'to', 'in', 'on', 'at'];
+                const titleWords = article.title.toLowerCase().split(/[\s,-]+/)
+                    .filter((w: string) => w.length > 2 && !stopWords.includes(w));
+
+                const relevantParts = parts.filter((p: any) => {
+                    const desc = (p.description || p.partDescription || p.name || '').toLowerCase();
+                    return titleWords.some((w: string) => desc.includes(w));
+                });
+
+                // If we found relevant parts, show them. Otherwise show all but with a notice.
+                const displayParts = relevantParts.length > 0 ? relevantParts : parts;
+                const title = relevantParts.length > 0 ? `Recommended Parts for ${article.title}` : `All Parts (No specific matches found)`;
 
                 if (displayParts.length === 0) {
                     this.articleContent = this.sanitizer.bypassSecurityTrustHtml('<div class="empty-state"><i class="fas fa-cogs"></i><p>No parts found for this vehicle.</p></div>');
@@ -284,10 +299,13 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
                 `;
 
                 displayParts.forEach((part: any) => {
+                    // Handle potential missing description fields
+                    const description = part.description || part.partDescription || part.name || 'N/A';
+
                     html += `
                         <tr>
                             <td><span class="part-num">${part.partNumber}</span></td>
-                            <td>${part.description}</td>
+                            <td>${description}</td>
                             <td>${part.price || 'N/A'}</td>
                             <td>${part.quantity || 1}</td>
                         </tr>
@@ -321,9 +339,18 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             (response: any) => {
                 const locations = response.body || [];
 
-                // Show all locations for now
-                const displayLocations = locations;
-                const title = `Component Locations`;
+                // Smart filtering for locations too
+                const stopWords = ['remove', 'install', 'r&r', 'replace', 'check', 'inspect', 'the', 'a', 'an', 'for', 'of', 'with', 'and', 'to', 'in', 'on', 'at'];
+                const titleWords = article.title.toLowerCase().split(/[\s,-]+/)
+                    .filter((w: string) => w.length > 2 && !stopWords.includes(w));
+
+                const relevantLocations = locations.filter((l: any) => {
+                    const desc = (l.description || l.name || '').toLowerCase();
+                    return titleWords.some((w: string) => desc.includes(w));
+                });
+
+                const displayLocations = relevantLocations.length > 0 ? relevantLocations : locations;
+                const title = relevantLocations.length > 0 ? `Locations for ${article.title}` : `All Locations (No specific matches found)`;
 
                 if (displayLocations.length === 0) {
                     this.articleContent = this.sanitizer.bypassSecurityTrustHtml('<div class="empty-state"><i class="fas fa-map-marker-alt"></i><p>No component locations found.</p></div>');
@@ -538,6 +565,12 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     closeArticle() {
         this.viewingArticle = null;
         this.articleContent = '';
+        // Clear query param to update history
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { articleId: null },
+            queryParamsHandling: 'merge'
+        });
     }
 
     async toggleAiEnhancement() {
