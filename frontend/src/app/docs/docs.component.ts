@@ -384,7 +384,14 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             },
             (err) => {
                 console.error('Error loading locations:', err);
-                this.articleContent = this.sanitizer.bypassSecurityTrustHtml('<div class="error-state"><p>Failed to load component locations.</p></div>');
+                const errorMessage = err.error?.message || err.message || 'Unknown error';
+                this.articleContent = this.sanitizer.bypassSecurityTrustHtml(`
+                    <div class="error-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Failed to load component locations.</p>
+                        <small style="color: #ff0055; display: block; margin-top: 10px;">${errorMessage}</small>
+                    </div>
+                `);
                 this.loadingArticle = false;
             }
         );
