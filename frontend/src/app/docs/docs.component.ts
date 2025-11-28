@@ -500,9 +500,9 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         html = html.replace(/href=['"]api\//g, 'href="/api/motor-proxy/api/');
         html = html.replace(/href=["']\/api\/motor-proxy\/api\/([^"']+)["']/g, 'href="/api/motor-proxy/api/$1"');
 
-        // Clean up messy inline styles
-        html = html.replace(/style="[^"]*display:block;[^"]*"/gi, 'style="display:block; max-width:100%; margin:20px auto; text-align:center;"');
-        html = html.replace(/width:\s*500px;?/gi, 'max-width:100%;');
+        // Clean up messy inline styles - REMOVED to preserve API formatting
+        // html = html.replace(/style="[^"]*display:block;[^"]*"/gi, 'style="display:block; max-width:100%; margin:20px auto; text-align:center;"');
+        // html = html.replace(/width:\s*500px;?/gi, 'max-width:100%;');
 
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
@@ -733,7 +733,7 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.miniCarContainer.nativeElement.appendChild(this.miniRenderer.domElement);
 
         this.miniCarGroup = new THREE.Group();
-        this.miniCarGroup.position.y = 0.5; // Move up slightly
+        this.miniCarGroup.position.y = 0.8; // Move up more (was 0.5)
         this.miniScene.add(this.miniCarGroup);
 
         const loader = new GLTFLoader();
