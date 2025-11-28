@@ -142,8 +142,9 @@ export class MotorApiService {
     }
 
     getComponentLocations(contentSource: string, vehicleId: string): Observable<any> {
-        return this.http.get<any>(
-            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/component-locations`
-        ).pipe(map(response => response.body));
+        return this.http.get(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/component-locations`,
+            { responseType: 'text' }
+        );
     }
 }

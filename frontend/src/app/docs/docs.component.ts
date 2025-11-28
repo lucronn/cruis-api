@@ -336,8 +336,26 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.articleContent = '';
 
         this.motorApi.getComponentLocations(this.contentSource, this.vehicleId).subscribe(
-            (response: any) => {
-                const locations = response.body || [];
+            (responseString: string) => {
+                let locations = [];
+                try {
+                    const response = JSON.parse(responseString);
+                    locations = response.body || [];
+                } catch (e) {
+                    console.error('Failed to parse locations JSON:', e);
+                    // It's likely HTML or error text
+                    this.articleContent = this.sanitizer.bypassSecurityTrustHtml(`
+                        <div class="error-state">
+                            <i class="fas fa-bug"></i>
+                            <p>API Error: Received invalid data.</p>
+                            <div style="text-align: left; background: #1a1a1a; padding: 10px; border-radius: 4px; margin-top: 10px; overflow: auto; max-height: 200px; font-family: monospace; font-size: 12px; color: #ff0055;">
+                                ${responseString.substring(0, 500).replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+                            </div>
+                        </div>
+                    `);
+                    this.loadingArticle = false;
+                    return;
+                }
 
                 // Smart filtering for locations too
                 const stopWords = ['remove', 'install', 'r&r', 'replace', 'check', 'inspect', 'the', 'a', 'an', 'for', 'of', 'with', 'and', 'to', 'in', 'on', 'at'];
