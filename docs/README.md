@@ -26,3 +26,7 @@ The complete API specification is available in the root directory:
 - `openapi.json` - Machine-readable JSON format
 
 View in Swagger Editor: https://editor.swagger.io/
+
+## Frontend Development
+
+- **[OLD_FRONTEND_ARCHITECTURE.md](OLD_FRONTEND_ARCHITECTURE.md)** - Comprehensive guide to the old frontend implementation, including all features, state management, API usage, and patterns. Essential reference for developing the new frontend.
