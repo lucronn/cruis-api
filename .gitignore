@@ -4,3 +4,19 @@ node_modules/
 *.log
 frontend/dist/
 motorproxy/dist/
+
+# Archive and backup directories
+archive/
+*.backup
+*.bak
+
+# Data files (keep schemas, ignore large files)
+data/*.har
+data/*.db
+data/*.log
+
+# Screenshots
+*.png
+*.jpg
+*.jpeg
+*.webarchive

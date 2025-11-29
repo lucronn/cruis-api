@@ -1,6 +1,0 @@
-<div class="filter-tabs-container">
-  <ng-container *ngIf="tabs$ | async as tabs">
-    <mtr-tabs [tabs]="tabs" [activeTabId]="(activeTabId$ | async) || ''" (tabChange)="onTabChange($event)">
-    </mtr-tabs>
-  </ng-container>
-</div>
