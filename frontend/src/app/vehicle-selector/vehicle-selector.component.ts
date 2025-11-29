@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { MotorApiService, VehicleEngine } from '../services/motor-api.service';
+import { MotorApiService } from '../services/motor-api.service';
+import { VehicleEngine } from '~/generated/api/models';
 import { catchError, map } from 'rxjs/operators';
 import { of } from 'rxjs';
 

@@ -1,9 +1,14 @@
 export enum FilterTab {
-  All = 'all',
-  Maintenance = 'maintenance',
-  Repair = 'repair',
-  Wiring = 'wiring',
-  Recalls = 'recalls',
-  TSB = 'tsb'
+  All = 'All',
+  Procedures = 'Procedures',
+  Diagrams = 'Diagrams',
+  Specifications = 'Specifications',
+  DTCs = 'DTCs',
+  TSBs = 'TSBs',
+  Maintenance = 'Maintenance',
+  Repair = 'Repair',
+  Wiring = 'Wiring',
+  Recalls = 'Recalls'
 }
+
 

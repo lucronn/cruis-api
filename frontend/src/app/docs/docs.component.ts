@@ -32,9 +32,10 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     filteredArticles: any[] = [];
     categories: ArticleCategory[] = [];
 
-    // New Navigation State
+    // API-driven Navigation State
     activePill: string = 'All';
-    pillFilters: string[] = ['All', 'Maintenance', 'Updates', 'DTCs', 'TSBs', 'Wiring', 'Labor', 'Brakes', 'Engine', 'Transmission', 'Electrical', 'HVAC', 'Suspension', 'Body'];
+    filterTabs: any[] = []; // Dynamic filter tabs from API
+    pillFilters: string[] = []; // Computed from filterTabs
 
     // HUD Data
     hudStats: any[] = [];
@@ -194,6 +195,13 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             )
             .subscribe(response => {
                 this.articles = response.body?.articleDetails || [];
+                this.filterTabs = response.body?.filterTabs || [];
+
+                // Build pill filters from API filterTabs
+                this.pillFilters = this.filterTabs
+                    .map(tab => tab.name)
+                    .filter(name => name); // Filter out any null/undefined names
+
                 // Initialize expanded state for accordions
                 this.articles.forEach(a => a.expanded = false);
 
@@ -211,13 +219,20 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.activePill = pill;
         this.error = null;
 
-        switch (pill) {
+        // Check if this is a special filter tab that requires dedicated API
+        const filterTab = this.filterTabs.find(tab => tab.name === pill);
+        const filterTabType = filterTab?.type || filterTab?.filterTabType;
+
+        switch (filterTabType || pill) {
             case 'DTCs':
+            case 'Diagnostic Codes':
                 this.loadDtcs();
                 break;
             case 'TSBs':
+            case 'Service Bulletins':
                 this.loadTsbs();
                 break;
+            case 'Diagrams':
             case 'Wiring':
                 this.loadWiring();
                 break;
@@ -231,6 +246,7 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.loadMaintenance();
                 break;
             default:
+                // For other tabs, filter from loaded articles
                 this.filterArticlesByPill();
                 break;
         }
@@ -316,14 +332,30 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     loadDtcs() {
         this.loading = true;
+        console.log('[DTC] Loading DTCs for vehicle:', this.vehicleId, 'Source:', this.contentSource);
+
         this.motorApi.getDtcs(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                this.dtcData = response || [];
+                console.log('[DTC] Raw response:', response);
+                // Extract dtcs array from response body
+                this.dtcData = response?.dtcs || [];
+                console.log('[DTC] Extracted DTC count:', this.dtcData.length);
+
+                if (this.dtcData.length === 0) {
+                    console.warn('[DTC] No DTCs found in response');
+                    this.error = 'No diagnostic trouble codes available for this vehicle.';
+                }
+
                 this.loading = false;
             },
             (err: any) => {
-                console.error('Error loading DTCs:', err);
-                this.error = 'Failed to load Diagnostic Trouble Codes.';
+                console.error('[DTC] Error loading DTCs:', err);
+                console.error('[DTC] Error details:', {
+                    status: err.status,
+                    message: err.message,
+                    error: err.error
+                });
+                this.error = `Failed to load Diagnostic Trouble Codes: ${err.status || 'Unknown error'}`;
                 this.loading = false;
             }
         );
@@ -333,7 +365,8 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loading = true;
         this.motorApi.getTsbs(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                this.tsbData = response || [];
+                // Extract tsbs array from response body
+                this.tsbData = response?.tsbs || [];
                 this.loading = false;
             },
             (err: any) => {
@@ -348,7 +381,8 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loading = true;
         this.motorApi.getWiringDiagrams(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                this.wiringData = response || [];
+                // Extract wiringDiagrams array from response body
+                this.wiringData = response?.wiringDiagrams || [];
                 this.loading = false;
             },
             (err: any) => {
@@ -363,7 +397,8 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loading = true;
         this.motorApi.getLaborTimes(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                this.laborData = response || [];
+                // Extract labor operations array from response
+                this.laborData = response?.laborOperations || response?.operations || [];
                 this.loading = false;
             },
             (err: any) => {
@@ -378,13 +413,38 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         if (this.activePill === 'All') {
             this.filteredArticles = this.articles;
         } else {
-            // Simple keyword matching for the pill categories
-            const keywords = this.getPillKeywords(this.activePill);
-            this.filteredArticles = this.articles.filter(article => {
-                const text = (article.title + ' ' + (article.bucket || '')).toLowerCase();
-                return keywords.some(k => text.includes(k));
-            });
+            // Find the active filter tab to get buckets
+            const activeTab = this.filterTabs.find(tab => tab.name === this.activePill);
+
+            if (activeTab && activeTab.buckets) {
+                // Filter by buckets in this tab
+                const bucketNames = this.getAllBucketNames(activeTab.buckets);
+                this.filteredArticles = this.articles.filter(article =>
+                    bucketNames.includes(article.bucket)
+                );
+            } else {
+                // Fallback to keyword matching
+                const keywords = this.getPillKeywords(this.activePill);
+                this.filteredArticles = this.articles.filter(article => {
+                    const text = (article.title + ' ' + (article.bucket || '')).toLowerCase();
+                    return keywords.some(k => text.includes(k));
+                });
+            }
         }
+    }
+
+    // Helper to get all bucket names recursively
+    getAllBucketNames(buckets: any[]): string[] {
+        const names: string[] = [];
+        for (const bucket of buckets) {
+            if (bucket.name) {
+                names.push(bucket.name);
+            }
+            if (bucket.children && bucket.children.length > 0) {
+                names.push(...this.getAllBucketNames(bucket.children));
+            }
+        }
+        return names;
     }
 
     getPillKeywords(pill: string): string[] {
@@ -733,8 +793,20 @@ type="application/pdf">
 
             const figure = doc.createElement('figure');
             figure.className = 'thumbnail';
-            // Store source for expansion
-            figure.setAttribute('data-expand-src', img.src);
+
+            // Convert thumbnail URL to full-resolution URL
+            // Common patterns: /thumbnail/ -> /image/, /resize/ -> /image/, or remove size parameters
+            let fullResUrl = img.src;
+            fullResUrl = fullResUrl.replace('/thumbnail/', '/image/');
+            fullResUrl = fullResUrl.replace('/thumbnails/', '/images/');
+            fullResUrl = fullResUrl.replace('/resize/', '/image/');
+            fullResUrl = fullResUrl.replace('/resized/', '/images/');
+            // Remove size parameters like ?width=200 or ?size=small
+            fullResUrl = fullResUrl.replace(/[?&](width|height|size|w|h)=[^&]*/gi, '');
+            fullResUrl = fullResUrl.replace(/\?&/, '?').replace(/\?$/, '');
+
+            // Store full-resolution URL for expansion
+            figure.setAttribute('data-expand-src', fullResUrl);
             figure.setAttribute('data-expand-alt', img.alt || 'Article Image');
 
             const imgClone = img.cloneNode(true) as HTMLImageElement;

@@ -2,43 +2,21 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-
-export interface VehicleModel {
-    id: string;
-    model: string;
-    engines?: VehicleEngine[];
-}
-
-export interface VehicleEngine {
-    id: string;
-    name: string;
-}
-
-export interface VehicleModelsResponse {
-    body: {
-        contentSource: string;
-        models: VehicleModel[];
-    };
-}
-
-export interface YearsResponse {
-    body: number[];
-}
-
-export interface MakesResponse {
-    body: Array<{
-        makeId: number;
-        makeName: string;
-    }>;
-}
-
-export interface ArticlesResponse {
-    body: {
-        articleDetails: any[];
-        filterTabs: any[];
-        vehicleGeoBlockingDetails?: any;
-    };
-}
+import {
+    ArticlesResponse,
+    YearsResponse,
+    MakesResponse,
+    ModelsResponse,
+    VehicleNameResponse,
+    DtcsResponse,
+    TsbsResponse,
+    WiringDiagramsResponse,
+    ComponentsResponse,
+    ProceduresResponse,
+    SpecsResponse,
+    VinDecodeResponse,
+    MotorVehiclesResponse
+} from '~/generated/api/models';
 
 export interface PartsResponse {
     body: any[];
@@ -60,14 +38,14 @@ export class MotorApiService {
         return this.http.get<MakesResponse>(`${this.baseUrl}/api/year/${year}/makes`);
     }
 
-    getModels(year: number, make: string): Observable<VehicleModelsResponse> {
-        return this.http.get<VehicleModelsResponse>(
+    getModels(year: number, make: string): Observable<ModelsResponse> {
+        return this.http.get<ModelsResponse>(
             `${this.baseUrl}/api/year/${year}/make/${make}/models`
         );
     }
 
-    getVehicleName(contentSource: string, vehicleId: string): Observable<{ body: string }> {
-        return this.http.get<{ body: string }>(
+    getVehicleName(contentSource: string, vehicleId: string): Observable<VehicleNameResponse> {
+        return this.http.get<VehicleNameResponse>(
             `${this.baseUrl}/api/source/${contentSource}/${encodeURIComponent(vehicleId)}/name`
         );
     }
@@ -158,7 +136,7 @@ export class MotorApiService {
      * Get Diagnostic Trouble Codes (DTCs) for a vehicle
      */
     getDtcs(contentSource: string, vehicleId: string): Observable<any> {
-        return this.http.get<any>(
+        return this.http.get<DtcsResponse>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/dtcs`
         ).pipe(map(response => response.body));
     }
@@ -176,7 +154,7 @@ export class MotorApiService {
      * Get Technical Service Bulletins (TSBs) for a vehicle
      */
     getTsbs(contentSource: string, vehicleId: string): Observable<any> {
-        return this.http.get<any>(
+        return this.http.get<TsbsResponse>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/tsbs`
         ).pipe(map(response => response.body));
     }
@@ -194,7 +172,7 @@ export class MotorApiService {
      * Get wiring diagrams for a vehicle
      */
     getWiringDiagrams(contentSource: string, vehicleId: string): Observable<any> {
-        return this.http.get<any>(
+        return this.http.get<WiringDiagramsResponse>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/wiring`
         ).pipe(map(response => response.body));
     }
@@ -205,7 +183,7 @@ export class MotorApiService {
     getComponentLocationsV3(contentSource: string, vehicleId: string): Observable<any> {
         const url = `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/components`;
         console.log('MotorApiService: Fetching component locations from:', url);
-        return this.http.get<any>(url).pipe(map(response => response.body));
+        return this.http.get<ComponentsResponse>(url).pipe(map(response => response.body));
     }
 
     /**
@@ -225,7 +203,7 @@ export class MotorApiService {
      * Get motor vehicles (engines/submodels) for a vehicle
      */
     getMotorVehicles(contentSource: string, vehicleId: string): Observable<any> {
-        return this.http.get<any>(
+        return this.http.get<MotorVehiclesResponse>(
             `${this.baseUrl}/api/source/${contentSource}/${encodeURIComponent(vehicleId)}/motorvehicles`
         ).pipe(map(response => response.body));
     }

@@ -54,15 +54,27 @@
                 </div>
 
                 <div class="accordion-body">
+                    <!-- Quick Access Info -->
+                    <div class="quick-info-grid"
+                        *ngIf="article.torqueSpecs || article.partNumber || article.description">
+                        <div class="info-item" *ngIf="article.torqueSpecs">
+                            <span class="info-label">Torque Spec:</span>
+                            <span class="info-value">{{ article.torqueSpecs }}</span>
+                        </div>
+                        <div class="info-item" *ngIf="article.partNumber">
+                            <span class="info-label">Part #:</span>
+                            <span class="info-value">{{ article.partNumber }}</span>
+                        </div>
+                        <div class="info-item" *ngIf="article.description">
+                            <span class="info-label">Info:</span>
+                            <span class="info-value">{{ article.description }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
                     <div class="action-buttons">
                         <button class="action-btn primary" (click)="viewArticle(article)">
-                            <i class="fas fa-file-alt"></i> View Procedure
-                        </button>
-                        <button class="action-btn secondary" (click)="locateComponent(article)">
-                            <i class="fas fa-map-marker-alt"></i> Locate Component
-                        </button>
-                        <button class="action-btn secondary" (click)="viewParts(article)">
-                            <i class="fas fa-cogs"></i> Parts List
+                            <i class="fas fa-eye"></i> VIEW
                         </button>
                     </div>
                 </div>
