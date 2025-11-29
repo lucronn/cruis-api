@@ -2,15 +2,42 @@
     <!-- Custom Light Beam Background -->
     <div class="light-beam-container" #lightBeamContainer></div>
 
-    <!-- Metrics Header Bar -->
-    <div class="metrics-header">
-        <div class="metric-item" *ngFor="let metric of metrics">
-            <span class="metric-value">{{ formatNumber(metric.value) }}{{ metric.suffix }}</span>
-            <span class="metric-label">{{ metric.label }}</span>
+    <!-- Quick Specs HUD (replaces Metrics Header when specs available) -->
+    <div class="hud-specs-bar" *ngIf="currentVehicleSpecs; else metricsHeader">
+        <div class="hud-item">
+            <span class="hud-label">OIL CAP</span>
+            <span class="hud-value text-cyan">{{ currentVehicleSpecs.oilCapacity }}</span>
+        </div>
+        <div class="hud-item">
+            <span class="hud-label">TORQUE</span>
+            <span class="hud-value text-magenta">{{ currentVehicleSpecs.lugNutTorque }}</span>
+        </div>
+        <div class="hud-item">
+            <span class="hud-label">BATTERY</span>
+            <span class="hud-value text-yellow">{{ currentVehicleSpecs.batteryGroup }}</span>
         </div>
     </div>
 
+    <ng-template #metricsHeader>
+        <div class="metrics-header">
+            <div class="metric-item" *ngFor="let metric of metrics">
+                <span class="metric-value">{{ formatNumber(metric.value) }}{{ metric.suffix }}</span>
+                <span class="metric-label">{{ metric.label }}</span>
+            </div>
+        </div>
+    </ng-template>
+
     <div class="content-overlay">
+        <!-- Time-Travel Slider -->
+        <div class="timeline-container" *ngIf="recentVehicles.length > 0">
+            <label>ODOMETER PREDICTION: <span class="glitch">{{ sliderMileage | number }} MILES</span></label>
+            <input type="range" min="0" max="150000" step="5000" [(ngModel)]="sliderMileage"
+                (change)="updateMaintenancePrediction()">
+
+            <div class="prediction-readout" *ngFor="let item of predictedMaintenance">
+                <i class="fas fa-exclamation-triangle"></i> {{ item.FrequencyDescription }}
+            </div>
+        </div>
 
         <div class="main-actions">
             <!-- Main Hero Content -->

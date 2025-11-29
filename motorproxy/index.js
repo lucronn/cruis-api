@@ -179,6 +179,102 @@ app.get('/health', (req, res) => {
   });
 });
 
+// ============================================================
+// CYBERPUNK FEATURES MOCK ENDPOINTS
+// ============================================================
+
+// Mock Part Vector Illustrations (X-Ray Mode)
+app.get('/api/motor-proxy/api/source/:source/vehicle/:vehicleId/part-vectors', (req, res) => {
+  const { GroupID } = req.query;
+  console.log(`[MOCK] Serving Part Vector for GroupID: ${GroupID}`);
+
+  // Generate a cool looking SVG schematic
+  const svgContent = `
+    <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="2" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+      </defs>
+      <g stroke="#00FFFF" stroke-width="2" fill="none" filter="url(#glow)">
+        <!-- Engine Block Outline -->
+        <path d="M200,150 L600,150 L650,250 L650,450 L150,450 L150,250 Z" />
+        <circle cx="300" cy="300" r="40" />
+        <circle cx="500" cy="300" r="40" />
+        <circle cx="300" cy="400" r="40" />
+        <circle cx="500" cy="400" r="40" />
+        
+        <!-- Connecting Lines -->
+        <line x1="300" y1="300" x2="500" y2="300" stroke-dasharray="5,5" />
+        <line x1="300" y1="400" x2="500" y2="400" stroke-dasharray="5,5" />
+        <line x1="300" y1="300" x2="300" y2="400" />
+        <line x1="500" y1="300" x2="500" y2="400" />
+        
+        <!-- Detail callouts -->
+        <line x1="650" y1="250" x2="750" y2="200" stroke="#FF00FF" />
+        <text x="760" y="200" fill="#FF00FF" font-family="monospace" font-size="14">CYLINDER HEAD</text>
+        
+        <line x1="150" y1="450" x2="50" y2="500" stroke="#FF00FF" />
+        <text x="10" y="515" fill="#FF00FF" font-family="monospace" font-size="14">CRANKCASE</text>
+      </g>
+    </svg>
+  `;
+
+  res.json({
+    groupId: GroupID,
+    svgContent: svgContent,
+    parts: [
+      { id: 1, name: 'Cylinder Head', number: 'CH-2025-X' },
+      { id: 2, name: 'Crankcase', number: 'CC-9000-Z' }
+    ]
+  });
+});
+
+// Mock Maintenance Timeline (Predictive Core)
+app.get('/api/motor-proxy/api/source/:source/vehicle/:vehicleId/maintenance-timeline/miles/:mileage', (req, res) => {
+  const mileage = parseInt(req.params.mileage) || 0;
+  console.log(`[MOCK] Serving Maintenance Timeline for mileage: ${mileage}`);
+
+  const predictions = [];
+
+  if (mileage > 30000) {
+    predictions.push({ FrequencyDescription: 'Brake Fluid Flush', Probability: 'High' });
+  }
+  if (mileage > 50000) {
+    predictions.push({ FrequencyDescription: 'Transmission Fluid Change', Probability: 'Medium' });
+  }
+  if (mileage > 75000) {
+    predictions.push({ FrequencyDescription: 'Timing Belt Inspection', Probability: 'Critical' });
+  }
+  if (mileage > 100000) {
+    predictions.push({ FrequencyDescription: 'Spark Plug Replacement', Probability: 'High' });
+    predictions.push({ FrequencyDescription: 'Coolant Flush', Probability: 'High' });
+  }
+
+  // Always return something for demo
+  if (predictions.length === 0) {
+    predictions.push({ FrequencyDescription: 'Oil Change & Filter', Probability: 'Routine' });
+    predictions.push({ FrequencyDescription: 'Tire Rotation', Probability: 'Routine' });
+  }
+
+  res.json(predictions);
+});
+
+// Mock Related Wiring (Linked Intelligence)
+app.get('/api/motor-proxy/api/source/:source/vehicle/:vehicleId/wiring/related-to/dtc/:dtcId', (req, res) => {
+  const { dtcId } = req.params;
+  console.log(`[MOCK] Serving Related Wiring for DTC: ${dtcId}`);
+
+  res.json({
+    dtcId: parseInt(dtcId),
+    title: 'Engine Control System Wiring Diagram',
+    url: 'https://via.placeholder.com/800x600.png?text=Wiring+Diagram+for+DTC', // Placeholder for now
+    thumbnail: 'https://via.placeholder.com/200x150.png?text=Wiring+Thumb',
+    confidence: 0.95
+  });
+});
+
 // Motor API proxy endpoint
 app.all('/api/motor-proxy/*', async (req, res) => {
   try {

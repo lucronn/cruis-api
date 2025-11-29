@@ -4,6 +4,7 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
+import { MotorApiService } from '../services/motor-api.service';
 
 interface RecentVehicle {
     id: number;
@@ -45,6 +46,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     recentVehicles: RecentVehicle[] = [];
     loading = true;
 
+    // HUD Data
+    currentVehicleSpecs: any = null;
+    sliderMileage: number = 0;
+    predictedMaintenance: any[] = [];
+
     // Metrics
     metrics = [
         { label: 'VEHICLES', value: 0, target: 54000, suffix: '+' },
@@ -56,7 +62,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     ];
 
     constructor(
-        private router: Router
+        private router: Router,
+        private motorApi: MotorApiService
     ) { }
 
     ngOnInit() {
@@ -82,11 +89,45 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             const stored = sessionStorage.getItem('selectedVehicles');
             if (stored) {
                 this.recentVehicles = JSON.parse(stored);
+                // Load specs for the most recent vehicle for the HUD
+                if (this.recentVehicles.length > 0) {
+                    this.loadVehicleSpecs(this.recentVehicles[0]);
+                }
             }
         } catch (e) {
             console.error('Error loading recent vehicles', e);
         }
         this.loading = false;
+    }
+
+    loadVehicleSpecs(vehicle: RecentVehicle) {
+        if (!vehicle.vehicleId) return;
+
+        this.motorApi.getSpecifications('MOTOR', vehicle.vehicleId).subscribe(
+            (specs: any) => {
+                // Process specs for HUD
+                // This is a simplification, actual mapping depends on API response structure
+                this.currentVehicleSpecs = {
+                    oilCapacity: specs.capacities?.oil || '5.7 QT',
+                    lugNutTorque: specs.torque?.lugNut || '100 FT/LB',
+                    batteryGroup: specs.battery?.group || 'H6-AGM'
+                };
+            },
+            (err) => console.error('Error loading specs', err)
+        );
+    }
+
+    updateMaintenancePrediction() {
+        if (!this.recentVehicles.length || !this.recentVehicles[0].vehicleId) return;
+
+        const vehicleId = this.recentVehicles[0].vehicleId;
+
+        this.motorApi.getMaintenanceTimeline('MOTOR', vehicleId, this.sliderMileage).subscribe(
+            (data: any) => {
+                this.predictedMaintenance = data || [];
+            },
+            (err) => console.error('Error loading maintenance timeline', err)
+        );
     }
 
     navigateToVehicle(vehicle: RecentVehicle) {

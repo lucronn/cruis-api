@@ -273,4 +273,36 @@ export class MotorApiService {
             { params: { intervalType, interval: interval.toString() } }
         ).pipe(map(response => response.body));
     }
+
+    // ============================================================
+    // CYBERPUNK FEATURES (November 2025)
+    // ============================================================
+
+    /**
+     * Get Part Vector Illustrations (X-Ray Mode)
+     */
+    getVectorIllustrations(contentSource: string, vehicleId: string, groupId: number): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/part-vectors`,
+            { params: { GroupID: groupId.toString() } }
+        ).pipe(map(res => res.body));
+    }
+
+    /**
+     * Get Maintenance Timeline (Predictive Core)
+     */
+    getMaintenanceTimeline(contentSource: string, vehicleId: string, mileage: number): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/maintenance-timeline/miles/${mileage}`
+        ).pipe(map(res => res.body));
+    }
+
+    /**
+     * Get Related Wiring Diagrams for DTC (Linked Intelligence)
+     */
+    getRelatedWiring(contentSource: string, vehicleId: string, dtcId: number): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/wiring/related-to/dtc/${dtcId}`
+        ).pipe(map(res => res.body));
+    }
 }

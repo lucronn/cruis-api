@@ -1524,6 +1524,181 @@ $text-secondary: #a0a0a0;
 }
 
 // Image Lightbox Styles
+/* Invert standard technical drawings to dark mode */
+.vector-diagram-svg {
+    filter: invert(1) hue-rotate(180deg);
+    /* Turns black lines to white/cyan */
+
+    /* Make the lines glow */
+    path,
+    line,
+    circle {
+        stroke: #00FFFF;
+        /* Cyan */
+        stroke-width: 1px;
+        fill: transparent;
+        transition: all 0.3s ease;
+
+        &:hover {
+            stroke: #FF00FF;
+            /* Magenta on hover */
+            filter: drop-shadow(0 0 5px #FF00FF);
+            cursor: pointer;
+            stroke-width: 2px;
+        }
+    }
+
+    /* Hide text labels if they clutter the view, or color them */
+    text {
+        fill: #ffffff;
+        font-family: 'Courier New', monospace;
+    }
+}
+
+.xray-container {
+    margin-top: 1rem;
+    border: 1px solid #00ffff;
+    background: rgba(0, 20, 40, 0.8);
+    padding: 1rem;
+    border-radius: 4px;
+
+    .xray-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+        padding-bottom: 0.5rem;
+
+        .xray-label {
+            font-family: 'Courier New', monospace;
+            color: #00ffff;
+            letter-spacing: 0.1em;
+            font-size: 0.8rem;
+        }
+
+        .xray-controls {
+            display: flex;
+            gap: 1rem;
+            color: #00ffff;
+            cursor: pointer;
+        }
+    }
+
+    .vector-diagram-svg {
+        width: 100%;
+        height: 300px;
+        /* Fixed height for consistency */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 4px;
+
+        img.xray-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 5px rgba(0, 243, 255, 0.3));
+        }
+
+        ::ng-deep svg {
+            width: 100%;
+            height: 100%;
+        }
+    }
+}
+
+.linked-intel-graph {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .intel-node {
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.8rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        &.root {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+        }
+
+        &.target {
+            background: rgba(0, 255, 255, 0.2);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+
+            &:hover {
+                background: rgba(0, 255, 255, 0.4);
+                box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            }
+
+            .node-icon {
+                font-size: 1.2rem;
+                margin-bottom: 0.2rem;
+            }
+
+            .node-sub {
+                font-size: 0.6rem;
+                opacity: 0.7;
+            }
+        }
+    }
+
+    .intel-connector {
+        flex: 1;
+        height: 2px;
+        background: linear-gradient(90deg, #ff0000, #00ffff);
+        position: relative;
+
+        &::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #fff;
+            animation: pulse-travel 2s infinite linear;
+        }
+    }
+}
+
+@keyframes pulse-travel {
+    0% {
+        left: 0;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        left: 100%;
+        opacity: 0;
+    }
+}
+
 .lightbox-overlay {
     position: fixed;
     top: 0;

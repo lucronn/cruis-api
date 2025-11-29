@@ -73,6 +73,14 @@
     {
       "name": "Debug",
       "description": "Debug and credential endpoints"
+    },
+    {
+      "name": "Bookmarks",
+      "description": "Article bookmarks"
+    },
+    {
+      "name": "UI",
+      "description": "UI resources and configuration"
     }
   ],
   "paths": {
@@ -1168,14 +1176,619 @@
                     "total": 45,
                     "specs": [
                       {
-                        "id": "SPEC:566679878",
+                        "id": "SPEC:12345",
                         "bucket": "Specifications",
-                        "title": "Air Intake Specifications"
+                        "title": "Torque Specifications"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/source/{contentSource}/vehicle/{vehicleId}/part-vectors": {
+      "get": {
+        "tags": [
+          "Graphics"
+        ],
+        "summary": "Get Part Vector Illustrations (X-Ray Mode)",
+        "description": "Returns interactive SVG schematics for vehicle parts",
+        "operationId": "getPartVectors",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/contentSource"
+          },
+          {
+            "$ref": "#/components/parameters/vehicleIdPath"
+          },
+          {
+            "name": "GroupID",
+            "in": "query",
+            "description": "Component group ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SVG content and part metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "groupId": {
+                      "type": "string"
+                    },
+                    "svgContent": {
+                      "type": "string",
+                      "description": "Raw SVG XML string"
+                    },
+                    "parts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "number": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/source/{contentSource}/vehicle/{vehicleId}/maintenance-timeline/miles/{mileage}": {
+      "get": {
+        "tags": [
+          "Maintenance"
+        ],
+        "summary": "Get Maintenance Timeline (Predictive Core)",
+        "description": "Returns predicted maintenance items based on mileage",
+        "operationId": "getMaintenanceTimeline",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/contentSource"
+          },
+          {
+            "$ref": "#/components/parameters/vehicleIdPath"
+          },
+          {
+            "name": "mileage",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of predicted maintenance items",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "FrequencyDescription": {
+                        "type": "string"
+                      },
+                      "Probability": {
+                        "type": "string",
+                        "enum": [
+                          "Routine",
+                          "Medium",
+                          "High",
+                          "Critical"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/source/{contentSource}/vehicle/{vehicleId}/wiring/related-to/dtc/{dtcId}": {
+      "get": {
+        "tags": [
+          "Diagrams"
+        ],
+        "summary": "Get Related Wiring (Linked Intelligence)",
+        "description": "Returns wiring diagrams related to a specific DTC",
+        "operationId": "getRelatedWiring",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/contentSource"
+          },
+          {
+            "$ref": "#/components/parameters/vehicleIdPath"
+          },
+          {
+            "name": "dtcId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Related wiring diagram info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "dtcId": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "url": {
+                      "type": "string"
+                    },
+                    "thumbnail": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "example": {
+                  "dtcId": 301467705,
+                  "title": "ABS",
+                  "url": "https://autolib.web.app/api/motor-proxy/api/source/MOTOR/graphic/12121061",
+                  "thumbnail": "https://autolib.web.app/api/motor-proxy/api/source/MOTOR/graphic/12121061?w=240&h=220",
+                  "confidence": 0.8
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/source/{contentSource}/vehicle/{vehicleId}/labor": {
+      "get": {
+        "tags": [
+          "Procedures"
+        ],
+        "summary": "Get labor operations",
+        "description": "Returns all labor operations with time estimates (326+ items)",
+        "operationId": "getLaborOperations",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/contentSource"
+          },
+          {
+            "$ref": "#/components/parameters/vehicleIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Labor operations list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "header": {
+                    "status": "OK",
+                    "statusCode": 200
+                  },
+                  "body": {
+                    "total": 326,
+                    "laborOperations": [
+                      {
+                        "id": "L:237238453",
+                        "title": "ABS Hydraulic Control Unit R&R",
+                        "bucket": "Labor"
                       },
                       {
-                        "id": "SPEC:566679879",
-                        "bucket": "Specifications",
-                        "title": "Brake Specifications"
+                        "id": "L:237255442",
+                        "title": "ABS System Diagnosis & Testing",
+                        "bucket": "Labor"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/source/{contentSource}/vehicle/{vehicleId}/brake-service": {
+      "get": {
+        "tags": [
+          "Procedures"
+        ],
+        "summary": "Get brake service procedures",
+        "description": "Returns brake-related repair procedures",
+        "operationId": "getBrakeService",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/contentSource"
+          },
+          {
+            "$ref": "#/components/parameters/vehicleIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Brake procedures",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "header": {
+                    "status": "OK",
+                    "statusCode": 200
+                  },
+                  "body": {
+                    "total": 15,
+                    "procedures": [
+                      {
+                        "id": "P:542299472",
+                        "title": "ABS Hydraulic Control Unit R&R",
+                        "bucket": "Brake Service"
+                      },
+                      {
+                        "id": "P:539389618",
+                        "title": "Brake Hydraulic System Bleed",
+                        "bucket": "Brake Service"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/source/{contentSource}/vehicle/{vehicleId}/ac-heater": {
+      "get": {
+        "tags": [
+          "Procedures"
+        ],
+        "summary": "Get A/C & Heater procedures",
+        "description": "Returns HVAC-related repair procedures",
+        "operationId": "getAcHeater",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/contentSource"
+          },
+          {
+            "$ref": "#/components/parameters/vehicleIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A/C & Heater procedures",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "header": {
+                    "status": "OK",
+                    "statusCode": 200
+                  },
+                  "body": {
+                    "total": 31,
+                    "procedures": [
+                      {
+                        "id": "P:538123456",
+                        "title": "A/C Compressor R&R",
+                        "bucket": "A/C & Heater Systems"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/source/{contentSource}/vehicle/{vehicleId}/tpms": {
+      "get": {
+        "tags": [
+          "Procedures"
+        ],
+        "summary": "Get TPMS procedures",
+        "description": "Returns Tire Pressure Monitoring System procedures",
+        "operationId": "getTpms",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/contentSource"
+          },
+          {
+            "$ref": "#/components/parameters/vehicleIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "TPMS procedures",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "header": {
+                    "status": "OK",
+                    "statusCode": 200
+                  },
+                  "body": {
+                    "total": 2,
+                    "procedures": [
+                      {
+                        "id": "P:563910815",
+                        "title": "Tire Pressure Monitor Sensor Relearn",
+                        "bucket": "Tire Pressure Monitoring System Procedures"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/source/{contentSource}/vehicle/{vehicleId}/relearn": {
+      "get": {
+        "tags": [
+          "Procedures"
+        ],
+        "summary": "Get computer relearn procedures",
+        "description": "Returns ECU/module relearn procedures",
+        "operationId": "getRelearn",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/contentSource"
+          },
+          {
+            "$ref": "#/components/parameters/vehicleIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Relearn procedures",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "header": {
+                    "status": "OK",
+                    "statusCode": 200
+                  },
+                  "body": {
+                    "total": 5,
+                    "procedures": [
+                      {
+                        "id": "P:563796123",
+                        "title": "Headlamp Control Module Relearn",
+                        "bucket": "Computer Relearn Procedures"
+                      },
+                      {
+                        "id": "P:563787118",
+                        "title": "Stability Control System Module Relearn",
+                        "bucket": "Computer Relearn Procedures"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/source/{contentSource}/vehicle/{vehicleId}/lamp-reset": {
+      "get": {
+        "tags": [
+          "Procedures"
+        ],
+        "summary": "Get maintenance lamp reset procedures",
+        "description": "Returns oil change/service light reset procedures",
+        "operationId": "getLampReset",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/contentSource"
+          },
+          {
+            "$ref": "#/components/parameters/vehicleIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lamp reset procedures",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "header": {
+                    "status": "OK",
+                    "statusCode": 200
+                  },
+                  "body": {
+                    "total": 1,
+                    "procedures": [
+                      {
+                        "id": "P:538123789",
+                        "title": "Maintenance Lamp Reset",
+                        "bucket": "Maintenance Lamp Reset Procedure"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/source/{contentSource}/vehicle/{vehicleId}/battery": {
+      "get": {
+        "tags": [
+          "Procedures"
+        ],
+        "summary": "Get battery replacement procedures",
+        "description": "Returns battery replacement and reset procedures",
+        "operationId": "getBattery",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/contentSource"
+          },
+          {
+            "$ref": "#/components/parameters/vehicleIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Battery procedures",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "header": {
+                    "status": "OK",
+                    "statusCode": 200
+                  },
+                  "body": {
+                    "total": 3,
+                    "procedures": [
+                      {
+                        "id": "P:538456789",
+                        "title": "Battery R&R",
+                        "bucket": "Battery Replacement Procedures"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/source/{contentSource}/vehicle/{vehicleId}/steering-suspension": {
+      "get": {
+        "tags": [
+          "Procedures"
+        ],
+        "summary": "Get steering & suspension procedures",
+        "description": "Returns steering and suspension repair procedures",
+        "operationId": "getSteeringSuspension",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/contentSource"
+          },
+          {
+            "$ref": "#/components/parameters/vehicleIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Steering & suspension procedures",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "header": {
+                    "status": "OK",
+                    "statusCode": 200
+                  },
+                  "body": {
+                    "total": 12,
+                    "procedures": [
+                      {
+                        "id": "P:538789123",
+                        "title": "Control Arm R&R",
+                        "bucket": "Steering & Suspension Replacement Procedures"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/source/{contentSource}/vehicle/{vehicleId}/airbag": {
+      "get": {
+        "tags": [
+          "Procedures"
+        ],
+        "summary": "Get airbag service procedures",
+        "description": "Returns SRS/airbag service procedures",
+        "operationId": "getAirbag",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/contentSource"
+          },
+          {
+            "$ref": "#/components/parameters/vehicleIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Airbag procedures",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "header": {
+                    "status": "OK",
+                    "statusCode": 200
+                  },
+                  "body": {
+                    "total": 8,
+                    "procedures": [
+                      {
+                        "id": "P:538321654",
+                        "title": "Driver Airbag Module R&R",
+                        "bucket": "Air Bag Service"
                       }
                     ]
                   }
@@ -1268,6 +1881,30 @@
               "type": "string",
               "example": "P:538499065"
             }
+          },
+          {
+            "name": "motorVehicleId",
+            "in": "query",
+            "description": "Motor vehicle ID for engine-specific labor times",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prettyPrint",
+            "in": "query",
+            "description": "Format output",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "searchTerm",
+            "in": "query",
+            "description": "Search term context",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1323,8 +1960,18 @@
           {
             "name": "motorVehicleId",
             "in": "query",
+            "description": "Motor vehicle ID for engine-specific filtering",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "searchTerm",
+            "in": "query",
+            "description": "Search term to filter parts",
+            "schema": {
+              "type": "string",
+              "example": "brake"
             }
           }
         ],
@@ -1409,6 +2056,46 @@
               "type": "string",
               "example": "P:538499065"
             }
+          },
+          {
+            "name": "motorVehicleId",
+            "in": "query",
+            "description": "Motor vehicle ID for engine-specific content",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "prettyPrint",
+            "in": "query",
+            "description": "Format HTML output",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "query",
+            "description": "Content bucket name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "articleSubtype",
+            "in": "query",
+            "description": "Article subtype filter",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "searchTerm",
+            "in": "query",
+            "description": "Search term context",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1429,6 +2116,303 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/source/{contentSource}/vehicle/{vehicleId}/article/{articleId}/bookmark": {
+      "post": {
+        "tags": [
+          "Articles"
+        ],
+        "summary": "Save article bookmark",
+        "description": "Saves a bookmark for an article",
+        "operationId": "saveBookmark",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/contentSource"
+          },
+          {
+            "$ref": "#/components/parameters/vehicleIdPath"
+          },
+          {
+            "name": "articleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "P:538499065"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bookmark saved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "bookmarkId": {
+                      "type": "integer",
+                      "description": "Saved bookmark ID"
+                    }
+                  }
+                },
+                "example": {
+                  "header": {
+                    "status": "OK",
+                    "statusCode": 200
+                  },
+                  "body": {
+                    "bookmarkId": 12345
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bookmark/{bookmarkId}": {
+      "get": {
+        "tags": [
+          "Articles"
+        ],
+        "summary": "Get saved bookmark",
+        "description": "Retrieves a saved bookmark by ID",
+        "operationId": "getBookmark",
+        "parameters": [
+          {
+            "name": "bookmarkId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 12345
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bookmark article content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleDetailResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/asset/{handleId}": {
+      "get": {
+        "tags": [
+          "Graphics"
+        ],
+        "summary": "Get asset by handle ID",
+        "description": "Returns an asset (image/document) by its handle ID (GUID)",
+        "operationId": "getAssetByHandle",
+        "parameters": [
+          {
+            "name": "handleId",
+            "in": "path",
+            "required": true,
+            "description": "Asset handle ID (GUID)",
+            "schema": {
+              "type": "string",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Asset data (image/document)",
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/source/{contentSource}/vehicles": {
+      "post": {
+        "tags": [
+          "Vehicle Info"
+        ],
+        "summary": "Get bulk vehicle information",
+        "description": "Returns detailed information for multiple vehicles by their IDs",
+        "operationId": "getVehicles",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/contentSource"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "vehicleIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": [
+                      "188569:13820",
+                      "188845:13821"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Vehicle information list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MotorVehiclesResponse"
+                },
+                "example": {
+                  "header": {
+                    "status": "OK",
+                    "statusCode": 200
+                  },
+                  "body": [
+                    {
+                      "id": "188569",
+                      "motorVehicleId": "188569",
+                      "year": 2021,
+                      "make": "Mazda",
+                      "model": "3",
+                      "submodel": "Base"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/motor/year/{year}/make/{make}/models": {
+      "get": {
+        "tags": [
+          "Vehicle Selection"
+        ],
+        "summary": "Get Motor models (alternative endpoint)",
+        "description": "Alternative endpoint for getting models, returns Motor-specific format",
+        "operationId": "getMotorModels",
+        "parameters": [
+          {
+            "name": "year",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 2021
+            }
+          },
+          {
+            "name": "make",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "Mazda"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Motor models list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/manufacturer/{manufacturerId}/graphic/{id}": {
+      "get": {
+        "tags": [
+          "Graphics"
+        ],
+        "summary": "Get manufacturer graphic (deprecated)",
+        "description": "Prior route for retrieving images. Deprecated but kept for backwards compatibility\nwith saved bookmarks. Use `/api/source/{contentSource}/graphic/{id}` instead.\n",
+        "deprecated": true,
+        "operationId": "getManufacturerGraphic",
+        "parameters": [
+          {
+            "name": "manufacturerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "w",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "h",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image data",
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
                 }
               }
             }
@@ -1533,6 +2517,34 @@
           },
           {
             "$ref": "#/components/parameters/vehicleIdPath"
+          },
+          {
+            "name": "frequencyTypeCode",
+            "in": "query",
+            "description": "Filter by frequency type code",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "description": "Filter by severity level",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Normal",
+                "Severe"
+              ]
+            }
+          },
+          {
+            "name": "searchTerm",
+            "in": "query",
+            "description": "Search term to filter schedules",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1621,6 +2633,26 @@
               "type": "integer",
               "example": 5000
             }
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "description": "Filter by severity level",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Normal",
+                "Severe"
+              ]
+            }
+          },
+          {
+            "name": "searchTerm",
+            "in": "query",
+            "description": "Search term to filter schedules",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1673,6 +2705,26 @@
           },
           {
             "$ref": "#/components/parameters/vehicleIdPath"
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "description": "Filter by severity level",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Normal",
+                "Severe"
+              ]
+            }
+          },
+          {
+            "name": "searchTerm",
+            "in": "query",
+            "description": "Search term to filter schedules",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1831,6 +2883,181 @@
         }
       }
     },
+    "/api/ui/favicon": {
+      "get": {
+        "tags": [
+          "UI"
+        ],
+        "summary": "Get favicon",
+        "description": "Returns the site favicon",
+        "operationId": "getFavicon",
+        "responses": {
+          "200": {
+            "description": "Favicon image",
+            "content": {
+              "image/x-icon": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ui/css/bootstrap": {
+      "get": {
+        "tags": [
+          "UI"
+        ],
+        "summary": "Get Bootstrap CSS",
+        "description": "Returns Bootstrap CSS stylesheet",
+        "operationId": "getBootstrapCss",
+        "responses": {
+          "200": {
+            "description": "CSS stylesheet",
+            "content": {
+              "text/css": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ui/banner.html": {
+      "get": {
+        "tags": [
+          "UI"
+        ],
+        "summary": "Get banner HTML",
+        "description": "Returns the banner HTML content",
+        "operationId": "getBannerHtml",
+        "responses": {
+          "200": {
+            "description": "HTML content",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ui/usersettings": {
+      "get": {
+        "tags": [
+          "UI"
+        ],
+        "summary": "Get user settings",
+        "description": "Returns user interface settings and preferences",
+        "operationId": "getUserSettings",
+        "responses": {
+          "200": {
+            "description": "User settings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "theme": {
+                      "type": "string"
+                    },
+                    "preferences": {
+                      "type": "object"
+                    }
+                  }
+                },
+                "example": {
+                  "header": {
+                    "status": "OK",
+                    "statusCode": 200
+                  },
+                  "body": {
+                    "theme": "light",
+                    "preferences": {
+                      "showTooltips": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ui/feedbackconfigurations": {
+      "get": {
+        "tags": [
+          "UI"
+        ],
+        "summary": "Get feedback configurations",
+        "description": "Returns feedback form configuration",
+        "operationId": "getFeedbackConfigurations",
+        "responses": {
+          "200": {
+            "description": "Feedback configuration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ui/savefeedback": {
+      "post": {
+        "tags": [
+          "UI"
+        ],
+        "summary": "Save feedback",
+        "description": "Submits user feedback",
+        "operationId": "saveFeedback",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  },
+                  "rating": {
+                    "type": "integer"
+                  }
+                },
+                "example": {
+                  "message": "Great service!",
+                  "rating": 5
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Feedback saved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/source/track-change/deltareport": {
       "get": {
         "tags": [
@@ -1843,18 +3070,25 @@
           {
             "name": "vehicleId",
             "in": "query",
-            "required": true,
-            "description": "Vehicle identifier",
+            "description": "Vehicle identifier (optional if quarter is provided)",
             "schema": {
               "type": "string",
               "example": "188569:13820"
             }
           },
           {
+            "name": "quarter",
+            "in": "query",
+            "description": "Processing quarter in YYYY-QN format (alternative to processingQuarter)",
+            "schema": {
+              "type": "string",
+              "example": "2025-Q4"
+            }
+          },
+          {
             "name": "processingQuarter",
             "in": "query",
-            "required": true,
-            "description": "Processing quarter in YYYY-QN format",
+            "description": "Processing quarter in YYYY-QN format (alternative to quarter)",
             "schema": {
               "type": "string",
               "example": "2025-Q4"

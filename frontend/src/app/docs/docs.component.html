@@ -76,6 +76,30 @@
                         <button class="action-btn primary" (click)="viewArticle(article)">
                             <i class="fas fa-eye"></i> VIEW
                         </button>
+                        <button class="action-btn secondary glow-cyan" (click)="toggleXRayMode(article)">
+                            <i class="fas fa-microchip"></i> X-RAY MODE
+                        </button>
+                    </div>
+
+                    <!-- X-Ray SVG Container -->
+                    <div class="xray-container" *ngIf="xRayMode && vectorIllustration">
+                        <div class="xray-header">
+                            <span class="xray-label">VECTOR SCHEMATIC // GROUP {{ vectorIllustration.groupId }}</span>
+                            <div class="xray-controls">
+                                <i class="fas fa-search-plus"></i>
+                                <i class="fas fa-expand"></i>
+                            </div>
+                        </div>
+                        <div class="vector-diagram-svg">
+                            <img *ngIf="vectorIllustration.imageUrl" [src]="vectorIllustration.imageUrl"
+                                alt="Component Location" class="xray-image">
+                            <div *ngIf="vectorIllustration.svgContent" [innerHTML]="vectorIllustration.svgContent">
+                            </div>
+                        </div>
+                        <div class="loading-state" *ngIf="loadingVector">
+                            <div class="cyber-spinner"></div>
+                            <p>INITIALIZING VECTOR GRAPHICS...</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -94,14 +118,33 @@
         </div>
 
         <!-- DTC List -->
-        <div class="feature-list dtc-list" *ngIf="activePill === 'DTCs'">
+        <div class="feature-list dtc-list" *ngIf="activePill === 'DTCs' || activePill === 'Diagnostic Codes'">
             <div class="feature-card dtc-card" *ngFor="let dtc of dtcData">
                 <div class="card-header">
                     <span class="code">{{ dtc.code }}</span>
                     <span class="system">{{ dtc.system }}</span>
                 </div>
                 <p class="description">{{ dtc.description }}</p>
-                <button class="action-btn small" (click)="viewArticle(dtc)">View Diagnostics</button>
+
+                <div class="dtc-actions">
+                    <button class="action-btn small" (click)="viewArticle(dtc)">View Diagnostics</button>
+                    <button class="action-btn small secondary" (click)="loadRelatedWiring(dtc)">
+                        <i class="fas fa-project-diagram"></i> Linked Intel
+                    </button>
+                </div>
+
+                <!-- Linked Intelligence Graph -->
+                <div class="linked-intel-graph" *ngIf="relatedWiring && relatedWiring.dtcId === dtc.id">
+                    <div class="intel-node root">
+                        <span class="node-label">DTC {{ dtc.code }}</span>
+                    </div>
+                    <div class="intel-connector"></div>
+                    <div class="intel-node target" (click)="expandImage(relatedWiring.url, relatedWiring.title)">
+                        <span class="node-icon"><i class="fas fa-bolt"></i></span>
+                        <span class="node-label">WIRING DIAGRAM</span>
+                        <span class="node-sub">{{ relatedWiring.title }}</span>
+                    </div>
+                </div>
             </div>
             <div class="empty-state" *ngIf="dtcData.length === 0 && !loading">
                 <i class="fas fa-exclamation-triangle"></i>
@@ -114,7 +157,7 @@
         </div>
 
         <!-- TSB List -->
-        <div class="feature-list tsb-list" *ngIf="activePill === 'TSBs'">
+        <div class="feature-list tsb-list" *ngIf="activePill === 'TSBs' || activePill === 'Service Bulletins'">
             <div class="feature-card tsb-card" *ngFor="let tsb of tsbData">
                 <div class="card-header">
                     <span class="bulletin-id">{{ tsb.id }}</span>
@@ -135,7 +178,7 @@
         </div>
 
         <!-- Wiring Diagrams -->
-        <div class="feature-grid wiring-grid" *ngIf="activePill === 'Wiring'">
+        <div class="feature-grid wiring-grid" *ngIf="activePill === 'Wiring' || activePill === 'Diagrams'">
             <div class="wiring-card" *ngFor="let diagram of wiringData"
                 (click)="expandImage(diagram.url, diagram.title)">
                 <div class="thumbnail-wrapper">

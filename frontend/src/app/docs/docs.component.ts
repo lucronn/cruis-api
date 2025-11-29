@@ -93,6 +93,13 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     selectedQuarter: string = '';
     vehicleInfo: any = null;
 
+    // Cyberpunk Features State
+    xRayMode = false;
+    vectorIllustration: any = null;
+    relatedWiring: any = null;
+    loadingVector = false;
+    loadingRelated = false;
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -405,6 +412,59 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
                 console.error('Error loading Labor Times:', err);
                 this.error = 'Failed to load Labor Times.';
                 this.loading = false;
+            }
+        );
+    }
+
+    // ============================================================
+    // CYBERPUNK FEATURES METHODS
+    // ============================================================
+
+    toggleXRayMode(article: any) {
+        this.xRayMode = !this.xRayMode;
+
+        if (this.xRayMode && article) {
+            this.loadingVector = true;
+            // Assuming article has a GroupID or we use a default for demo
+            // In a real scenario, we'd get the GroupID from the article metadata
+            const groupId = article.groupId || 12345;
+
+            this.motorApi.getVectorIllustrations(this.contentSource, this.vehicleId, groupId).subscribe(
+                (data: any) => {
+                    // Sanitize SVG content if present
+                    if (data && data.svgContent) {
+                        data.svgContent = this.sanitizer.bypassSecurityTrustHtml(data.svgContent);
+                    }
+                    // Handle imageUrl (new backend behavior)
+                    if (data && data.imageUrl) {
+                        // Ensure URL is absolute if it's a proxy path
+                        if (data.imageUrl.startsWith('/')) {
+                            data.imageUrl = window.location.origin + data.imageUrl;
+                        }
+                    }
+                    this.vectorIllustration = data;
+                    this.loadingVector = false;
+                },
+                (err) => {
+                    console.error('Error loading vector illustration', err);
+                    this.loadingVector = false;
+                }
+            );
+        }
+    }
+
+    loadRelatedWiring(dtc: any) {
+        if (!dtc || !dtc.id) return;
+
+        this.loadingRelated = true;
+        this.motorApi.getRelatedWiring(this.contentSource, this.vehicleId, dtc.id).subscribe(
+            (data: any) => {
+                this.relatedWiring = data;
+                this.loadingRelated = false;
+            },
+            (err) => {
+                console.error('Error loading related wiring', err);
+                this.loadingRelated = false;
             }
         );
     }
@@ -876,7 +936,12 @@ type="application/pdf">
         try {
             const response = await this.http.post<{ enhancedHtml: string }>(
                 '/api/motor-proxy/api/enhance-article',
-                { html: this.originalArticleHtml }
+                {
+                    html: this.originalArticleHtml,
+                    contentSource: this.contentSource,
+                    vehicleId: this.vehicleId,
+                    articleId: this.viewingArticle?.id
+                }
             ).toPromise();
 
             if (response && response.enhancedHtml) {

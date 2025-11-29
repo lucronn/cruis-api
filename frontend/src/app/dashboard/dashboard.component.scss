@@ -368,3 +368,142 @@
         }
     }
 }
+
+// ============================================================
+// CYBERPUNK HUD & TIMELINE STYLES
+// ============================================================
+
+.hud-specs-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba($color-primary, 0.3);
+    padding: 0.5rem 1.5rem;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    height: 48px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+
+    .hud-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        .hud-label {
+            font-family: $font-mono;
+            font-size: 0.5rem;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.1em;
+        }
+
+        .hud-value {
+            font-family: $font-heading;
+            font-size: 1rem;
+            font-weight: 700;
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        .text-cyan {
+            color: #00ffff;
+        }
+
+        .text-magenta {
+            color: #ff00ff;
+        }
+
+        .text-yellow {
+            color: #ffff00;
+        }
+    }
+}
+
+.timeline-container {
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 2rem;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba($color-primary, 0.2);
+    padding: 1.5rem;
+    border-radius: 8px;
+    backdrop-filter: blur(5px);
+    text-align: center;
+
+    label {
+        display: block;
+        font-family: $font-mono;
+        color: $color-primary;
+        margin-bottom: 1rem;
+        letter-spacing: 0.1em;
+        font-size: 0.9rem;
+
+        .glitch {
+            color: #fff;
+            font-weight: bold;
+            text-shadow: 0 0 5px $color-primary;
+        }
+    }
+
+    input[type=range] {
+        width: 100%;
+        margin-bottom: 1rem;
+        accent-color: $color-primary;
+    }
+
+    .prediction-readout {
+        color: #ff00ff;
+        font-family: $font-mono;
+        font-size: 0.9rem;
+        text-shadow: 0 0 5px #ff00ff;
+        animation: blink 1s infinite;
+        margin-top: 0.5rem;
+    }
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Invert standard technical drawings to dark mode */
+.vector-diagram-svg {
+    filter: invert(1) hue-rotate(180deg);
+    /* Turns black lines to white/cyan */
+
+    /* Make the lines glow */
+    path,
+    line,
+    circle {
+        stroke: #00FFFF;
+        /* Cyan */
+        stroke-width: 1px;
+        fill: transparent;
+        transition: all 0.3s ease;
+
+        &:hover {
+            stroke: #FF00FF;
+            /* Magenta on hover */
+            filter: drop-shadow(0 0 5px #FF00FF);
+            cursor: pointer;
+            stroke-width: 2px;
+        }
+    }
+
+    /* Hide text labels if they clutter the view, or color them */
+    text {
+        fill: #ffffff;
+        font-family: 'Courier New', monospace;
+    }
+}
