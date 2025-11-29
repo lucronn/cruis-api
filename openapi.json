@@ -113,6 +113,28 @@
         }
       }
     },
+    "/connector-url": {
+      "get": {
+        "tags": [
+          "Debug"
+        ],
+        "summary": "Get connector URL",
+        "description": "Debug endpoint to get EBSCO connector URL and signature",
+        "operationId": "getConnectorUrl",
+        "responses": {
+          "200": {
+            "description": "Connector info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/credentials": {
       "get": {
         "tags": [
@@ -146,7 +168,7 @@
         }
       }
     },
-    "/api/vin/{vin}/vehicle": {
+    "/api/vin/{vin}": {
       "get": {
         "tags": [
           "VIN"
@@ -237,6 +259,38 @@
                       }
                     ]
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/vin-decode/{vin}": {
+      "get": {
+        "tags": [
+          "VIN"
+        ],
+        "summary": "Decode VIN (Alias)",
+        "description": "Alias for VIN decode endpoint",
+        "operationId": "decodeVinAlias",
+        "parameters": [
+          {
+            "name": "vin",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "VIN decoded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VinDecodeResponse"
                 }
               }
             }
@@ -1851,6 +1905,36 @@
                       }
                     ]
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/source/{contentSource}/vehicle/{vehicleId}/labor-times-direct": {
+      "get": {
+        "tags": [
+          "Procedures"
+        ],
+        "summary": "Get labor times (Direct)",
+        "description": "Direct access to estimated work times from Motor API",
+        "operationId": "getLaborTimesDirect",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/contentSource"
+          },
+          {
+            "$ref": "#/components/parameters/vehicleIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Labor times",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
                 }
               }
             }
