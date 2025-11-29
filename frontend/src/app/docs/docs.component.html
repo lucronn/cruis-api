@@ -39,7 +39,8 @@
     <!-- Main Content Area -->
     <div class="content-area">
         <!-- Article List (Accordion Style) -->
-        <div class="article-list" *ngIf="!viewingArticle">
+        <div class="article-list"
+            *ngIf="!viewingArticle && activePill !== 'DTCs' && activePill !== 'TSBs' && activePill !== 'Wiring' && activePill !== 'Labor'">
             <div class="accordion-card" *ngFor="let article of filteredArticles" [class.expanded]="article.expanded">
                 <div class="accordion-header" (click)="toggleAccordion(article)">
                     <div class="accordion-title-group">
@@ -77,6 +78,162 @@
             <div class="loading-state" *ngIf="loading">
                 <div class="spinner"></div>
                 <p>Loading vehicle data...</p>
+            </div>
+        </div>
+
+        <!-- DTC List -->
+        <div class="feature-list dtc-list" *ngIf="activePill === 'DTCs'">
+            <div class="feature-card dtc-card" *ngFor="let dtc of dtcData">
+                <div class="card-header">
+                    <span class="code">{{ dtc.code }}</span>
+                    <span class="system">{{ dtc.system }}</span>
+                </div>
+                <p class="description">{{ dtc.description }}</p>
+                <button class="action-btn small" (click)="viewArticle(dtc)">View Diagnostics</button>
+            </div>
+            <div class="empty-state" *ngIf="dtcData.length === 0 && !loading">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>No DTCs found.</p>
+            </div>
+            <div class="loading-state" *ngIf="loading">
+                <div class="spinner"></div>
+                <p>Loading DTCs...</p>
+            </div>
+        </div>
+
+        <!-- TSB List -->
+        <div class="feature-list tsb-list" *ngIf="activePill === 'TSBs'">
+            <div class="feature-card tsb-card" *ngFor="let tsb of tsbData">
+                <div class="card-header">
+                    <span class="bulletin-id">{{ tsb.id }}</span>
+                    <span class="date">{{ tsb.date }}</span>
+                </div>
+                <h3 class="title">{{ tsb.title }}</h3>
+                <p class="summary">{{ tsb.summary }}</p>
+                <button class="action-btn small" (click)="viewArticle(tsb)">View Bulletin</button>
+            </div>
+            <div class="empty-state" *ngIf="tsbData.length === 0 && !loading">
+                <i class="fas fa-clipboard-list"></i>
+                <p>No TSBs found.</p>
+            </div>
+            <div class="loading-state" *ngIf="loading">
+                <div class="spinner"></div>
+                <p>Loading TSBs...</p>
+            </div>
+        </div>
+
+        <!-- Wiring Diagrams -->
+        <div class="feature-grid wiring-grid" *ngIf="activePill === 'Wiring'">
+            <div class="wiring-card" *ngFor="let diagram of wiringData"
+                (click)="expandImage(diagram.url, diagram.title)">
+                <div class="thumbnail-wrapper">
+                    <img [src]="diagram.thumbnail || diagram.url" alt="Wiring Diagram">
+                    <div class="overlay"><i class="fas fa-search-plus"></i></div>
+                </div>
+                <p class="title">{{ diagram.title }}</p>
+            </div>
+            <div class="empty-state" *ngIf="wiringData.length === 0 && !loading">
+                <i class="fas fa-project-diagram"></i>
+                <p>No wiring diagrams found.</p>
+            </div>
+            <div class="loading-state" *ngIf="loading">
+                <div class="spinner"></div>
+                <p>Loading Diagrams...</p>
+            </div>
+        </div>
+
+        <!-- Labor Times -->
+        <div class="feature-list labor-list" *ngIf="activePill === 'Labor'">
+            <div class="labor-table-card">
+                <table class="cyber-table">
+                    <thead>
+                        <tr>
+                            <th>Operation</th>
+                            <th>Time (Hrs)</th>
+                            <th>Skill</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let labor of laborData">
+                            <td>{{ labor.operation }}</td>
+                            <td class="time">{{ labor.time }}</td>
+                            <td>{{ labor.skillLevel }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="empty-state" *ngIf="(!laborData || laborData.length === 0) && !loading">
+                <i class="fas fa-stopwatch"></i>
+                <p>No labor times found.</p>
+            </div>
+            <div class="loading-state" *ngIf="loading">
+                <div class="spinner"></div>
+                <p>Loading Labor Times...</p>
+            </div>
+        </div>
+
+        <!-- Maintenance View -->
+        <div class="feature-list maintenance-list" *ngIf="activePill === 'Maintenance'">
+            <div class="maintenance-section">
+                <h3><i class="fas fa-calendar-alt"></i> Scheduled Maintenance (30k Miles)</h3>
+                <div class="maintenance-grid">
+                    <div class="maint-card" *ngFor="let item of maintenanceData.intervals">
+                        <div class="maint-icon"><i class="fas fa-wrench"></i></div>
+                        <div class="maint-info">
+                            <h4>{{ item.serviceName }}</h4>
+                            <p>{{ item.action }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="maintenance-section">
+                <h3><i class="fas fa-tachometer-alt"></i> Indicator Based</h3>
+                <div class="maintenance-grid">
+                    <div class="maint-card" *ngFor="let item of maintenanceData.indicators">
+                        <div class="maint-icon warning"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="maint-info">
+                            <h4>{{ item.indicatorName }}</h4>
+                            <p>{{ item.description }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="loading-state" *ngIf="loading">
+                <div class="spinner"></div>
+                <p>Loading Maintenance Schedules...</p>
+            </div>
+        </div>
+
+        <!-- Updates / Track Changes -->
+        <div class="feature-list updates-list" *ngIf="activePill === 'Updates'">
+            <div class="updates-header">
+                <label>Select Quarter:</label>
+                <select [(ngModel)]="selectedQuarter" (change)="loadDeltaReport(selectedQuarter)">
+                    <option *ngFor="let q of trackChangeQuarters" [value]="q">{{ q }}</option>
+                </select>
+            </div>
+
+            <div class="updates-feed">
+                <div class="update-card" *ngFor="let delta of trackChangeDeltas">
+                    <div class="update-type" [class.added]="delta.type === 'ADD'"
+                        [class.modified]="delta.type === 'MODIFY'">
+                        {{ delta.type }}
+                    </div>
+                    <div class="update-content">
+                        <h4>{{ delta.entityType }} - {{ delta.entityId }}</h4>
+                        <p>{{ delta.description }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="empty-state" *ngIf="trackChangeDeltas.length === 0 && !loading">
+                <i class="fas fa-history"></i>
+                <p>No updates found for this quarter.</p>
+            </div>
+            <div class="loading-state" *ngIf="loading">
+                <div class="spinner"></div>
+                <p>Loading Update History...</p>
             </div>
         </div>
 
@@ -146,4 +303,14 @@
 
     <!-- Backdrop for Search Sheet -->
     <div class="sheet-backdrop" *ngIf="showSearchSheet" (click)="toggleSearchSheet()"></div>
+    <!-- Image Lightbox -->
+    <div class="lightbox-overlay" *ngIf="expandedImage" (click)="closeImage()">
+        <div class="lightbox-content" (click)="$event.stopPropagation()">
+            <button class="close-lightbox" (click)="closeImage()">
+                <i class="fas fa-times"></i>
+            </button>
+            <img [src]="expandedImage.src" [alt]="expandedImage.alt">
+            <p class="lightbox-caption" *ngIf="expandedImage.alt">{{ expandedImage.alt }}</p>
+        </div>
+    </div>
 </div>

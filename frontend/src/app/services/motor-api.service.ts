@@ -135,16 +135,164 @@ export class MotorApiService {
         ).pipe(map(response => response.body));
     }
 
-    getEstimatedWorkTimes(contentSource: string, vehicleId: string): Observable<any> {
+    // ============================================================
+    // NEW API ENDPOINTS (Updated November 2025)
+    // ============================================================
+
+    /**
+     * Decode a VIN to get vehicle details
+     * Returns: { vehicleId, contentSource, motorVehicleId }
+     */
+    decodeVin(vin: string): Observable<any> {
+        return this.http.get<any>(`${this.baseUrl}/api/vin/${vin}/vehicle`);
+    }
+
+    /**
+     * Search for a vehicle by VIN (alias for decodeVin)
+     */
+    searchByVin(vin: string): Observable<any> {
+        return this.decodeVin(vin);
+    }
+
+    /**
+     * Get Diagnostic Trouble Codes (DTCs) for a vehicle
+     */
+    getDtcs(contentSource: string, vehicleId: string): Observable<any> {
         return this.http.get<any>(
-            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/estimated-work-times`
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/dtcs`
         ).pipe(map(response => response.body));
     }
 
-    getComponentLocations(contentSource: string, vehicleId: string): Observable<any> {
+    /**
+     * Get details for a specific DTC code
+     */
+    getDtcDetail(contentSource: string, vehicleId: string, dtcCode: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/dtc/${encodeURIComponent(dtcCode)}`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get Technical Service Bulletins (TSBs) for a vehicle
+     */
+    getTsbs(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/tsbs`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get details for a specific TSB
+     */
+    getTsbDetail(contentSource: string, vehicleId: string, tsbId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/tsb/${encodeURIComponent(tsbId)}`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get wiring diagrams for a vehicle
+     */
+    getWiringDiagrams(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/wiring`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get component locations for a vehicle
+     */
+    getComponentLocationsV3(contentSource: string, vehicleId: string): Observable<any> {
+        const url = `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/components`;
+        console.log('MotorApiService: Fetching component locations from:', url);
+        return this.http.get<any>(url).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get estimated labor times for a vehicle
+     */
+    getLaborTimes(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/labor-times`
+        ).pipe(map(response => response.body));
+    }
+
+    // ============================================================
+    // ADDITIONAL DISCOVERED ENDPOINTS (November 2025)
+    // ============================================================
+
+    /**
+     * Get motor vehicles (engines/submodels) for a vehicle
+     */
+    getMotorVehicles(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/${encodeURIComponent(vehicleId)}/motorvehicles`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get article title
+     */
+    getArticleTitle(contentSource: string, vehicleId: string, articleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/article/${encodeURIComponent(articleId)}/title`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get article XML content
+     */
+    getArticleXml(contentSource: string, articleId: string): Observable<string> {
         return this.http.get(
-            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/component-locations`,
+            `${this.baseUrl}/api/source/${contentSource}/xml/${encodeURIComponent(articleId)}`,
             { responseType: 'text' }
         );
+    }
+
+    /**
+     * Get track change processing quarters
+     */
+    getTrackChangeQuarters(): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/track-change/processingquarters`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get track change delta report
+     */
+    getTrackChangeDeltaReport(vehicleId: string, processingQuarter: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/track-change/deltareport`,
+            { params: { vehicleId, processingQuarter } }
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get maintenance schedules by frequency
+     */
+    getMaintenanceByFrequency(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/maintenanceSchedules/frequency`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get maintenance schedules by indicators (dashboard lights)
+     */
+    getMaintenanceByIndicators(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/maintenanceSchedules/indicators`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get maintenance schedules by intervals
+     */
+    getMaintenanceByIntervals(contentSource: string, vehicleId: string, intervalType: string, interval: number): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/maintenanceSchedules/intervals`,
+            { params: { intervalType, interval: interval.toString() } }
+        ).pipe(map(response => response.body));
     }
 }

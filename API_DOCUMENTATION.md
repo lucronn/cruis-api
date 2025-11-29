@@ -9,12 +9,23 @@ Complete API documentation for the YourCar Vehicle Information System proxy serv
 - [Authentication](#authentication)
 - [Endpoints](#endpoints)
   - [Health Check](#health-check)
+  - [Credentials (Debug)](#credentials-debug)
+  - [VIN Lookup](#vin-lookup)
   - [Vehicle Selection](#vehicle-selection)
   - [Search](#search)
   - [Articles & Assets](#articles--assets)
   - [Parts](#parts)
+  - [Diagnostics (DTCs)](#diagnostics-dtcs)
+  - [Technical Service Bulletins (TSBs)](#technical-service-bulletins-tsbs)
+  - [Wiring Diagrams](#wiring-diagrams)
+  - [Component Locations](#component-locations)
+  - [Procedures](#procedures)
+  - [Diagrams (All Types)](#diagrams-all-types)
+  - [Specifications](#specifications)
+  - [Categories](#categories)
   - [Labor Operations](#labor-operations)
   - [Maintenance Schedules](#maintenance-schedules)
+  - [Specifications & Fluids](#specifications--fluids)
   - [Bookmarks](#bookmarks)
   - [Track Change](#track-change)
 - [Error Handling](#error-handling)
@@ -118,6 +129,68 @@ Check the health status of the API proxy and authentication session.
 ```bash
 curl https://motorproxy-erohrfg7qa-uc.a.run.app/health
 ```
+
+---
+
+### Credentials (Debug)
+
+#### `GET /api/motor-proxy/credentials`
+
+Get the current authentication credentials (for debugging purposes).
+
+**Response:**
+```json
+{
+  "publicKey": "S5dFutoiQg",
+  "apiTokenKey": "CHyZO",
+  "apiTokenValue": "PLOZ9XKYGUUO6MwhxucuqYry8",
+  "expiration": "2025-11-29T03:50:13Z",
+  "userName": "TruSpeedTrialEBSCO",
+  "subscriptions": ["TruSpeed"],
+  "tokenAuthHeader": "Token S5dFutoiQg:PLOZ9XKYGUUO6MwhxucuqYry8"
+}
+```
+
+**Example:**
+```bash
+curl https://autolib.web.app/api/motor-proxy/credentials
+```
+
+---
+
+### VIN Lookup
+
+#### `GET /api/vin/{vin}/vehicle`
+
+Decode a VIN (Vehicle Identification Number) to get vehicle details.
+
+**Path Parameters:**
+- `vin` (string, required): 17-character VIN
+
+**Response:**
+```json
+{
+  "header": {
+    "messages": [],
+    "date": "Fri, 28 Nov 2025 18:10:25 GMT",
+    "status": "OK",
+    "statusCode": 200
+  },
+  "body": {
+    "vehicleId": "2018:ACCORD",
+    "contentSource": "Honda",
+    "vehicleIdChoices": "",
+    "motorVehicleId": "145017"
+  }
+}
+```
+
+**Example:**
+```bash
+curl https://autolib.web.app/api/motor-proxy/api/vin/1HGCV1F34JA012345/vehicle
+```
+
+**Use Case:** Start with a VIN to get the `vehicleId` and `contentSource` needed for all other API calls.
 
 ---
 
@@ -556,6 +629,406 @@ curl "https://motorproxy-erohrfg7qa-uc.a.run.app/api/motor-proxy/api/source/Moto
 
 ---
 
+### Diagnostics (DTCs)
+
+#### `GET /api/source/{contentSource}/vehicle/{vehicleId}/dtcs`
+
+Get Diagnostic Trouble Codes available for a vehicle.
+
+**Path Parameters:**
+- `contentSource` (string, required): Content source identifier (e.g., `MOTOR`, `Honda`)
+- `vehicleId` (string, required): Vehicle identifier
+
+**Response (Real Example - 2021 Mazda 3):**
+```json
+{
+  "header": {
+    "status": "OK",
+    "statusCode": 200,
+    "date": "Sat, 29 Nov 2025 12:00:00 GMT"
+  },
+  "body": {
+    "total": 2145,
+    "dtcs": [
+      {
+        "id": "DTC:301467705",
+        "code": "B0001:11",
+        "description": "Driver Frontal Stage 1 Deployment Control: Circuit Short to Ground",
+        "subtitle": "",
+        "bucket": "Diagnostic Trouble Codes"
+      },
+      {
+        "id": "DTC:301040196",
+        "code": "B0001:12",
+        "description": "Driver Frontal Stage 1 Deployment Control: Circuit Short to Battery",
+        "subtitle": "",
+        "bucket": "Diagnostic Trouble Codes"
+      }
+    ]
+  }
+}
+```
+
+**Example:**
+```bash
+curl https://autolib.web.app/api/motor-proxy/api/source/MOTOR/vehicle/188569%3A13820/dtcs
+```
+
+---
+
+#### `GET /api/source/{contentSource}/vehicle/{vehicleId}/dtc/{dtcCode}`
+
+Get detailed information for a specific DTC code.
+
+**Path Parameters:**
+- `contentSource` (string, required): Content source identifier
+- `vehicleId` (string, required): Vehicle identifier
+- `dtcCode` (string, required): The DTC code (e.g., `P0300`)
+
+**Example:**
+```bash
+curl https://autolib.web.app/api/motor-proxy/api/source/MOTOR/vehicle/188569%3A13820/dtc/P0300
+```
+
+---
+
+### Technical Service Bulletins (TSBs)
+
+#### `GET /api/source/{contentSource}/vehicle/{vehicleId}/tsbs`
+
+Get Technical Service Bulletins for a vehicle.
+
+**Path Parameters:**
+- `contentSource` (string, required): Content source identifier
+- `vehicleId` (string, required): Vehicle identifier
+
+**Response (Real Example - 2021 Mazda 3):**
+```json
+{
+  "header": {
+    "status": "OK",
+    "statusCode": 200,
+    "date": "Sat, 29 Nov 2025 12:00:00 GMT"
+  },
+  "body": {
+    "total": 89,
+    "tsbs": [
+      {
+        "id": "TSB:468775993",
+        "bulletinNumber": "09-034/25",
+        "title": "WATER FOUND IN TRUNK AFTER HEAVY RAIN OR CAR WASH",
+        "subtitle": "",
+        "releaseDate": "Aug 20, 2025"
+      },
+      {
+        "id": "TSB:463746565",
+        "bulletinNumber": "09-012/25",
+        "title": "SUNVISOR(S) DO NOT STAY IN FULLY RETRACTED POSITION",
+        "subtitle": "",
+        "releaseDate": "Aug 1, 2025"
+      }
+    ]
+  }
+}
+```
+
+**Example:**
+```bash
+curl https://autolib.web.app/api/motor-proxy/api/source/MOTOR/vehicle/188569%3A13820/tsbs
+```
+
+---
+
+#### `GET /api/source/{contentSource}/vehicle/{vehicleId}/tsb/{tsbId}`
+
+Get detailed information for a specific TSB.
+
+**Path Parameters:**
+- `contentSource` (string, required): Content source identifier
+- `vehicleId` (string, required): Vehicle identifier
+- `tsbId` (string, required): TSB identifier
+
+**Example:**
+```bash
+curl https://autolib.web.app/api/motor-proxy/api/source/MOTOR/vehicle/188569%3A13820/tsb/TSB:468775993
+```
+
+---
+
+### Wiring Diagrams
+
+#### `GET /api/source/{contentSource}/vehicle/{vehicleId}/wiring`
+
+Get wiring diagrams for a vehicle.
+
+**Path Parameters:**
+- `contentSource` (string, required): Content source identifier
+- `vehicleId` (string, required): Vehicle identifier
+
+**Response (Real Example - 2021 Mazda 3):**
+```json
+{
+  "header": {
+    "status": "OK",
+    "statusCode": 200,
+    "date": "Sat, 29 Nov 2025 12:00:00 GMT"
+  },
+  "body": {
+    "total": 56,
+    "allDiagramsTotal": 634,
+    "wiringDiagrams": [
+      {
+        "id": "WIR:536228788",
+        "bucket": "Wiring Diagrams",
+        "title": "ABS",
+        "subtitle": "",
+        "thumbnailHref": "api/source/MOTOR/graphic/12121061?w=240&h=220",
+        "sort": 0
+      },
+      {
+        "id": "WIR:537147988",
+        "bucket": "Wiring Diagrams",
+        "title": "Adaptive Front Lighting System",
+        "subtitle": "WITH AUTOMATIC HEADLAMP LEVELING",
+        "thumbnailHref": "api/source/MOTOR/graphic/12121108?w=240&h=220",
+        "sort": 0
+      }
+    ]
+  }
+}
+```
+
+**Example:**
+```bash
+curl https://autolib.web.app/api/motor-proxy/api/source/MOTOR/vehicle/188569%3A13820/wiring
+```
+
+---
+
+### Component Locations
+
+#### `GET /api/source/{contentSource}/vehicle/{vehicleId}/components`
+
+Get component locations for a vehicle.
+
+**Path Parameters:**
+- `contentSource` (string, required): Content source identifier
+- `vehicleId` (string, required): Vehicle identifier
+
+**Response (Real Example - 2021 Mazda 3):**
+```json
+{
+  "header": {
+    "status": "OK",
+    "statusCode": 200,
+    "date": "Sat, 29 Nov 2025 12:00:00 GMT"
+  },
+  "body": {
+    "total": 578,
+    "componentLocations": [
+      {
+        "id": "CMPLOC:527860909",
+        "bucket": "Component Location Diagrams",
+        "title": "A Pillar Trim Panel",
+        "subtitle": "",
+        "thumbnailHref": "api/source/MOTOR/graphic/10505554?w=240&h=220",
+        "sort": 0
+      },
+      {
+        "id": "CMPLOC:527836125",
+        "bucket": "Component Location Diagrams",
+        "title": "ABS Control Module",
+        "subtitle": "",
+        "thumbnailHref": "api/source/MOTOR/graphic/10505523?w=240&h=220",
+        "sort": 0
+      }
+    ]
+  }
+}
+```
+
+**Example:**
+```bash
+curl https://autolib.web.app/api/motor-proxy/api/source/MOTOR/vehicle/188569%3A13820/components
+```
+
+---
+
+### Procedures
+
+#### `GET /api/source/{contentSource}/vehicle/{vehicleId}/procedures`
+
+Get repair procedures for a vehicle.
+
+**Path Parameters:**
+- `contentSource` (string, required): Content source identifier
+- `vehicleId` (string, required): Vehicle identifier
+
+**Response (Real Example - 2021 Mazda 3):**
+```json
+{
+  "header": {
+    "status": "OK",
+    "statusCode": 200,
+    "date": "Sat, 29 Nov 2025 12:00:00 GMT"
+  },
+  "body": {
+    "total": 186,
+    "procedures": [
+      {
+        "id": "P:546844136",
+        "bucket": "Interior Panel Replacement Procedures",
+        "title": "A Pillar Trim Panel R&R",
+        "subtitle": "",
+        "sort": 0,
+        "parentBucket": "Procedures"
+      },
+      {
+        "id": "P:538499065",
+        "bucket": "Starter & Alternator Replacement Procedures",
+        "title": "Alternator R&R",
+        "subtitle": "With Variable Engine Displacement",
+        "sort": 0,
+        "parentBucket": "Procedures"
+      }
+    ]
+  }
+}
+```
+
+**Example:**
+```bash
+curl https://autolib.web.app/api/motor-proxy/api/source/MOTOR/vehicle/188569%3A13820/procedures
+```
+
+---
+
+### Diagrams (All Types)
+
+#### `GET /api/source/{contentSource}/vehicle/{vehicleId}/diagrams`
+
+Get all diagrams for a vehicle (component locations, wiring diagrams, etc.).
+
+**Path Parameters:**
+- `contentSource` (string, required): Content source identifier
+- `vehicleId` (string, required): Vehicle identifier
+
+**Response (Real Example - 2021 Mazda 3):**
+```json
+{
+  "header": {
+    "status": "OK",
+    "statusCode": 200,
+    "date": "Sat, 29 Nov 2025 12:00:00 GMT"
+  },
+  "body": {
+    "total": 634,
+    "diagrams": [
+      {
+        "id": "CMPLOC:527860909",
+        "bucket": "Component Location Diagrams",
+        "title": "A Pillar Trim Panel",
+        "subtitle": "",
+        "thumbnailHref": "api/source/MOTOR/graphic/10505554?w=240&h=220",
+        "sort": 0
+      }
+    ]
+  }
+}
+```
+
+**Example:**
+```bash
+curl https://autolib.web.app/api/motor-proxy/api/source/MOTOR/vehicle/188569%3A13820/diagrams
+```
+
+---
+
+### Specifications
+
+#### `GET /api/source/{contentSource}/vehicle/{vehicleId}/specs`
+
+Get specifications for a vehicle (torque specs, capacities, etc.).
+
+**Path Parameters:**
+- `contentSource` (string, required): Content source identifier
+- `vehicleId` (string, required): Vehicle identifier
+
+**Response (Real Example - 2021 Mazda 3):**
+```json
+{
+  "header": {
+    "status": "OK",
+    "statusCode": 200,
+    "date": "Sat, 29 Nov 2025 12:00:00 GMT"
+  },
+  "body": {
+    "total": 45,
+    "specs": [
+      {
+        "id": "F:237320787-F:237313052...",
+        "bucket": "Specifications",
+        "title": "Air Conditioning Specifications",
+        "sort": 0
+      },
+      {
+        "id": "SPEC:566679878",
+        "bucket": "Specifications",
+        "title": "Air Intake Specifications",
+        "sort": 0
+      }
+    ]
+  }
+}
+```
+
+**Example:**
+```bash
+curl https://autolib.web.app/api/motor-proxy/api/source/MOTOR/vehicle/188569%3A13820/specs
+```
+
+---
+
+### Categories
+
+#### `GET /api/source/{contentSource}/vehicle/{vehicleId}/categories`
+
+Get a summary of all available content categories and counts for a vehicle.
+
+**Path Parameters:**
+- `contentSource` (string, required): Content source identifier
+- `vehicleId` (string, required): Vehicle identifier
+
+**Response (Real Example - 2021 Mazda 3):**
+```json
+{
+  "header": {
+    "status": "OK",
+    "statusCode": 200,
+    "date": "Sat, 29 Nov 2025 12:00:00 GMT"
+  },
+  "body": {
+    "categories": [
+      { "name": "All", "count": 3426 },
+      { "name": "Procedures", "count": 186 },
+      { "name": "Diagrams", "count": 634 },
+      { "name": "Service Bulletins", "count": 89 },
+      { "name": "Diagnostic Codes", "count": 2145 },
+      { "name": "Maint. Schedules", "count": 1 },
+      { "name": "Specs", "count": 45 },
+      { "name": "Other", "count": 326 }
+    ]
+  }
+}
+```
+
+**Example:**
+```bash
+curl https://autolib.web.app/api/motor-proxy/api/source/MOTOR/vehicle/188569%3A13820/categories
+```
+
+---
+
 ### Labor Operations
 
 #### `GET /api/source/{contentSource}/vehicle/{vehicleId}/labor/{articleId}`
@@ -581,6 +1054,75 @@ Get detailed labor operation information for an article.
 **Example:**
 ```bash
 curl https://motorproxy-erohrfg7qa-uc.a.run.app/api/motor-proxy/api/source/Motor/vehicle/12345/labor/article-123
+```
+
+---
+
+#### `GET /api/source/{contentSource}/vehicle/{vehicleId}/labor-times`
+
+Get estimated labor times for all operations on a vehicle.
+
+**Path Parameters:**
+- `contentSource` (string, required): Content source identifier
+- `vehicleId` (string, required): Vehicle identifier
+
+**Response (Real Example - 2021 Mazda 3):**
+```json
+{
+  "header": {
+    "status": "OK",
+    "statusCode": 200,
+    "date": "Sat, 29 Nov 2025 12:00:00 GMT"
+  },
+  "body": {
+    "total": 186,
+    "note": "Labor times are associated with individual procedures. Use /labor/{articleId} to get labor time for a specific article.",
+    "laborOperations": [
+      {
+        "id": "P:546844136",
+        "title": "A Pillar Trim Panel R&R",
+        "bucket": "Interior Panel Replacement Procedures"
+      }
+    ]
+  }
+}
+```
+
+**Example:**
+```bash
+curl https://autolib.web.app/api/motor-proxy/api/source/MOTOR/vehicle/188569%3A13820/labor-times
+```
+
+---
+
+### Specifications & Fluids
+
+#### `GET /api/source/{contentSource}/vehicle/{vehicleId}/specifications`
+
+Get vehicle specifications (torque specs, capacities, etc.).
+
+**Path Parameters:**
+- `contentSource` (string, required): Content source identifier
+- `vehicleId` (string, required): Vehicle identifier
+
+**Example:**
+```bash
+curl https://autolib.web.app/api/motor-proxy/api/source/MOTOR/vehicle/240532:15296/specifications
+```
+
+---
+
+#### `GET /api/source/{contentSource}/vehicle/{vehicleId}/fluids`
+
+Get fluid specifications and capacities.
+
+**Path Parameters:**
+- `contentSource` (string, required): Content source identifier
+- `vehicleId` (string, required): Vehicle identifier
+
+**Example:**
+```bash
+curl https://autolib.web.app/api/motor-proxy/api/source/MOTOR/vehicle/240532:15296/fluids
 ```
 
 ---
@@ -798,22 +1340,38 @@ Currently, there are no explicit rate limits enforced. However, the following co
 
 ## Examples
 
-### Complete Vehicle Selection Flow
+### Complete Vehicle Selection Flow (Year/Make/Model)
 
 ```bash
 # 1. Get available years
-curl https://motorproxy-erohrfg7qa-uc.a.run.app/api/motor-proxy/api/years
+curl https://autolib.web.app/api/motor-proxy/api/years
 
 # 2. Get makes for 2024
-curl https://motorproxy-erohrfg7qa-uc.a.run.app/api/motor-proxy/api/year/2024/makes
+curl https://autolib.web.app/api/motor-proxy/api/year/2024/makes
 
-# 3. Get models for 2024 Toyota
-curl https://motorproxy-erohrfg7qa-uc.a.run.app/api/motor-proxy/api/year/2024/make/Toyota/models
+# 3. Get models for 2024 BMW
+curl https://autolib.web.app/api/motor-proxy/api/year/2024/make/BMW/models
 
-# 4. Get vehicle details
-curl -X POST https://motorproxy-erohrfg7qa-uc.a.run.app/api/motor-proxy/api/source/Motor/vehicles \
-  -H "Content-Type: application/json" \
-  -d '{"vehicleIds": ["12345"]}'
+# 4. Get vehicle name
+curl https://autolib.web.app/api/motor-proxy/api/source/MOTOR/240532:15296/name
+```
+
+### Complete Vehicle Flow (VIN-based)
+
+```bash
+# 1. Decode VIN to get vehicle info
+curl https://autolib.web.app/api/motor-proxy/api/vin/1HGCV1F34JA012345/vehicle
+
+# Response: { "body": { "vehicleId": "2018:ACCORD", "contentSource": "Honda" } }
+
+# 2. Get vehicle name
+curl https://autolib.web.app/api/motor-proxy/api/source/Honda/2018:ACCORD/name
+
+# 3. Get articles
+curl "https://autolib.web.app/api/motor-proxy/api/source/Honda/vehicle/2018:ACCORD/articles/v2"
+
+# 4. Get parts
+curl "https://autolib.web.app/api/motor-proxy/api/source/Honda/vehicle/2018:ACCORD/parts"
 ```
 
 ### Search and Retrieve Article
@@ -833,28 +1391,49 @@ curl https://motorproxy-erohrfg7qa-uc.a.run.app/api/motor-proxy/api/source/Motor
 ### JavaScript/TypeScript Example
 
 ```typescript
-const BASE_URL = 'https://motorproxy-erohrfg7qa-uc.a.run.app/api/motor-proxy';
+const BASE_URL = 'https://autolib.web.app/api/motor-proxy';
+
+// Decode VIN
+async function decodeVin(vin: string) {
+  const response = await fetch(`${BASE_URL}/api/vin/${vin}/vehicle`);
+  const data = await response.json();
+  return data.body; // { vehicleId, contentSource, motorVehicleId }
+}
 
 // Get years
 async function getYears() {
   const response = await fetch(`${BASE_URL}/api/years`);
   const data = await response.json();
-  return data.data;
+  return data.body;
+}
+
+// Get vehicle name
+async function getVehicleName(contentSource: string, vehicleId: string) {
+  const response = await fetch(`${BASE_URL}/api/source/${contentSource}/${vehicleId}/name`);
+  const data = await response.json();
+  return data.body; // "2024 BMW 230i Base 2.0L L4..."
 }
 
 // Search articles
-async function searchArticles(vehicleId: string, searchTerm: string) {
-  const url = `${BASE_URL}/api/source/Motor/vehicle/${vehicleId}/articles/v2?searchTerm=${encodeURIComponent(searchTerm)}`;
+async function searchArticles(contentSource: string, vehicleId: string, searchTerm: string) {
+  const url = `${BASE_URL}/api/source/${contentSource}/vehicle/${vehicleId}/articles/v2?searchTerm=${encodeURIComponent(searchTerm)}`;
   const response = await fetch(url);
   const data = await response.json();
-  return data;
+  return data.body;
 }
 
-// Get article content
-async function getArticle(vehicleId: string, articleId: string) {
-  const response = await fetch(`${BASE_URL}/api/source/Motor/vehicle/${vehicleId}/article/${articleId}`);
-  const html = await response.text();
-  return html;
+// Get parts
+async function getParts(contentSource: string, vehicleId: string) {
+  const response = await fetch(`${BASE_URL}/api/source/${contentSource}/vehicle/${vehicleId}/parts`);
+  const data = await response.json();
+  return data.body;
+}
+
+// Get DTCs
+async function getDtcs(contentSource: string, vehicleId: string) {
+  const response = await fetch(`${BASE_URL}/api/source/${contentSource}/vehicle/${vehicleId}/dtcs`);
+  const data = await response.json();
+  return data.body;
 }
 ```
 
@@ -863,25 +1442,41 @@ async function getArticle(vehicleId: string, articleId: string) {
 ```python
 import requests
 
-BASE_URL = 'https://motorproxy-erohrfg7qa-uc.a.run.app/api/motor-proxy'
+BASE_URL = 'https://autolib.web.app/api/motor-proxy'
+
+# Decode VIN
+def decode_vin(vin):
+    response = requests.get(f'{BASE_URL}/api/vin/{vin}/vehicle')
+    return response.json()['body']
 
 # Get years
 def get_years():
     response = requests.get(f'{BASE_URL}/api/years')
-    return response.json()['data']
+    return response.json()['body']
+
+# Get vehicle name
+def get_vehicle_name(content_source, vehicle_id):
+    response = requests.get(f'{BASE_URL}/api/source/{content_source}/{vehicle_id}/name')
+    return response.json()['body']
 
 # Search articles
-def search_articles(vehicle_id, search_term):
-    url = f'{BASE_URL}/api/source/Motor/vehicle/{vehicle_id}/articles/v2'
+def search_articles(content_source, vehicle_id, search_term=''):
+    url = f'{BASE_URL}/api/source/{content_source}/vehicle/{vehicle_id}/articles/v2'
     params = {'searchTerm': search_term}
     response = requests.get(url, params=params)
-    return response.json()
+    return response.json()['body']
 
-# Get article content
-def get_article(vehicle_id, article_id):
-    url = f'{BASE_URL}/api/source/Motor/vehicle/{vehicle_id}/article/{article_id}'
+# Get parts with prices
+def get_parts(content_source, vehicle_id):
+    url = f'{BASE_URL}/api/source/{content_source}/vehicle/{vehicle_id}/parts'
     response = requests.get(url)
-    return response.text
+    return response.json()['body']
+
+# Get DTCs
+def get_dtcs(content_source, vehicle_id):
+    url = f'{BASE_URL}/api/source/{content_source}/vehicle/{vehicle_id}/dtcs'
+    response = requests.get(url)
+    return response.json()['body']
 ```
 
 ---
@@ -924,6 +1519,28 @@ For issues or questions:
 
 ---
 
-**Last Updated:** January 2024  
-**API Version:** 1.0.0
+**Last Updated:** November 28, 2025  
+**API Version:** 2.0.0
+
+## Authentication Architecture
+
+The proxy uses a multi-layer authentication approach:
+
+```
+┌──────────────────┐     ┌─────────────────┐     ┌──────────────────┐
+│   Your App       │────>│  autolib.web.app│────>│ sites.motor.com  │
+│   (Frontend)     │     │    (Proxy)      │     │    (Motor M1)    │
+└──────────────────┘     └─────────────────┘     └──────────────────┘
+         │                       │                       │
+    No auth needed         Cookie Auth            HMAC-SHA256
+                          (automatic)            (server-side)
+```
+
+**Key Points:**
+- No authentication required from your frontend
+- Proxy handles all authentication automatically via Playwright
+- Sessions are cached and renewed as needed
+- All requests use shared session for efficiency
+
+For technical details on the HMAC authentication, see `HMAC_AUTH_ANALYSIS.md`.
 

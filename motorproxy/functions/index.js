@@ -179,6 +179,743 @@ app.get('/health', (req, res) => {
   });
 });
 
+// ============================================================
+// DIRECT API.MOTOR.COM ACCESS (Token Authentication)
+// ============================================================
+
+// Expose current token credentials (for debugging)
+app.get('/api/motor-proxy/credentials', async (req, res) => {
+  try {
+    const credentials = await ensureAuthenticated();
+    
+    // Return sanitized credentials (no full cookie string)
+    res.json({
+      publicKey: credentials.PublicKey,
+      apiTokenKey: credentials.ApiTokenKey,
+      apiTokenValue: credentials.ApiTokenValue,
+      expiration: credentials.ApiTokenExpiration,
+      userName: credentials.UserName,
+      subscriptions: credentials.Subscriptions,
+      // For Token auth header
+      tokenAuthHeader: `Token ${credentials.PublicKey}:${credentials.ApiTokenValue}`
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Not authenticated', message: error.message });
+  }
+});
+
+// Direct proxy to api.motor.com using Token authentication
+// Usage: /api/motor-proxy/direct/v1/HelloWorld
+app.all('/api/motor-proxy/direct/*', async (req, res) => {
+  try {
+    console.log(`[DIRECT-API] ${req.method} ${req.url}`);
+    
+    const credentials = await ensureAuthenticated();
+    
+    // Extract path after /direct/
+    const apiPath = req.url.replace('/api/motor-proxy/direct', '');
+    const targetUrl = `https://api.motor.com${apiPath}`;
+    
+    console.log(`[DIRECT-API] Token auth to: ${targetUrl}`);
+    console.log(`[DIRECT-API] PublicKey: ${credentials.PublicKey}`);
+    console.log(`[DIRECT-API] TokenKey: ${credentials.ApiTokenKey}`);
+    
+    // Generate timestamp (Unix epoch)
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    
+    // Use Token authentication with timestamp
+    const authHeader = `Token ${credentials.PublicKey}:${credentials.ApiTokenValue}`;
+    
+    const headers = {
+      'Authorization': authHeader,
+      'X-Date': timestamp,
+      'Date': new Date().toUTCString(),
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    };
+    
+    console.log(`[DIRECT-API] Timestamp: ${timestamp}`);
+    console.log(`[DIRECT-API] Auth: ${authHeader}`);
+    
+    const response = await axios({
+      method: req.method,
+      url: targetUrl,
+      headers: headers,
+      data: req.body,
+      timeout: 30000,
+      validateStatus: () => true
+    });
+    
+    console.log(`[DIRECT-API] Response: ${response.status}`);
+    console.log(`[DIRECT-API] Body: ${JSON.stringify(response.data).substring(0, 200)}`);
+    
+    // Forward response
+    res.status(response.status);
+    
+    // Copy headers
+    if (response.headers['content-type']) {
+      res.set('Content-Type', response.headers['content-type']);
+    }
+    res.set('Access-Control-Allow-Origin', '*');
+    
+    res.send(response.data);
+    
+  } catch (error) {
+    console.error('[DIRECT-API] Error:', error.message);
+    res.status(500).json({ error: 'Direct API call failed', message: error.message });
+  }
+});
+
+// HMAC-SHA256 signing for Shared auth scheme
+// This generates signatures for api.motor.com if we had the private key
+// Since private key is server-side only, this is for reference/testing
+const crypto = require('crypto');
+
+function generateHmacSignature(privateKey, publicKey, method, timestamp, uriPath) {
+  const signatureData = `${publicKey}\n${method}\n${timestamp}\n${uriPath}`;
+  const hmac = crypto.createHmac('sha256', privateKey);
+  hmac.update(signatureData);
+  return hmac.digest('base64');
+}
+
+// Endpoint to test HMAC signature generation (requires private key)
+app.post('/api/motor-proxy/sign', async (req, res) => {
+  try {
+    const { privateKey, method, uriPath } = req.body;
+    
+    if (!privateKey) {
+      return res.status(400).json({ error: 'privateKey required in body' });
+    }
+    
+    const credentials = await ensureAuthenticated();
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    
+    const signature = generateHmacSignature(
+      privateKey,
+      credentials.PublicKey,
+      method || 'GET',
+      timestamp,
+      uriPath || '/v1/HelloWorld'
+    );
+    
+    res.json({
+      publicKey: credentials.PublicKey,
+      timestamp: timestamp,
+      signature: signature,
+      authHeader: `Shared ${credentials.PublicKey}:${signature}`,
+      signatureData: `${credentials.PublicKey}\n${method || 'GET'}\n${timestamp}\n${uriPath || '/v1/HelloWorld'}`
+    });
+    
+  } catch (error) {
+    res.status(500).json({ error: 'Signing failed', message: error.message });
+  }
+});
+
+// Fetch connector URL (the pre-signed URL with HMAC signature)
+app.get('/api/motor-proxy/connector-url', async (req, res) => {
+  try {
+    const credentials = await ensureAuthenticated();
+    
+    // Get the vehicles page to look for connector URL
+    const targetUrl = 'https://sites.motor.com/m1/vehicles';
+    
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'text/html,application/xhtml+xml',
+        'Cookie': credentials._cookieString,
+        'Referer': 'https://sites.motor.com/m1'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+    
+    console.log(`[CONNECTOR] Fetched page: ${response.status}`);
+    
+    const html = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+    
+    // Extract signature parameters
+    const connectorMatch = html.match(/connector\?[^"'<>\s]+/gi);
+    const sigMatch = html.match(/Sig=([A-Za-z0-9+/=]+)/gi);
+    
+    res.json({
+      status: response.status,
+      publicKey: credentials.PublicKey,
+      apiTokenValue: credentials.ApiTokenValue,
+      expiration: credentials.ApiTokenExpiration,
+      connectorUrls: connectorMatch || [],
+      signatures: sigMatch || [],
+      htmlLength: html.length
+    });
+    
+  } catch (error) {
+    console.error('[CONNECTOR] Error:', error.message);
+    res.status(500).json({ error: 'Failed', message: error.message });
+  }
+});
+
+// ============================================================
+// NEW SWAGGER API ENDPOINTS
+// ============================================================
+
+// VIN Search - GET /api/motor-proxy/api/vin/{vin}
+// Returns vehicle info from VIN (correct path: /api/vin/{vin}/vehicle)
+app.get('/api/motor-proxy/api/vin/:vin', async (req, res) => {
+  try {
+    const { vin } = req.params;
+    console.log(`[VIN] Searching for VIN: ${vin}`);
+    
+    const credentials = await ensureAuthenticated();
+    
+    // CORRECT Motor API path for VIN search
+    const targetUrl = `https://sites.motor.com/m1/api/vin/${vin}/vehicle`;
+    
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+    
+    console.log(`[VIN] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+    
+  } catch (error) {
+    console.error('[VIN] Error:', error.message);
+    res.status(500).json({ error: 'VIN search failed', message: error.message });
+  }
+});
+
+// VIN Decode - GET /api/motor-proxy/api/vin-decode/{vin}
+// Alias for VIN search - both use the same endpoint
+app.get('/api/motor-proxy/api/vin-decode/:vin', async (req, res) => {
+  try {
+    const { vin } = req.params;
+    console.log(`[VIN-DECODE] Decoding VIN: ${vin}`);
+    
+    const credentials = await ensureAuthenticated();
+    
+    // Use the correct Motor API path
+    const targetUrl = `https://sites.motor.com/m1/api/vin/${vin}/vehicle`;
+    
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+    
+    console.log(`[VIN-DECODE] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+    
+  } catch (error) {
+    console.error('[VIN-DECODE] Error:', error.message);
+    res.status(500).json({ error: 'VIN decode failed', message: error.message });
+  }
+});
+
+// ============================================================
+// FILTERED ARTICLE ENDPOINTS (DTCs, TSBs, etc.)
+// These filter the /articles/v2 response by bucket type
+// ============================================================
+
+// Helper function to fetch and filter articles by bucket
+async function fetchArticlesByBucket(credentials, contentSource, vehicleId, motorVehicleId, bucketName) {
+  const params = new URLSearchParams({ searchTerm: '' });
+  if (motorVehicleId) {
+    params.append('motorVehicleId', motorVehicleId);
+  }
+  
+  const targetUrl = `https://sites.motor.com/m1/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/articles/v2?${params}`;
+  
+  const response = await axios({
+    method: 'GET',
+    url: targetUrl,
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+      'Accept': 'application/json',
+      'Cookie': credentials._cookieString,
+      'X-Requested-With': 'XMLHttpRequest',
+      'Referer': 'https://sites.motor.com/m1/vehicles'
+    },
+    timeout: 30000,
+    validateStatus: () => true
+  });
+  
+  if (response.status !== 200 || !response.data.body) {
+    return { articles: [], filterTabs: [], total: 0 };
+  }
+  
+  const body = response.data.body;
+  const allArticles = body.articleDetails || [];
+  
+  // Filter by bucket name (case-insensitive partial match)
+  const filtered = allArticles.filter(a => 
+    a.bucket && a.bucket.toLowerCase().includes(bucketName.toLowerCase())
+  );
+  
+  // Get the count from filterTabs
+  const tab = (body.filterTabs || []).find(t => 
+    t.name.toLowerCase().includes(bucketName.toLowerCase())
+  );
+  
+  return {
+    articles: filtered,
+    filterTabs: body.filterTabs || [],
+    total: tab ? tab.articlesCount : filtered.length
+  };
+}
+
+// DTCs - GET /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/dtcs
+// Returns Diagnostic Trouble Codes filtered from articles/v2
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/dtcs', async (req, res) => {
+  try {
+    const { contentSource, vehicleId } = req.params;
+    const { motorVehicleId, includeOther } = req.query;
+    console.log(`[DTC] Getting DTCs for ${contentSource}/${vehicleId} (motorVehicleId: ${motorVehicleId || 'none'})`);
+    
+    const credentials = await ensureAuthenticated();
+    
+    // Fetch all articles
+    const params = new URLSearchParams({ searchTerm: '' });
+    if (motorVehicleId) {
+      params.append('motorVehicleId', motorVehicleId);
+    }
+    
+    const targetUrl = `https://sites.motor.com/m1/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/articles/v2?${params}`;
+    
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+    
+    if (response.status !== 200 || !response.data.body) {
+      return res.status(response.status).json(response.data);
+    }
+    
+    const body = response.data.body;
+    const allArticles = body.articleDetails || [];
+    
+    // Filter for DTCs - bucket = "Diagnostic Trouble Codes" or "Other Diagnostics"
+    const dtcArticles = allArticles.filter(a => 
+      a.bucket === 'Diagnostic Trouble Codes' || 
+      (includeOther === 'true' && a.bucket === 'Other Diagnostics')
+    );
+    
+    // Get count from filterTabs
+    const dtcTab = (body.filterTabs || []).find(t => t.name === 'Diagnostic Codes');
+    
+    console.log(`[DTC] Found ${dtcArticles.length} DTCs`);
+    
+    res.json({
+      header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
+      body: {
+        total: dtcTab ? dtcTab.articlesCount : dtcArticles.length,
+        dtcs: dtcArticles.map(a => ({
+          id: a.id,
+          code: a.code || (a.title || '').match(/^[A-Z]?\d+[-\d]*/)?.[0] || '',
+          description: a.description || a.title || '',
+          subtitle: a.subtitle || '',
+          bucket: a.bucket || ''
+        }))
+      }
+    });
+    
+  } catch (error) {
+    console.error('[DTC] Error:', error.message);
+    res.status(500).json({ error: 'DTCs fetch failed', message: error.message });
+  }
+});
+
+// TSBs - GET /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/tsbs
+// Returns Technical Service Bulletins filtered from articles/v2
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/tsbs', async (req, res) => {
+  try {
+    const { contentSource, vehicleId } = req.params;
+    const { motorVehicleId } = req.query;
+    console.log(`[TSB] Getting TSBs for ${contentSource}/${vehicleId}`);
+    
+    const credentials = await ensureAuthenticated();
+    
+    // Use exact bucket name: "Technical Service Bulletins"
+    const result = await fetchArticlesByBucket(credentials, contentSource, vehicleId, motorVehicleId, 'Technical Service Bulletins');
+    
+    console.log(`[TSB] Found ${result.articles.length} TSBs`);
+    
+    res.json({
+      header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
+      body: {
+        total: result.total,
+        tsbs: result.articles.map(a => ({
+          id: a.id,
+          bulletinNumber: a.bulletinNumber || '',
+          title: a.title,
+          subtitle: a.subtitle || '',
+          releaseDate: a.releaseDate || ''
+        }))
+      }
+    });
+    
+  } catch (error) {
+    console.error('[TSB] Error:', error.message);
+    res.status(500).json({ error: 'TSBs fetch failed', message: error.message });
+  }
+});
+
+// Procedures - GET /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/procedures
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/procedures', async (req, res) => {
+  try {
+    const { contentSource, vehicleId } = req.params;
+    const { motorVehicleId } = req.query;
+    console.log(`[PROCEDURES] Getting procedures for ${contentSource}/${vehicleId}`);
+    
+    const credentials = await ensureAuthenticated();
+    
+    const result = await fetchArticlesByBucket(credentials, contentSource, vehicleId, motorVehicleId, 'Procedure');
+    
+    console.log(`[PROCEDURES] Found ${result.articles.length} procedures`);
+    
+    res.json({
+      header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
+      body: {
+        total: result.total,
+        procedures: result.articles
+      }
+    });
+    
+  } catch (error) {
+    console.error('[PROCEDURES] Error:', error.message);
+    res.status(500).json({ error: 'Procedures fetch failed', message: error.message });
+  }
+});
+
+// Diagrams - GET /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/diagrams
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/diagrams', async (req, res) => {
+  try {
+    const { contentSource, vehicleId } = req.params;
+    const { motorVehicleId } = req.query;
+    console.log(`[DIAGRAMS] Getting diagrams for ${contentSource}/${vehicleId}`);
+    
+    const credentials = await ensureAuthenticated();
+    
+    const result = await fetchArticlesByBucket(credentials, contentSource, vehicleId, motorVehicleId, 'Diagram');
+    
+    console.log(`[DIAGRAMS] Found ${result.articles.length} diagrams`);
+    
+    res.json({
+      header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
+      body: {
+        total: result.total,
+        diagrams: result.articles
+      }
+    });
+    
+  } catch (error) {
+    console.error('[DIAGRAMS] Error:', error.message);
+    res.status(500).json({ error: 'Diagrams fetch failed', message: error.message });
+  }
+});
+
+// Specs - GET /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/specs
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/specs', async (req, res) => {
+  try {
+    const { contentSource, vehicleId } = req.params;
+    const { motorVehicleId } = req.query;
+    console.log(`[SPECS] Getting specs for ${contentSource}/${vehicleId}`);
+    
+    const credentials = await ensureAuthenticated();
+    
+    const result = await fetchArticlesByBucket(credentials, contentSource, vehicleId, motorVehicleId, 'Spec');
+    
+    console.log(`[SPECS] Found ${result.articles.length} specs`);
+    
+    res.json({
+      header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
+      body: {
+        total: result.total,
+        specs: result.articles
+      }
+    });
+    
+  } catch (error) {
+    console.error('[SPECS] Error:', error.message);
+    res.status(500).json({ error: 'Specs fetch failed', message: error.message });
+  }
+});
+
+// Article Categories Summary - GET /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/categories
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/categories', async (req, res) => {
+  try {
+    const { contentSource, vehicleId } = req.params;
+    const { motorVehicleId } = req.query;
+    console.log(`[CATEGORIES] Getting article categories for ${contentSource}/${vehicleId}`);
+    
+    const credentials = await ensureAuthenticated();
+    
+    const params = new URLSearchParams({ searchTerm: '' });
+    if (motorVehicleId) {
+      params.append('motorVehicleId', motorVehicleId);
+    }
+    
+    const targetUrl = `https://sites.motor.com/m1/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/articles/v2?${params}`;
+    
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+    
+    if (response.status !== 200) {
+      return res.status(response.status).json(response.data);
+    }
+    
+    const filterTabs = response.data.body?.filterTabs || [];
+    
+    res.json({
+      header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
+      body: {
+        categories: filterTabs.map(t => ({
+          name: t.name,
+          count: t.articlesCount,
+          buckets: t.buckets
+        }))
+      }
+    });
+    
+  } catch (error) {
+    console.error('[CATEGORIES] Error:', error.message);
+    res.status(500).json({ error: 'Categories fetch failed', message: error.message });
+  }
+});
+
+// OLD DTCs endpoint (kept for backwards compatibility, redirects to new implementation)
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/dtcs-old', async (req, res) => {
+  try {
+    const { contentSource, vehicleId } = req.params;
+    const decodedVehicleId = decodeURIComponent(vehicleId);
+    console.log(`[DTC-OLD] Getting DTCs for ${contentSource}/${decodedVehicleId}`);
+    
+    const credentials = await ensureAuthenticated();
+    
+    // Motor API path for DTCs (this path returns HTML, not JSON)
+    const targetUrl = `https://sites.motor.com/m1/api/source/${contentSource}/vehicle/${vehicleId}/diagnostic-trouble-codes`;
+    
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': `https://sites.motor.com/m1/source/${contentSource}/vehicle/${vehicleId}`
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+    
+    console.log(`[DTC] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+    
+  } catch (error) {
+    console.error('[DTC] Error:', error.message);
+    res.status(500).json({ error: 'DTC retrieval failed', message: error.message });
+  }
+});
+
+// DTC Detail - GET /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/dtc/{articleId}
+// DTCs are articles - redirect to article endpoint
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/dtc/:articleId', async (req, res) => {
+  const { contentSource, vehicleId, articleId } = req.params;
+  res.redirect(`/api/motor-proxy/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/article/${articleId}`);
+});
+
+// NOTE: TSBs endpoint is defined above using the fetchArticlesByBucket helper
+// The /tsbs route filters articles from /articles/v2 where bucket = "Service Bulletin"
+
+// TSB/DTC Detail - These use the standard article endpoint since DTCs/TSBs are articles
+// GET /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/tsb/{articleId}
+// Redirects to the standard article endpoint
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/tsb/:articleId', async (req, res) => {
+  // TSBs are articles - redirect to article endpoint
+  const { contentSource, vehicleId, articleId } = req.params;
+  res.redirect(`/api/motor-proxy/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/article/${articleId}`);
+});
+
+// Wiring Diagrams - GET /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/wiring
+// Filters diagrams from articles/v2 - wiring diagrams are in the "Diagrams" category
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/wiring', async (req, res) => {
+  try {
+    const { contentSource, vehicleId } = req.params;
+    const { motorVehicleId } = req.query;
+    console.log(`[WIRING] Getting wiring diagrams for ${contentSource}/${vehicleId}`);
+    
+    const credentials = await ensureAuthenticated();
+    
+    // Wiring diagrams are part of the "Diagrams" category in articles
+    const result = await fetchArticlesByBucket(credentials, contentSource, vehicleId, motorVehicleId, 'Diagram');
+    
+    // Further filter for wiring-specific diagrams if possible
+    const wiringDiagrams = result.articles.filter(a => 
+      a.title?.toLowerCase().includes('wiring') || 
+      a.bucket?.toLowerCase().includes('wiring')
+    );
+    
+    console.log(`[WIRING] Found ${wiringDiagrams.length} wiring diagrams out of ${result.articles.length} total diagrams`);
+    
+    res.json({
+      header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
+      body: {
+        total: wiringDiagrams.length,
+        allDiagramsTotal: result.total,
+        wiringDiagrams: wiringDiagrams
+      }
+    });
+    
+  } catch (error) {
+    console.error('[WIRING] Error:', error.message);
+    res.status(500).json({ error: 'Wiring diagrams retrieval failed', message: error.message });
+  }
+});
+
+// Component Locations - GET /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/components
+// Filters component location diagrams from articles/v2
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/components', async (req, res) => {
+  try {
+    const { contentSource, vehicleId } = req.params;
+    const { motorVehicleId } = req.query;
+    console.log(`[COMPONENTS] Getting component locations for ${contentSource}/${vehicleId}`);
+    
+    const credentials = await ensureAuthenticated();
+    
+    // Component locations are part of the "Diagrams" category
+    const result = await fetchArticlesByBucket(credentials, contentSource, vehicleId, motorVehicleId, 'Diagram');
+    
+    // Filter for component location diagrams
+    const componentDiagrams = result.articles.filter(a => 
+      a.title?.toLowerCase().includes('component') || 
+      a.title?.toLowerCase().includes('location') ||
+      a.bucket?.toLowerCase().includes('component')
+    );
+    
+    console.log(`[COMPONENTS] Found ${componentDiagrams.length} component diagrams out of ${result.articles.length} total diagrams`);
+    
+    res.json({
+      header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
+      body: {
+        total: componentDiagrams.length,
+        allDiagramsTotal: result.total,
+        componentLocations: componentDiagrams
+      }
+    });
+    
+  } catch (error) {
+    console.error('[COMPONENTS] Error:', error.message);
+    res.status(500).json({ error: 'Component locations retrieval failed', message: error.message });
+  }
+});
+
+// Estimated Work Times / Labor - GET /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/labor-times
+// Note: Labor times are typically associated with specific procedures, not a separate endpoint
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/labor-times', async (req, res) => {
+  try {
+    const { contentSource, vehicleId } = req.params;
+    const { motorVehicleId } = req.query;
+    console.log(`[LABOR] Getting labor times for ${contentSource}/${vehicleId}`);
+    
+    const credentials = await ensureAuthenticated();
+    
+    // Labor times are associated with procedures - get procedures
+    const result = await fetchArticlesByBucket(credentials, contentSource, vehicleId, motorVehicleId, 'Procedure');
+    
+    console.log(`[LABOR] Found ${result.articles.length} procedures (labor times are per-article)`);
+    
+    res.json({
+      header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
+      body: {
+        note: 'Labor times are associated with individual procedures. Use /labor/{articleId} to get labor time for a specific article.',
+        total: result.total,
+        procedures: result.articles.slice(0, 50) // Return first 50 as sample
+      }
+    });
+    
+  } catch (error) {
+    console.error('[LABOR] Error:', error.message);
+    res.status(500).json({ error: 'Labor times retrieval failed', message: error.message });
+  }
+});
+
+// OLD Estimated Work Times endpoint (for backwards compatibility - tries direct path)
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/labor-times-direct', async (req, res) => {
+  try {
+    const { contentSource, vehicleId } = req.params;
+    console.log(`[LABOR-DIRECT] Getting labor times for ${contentSource}/${vehicleId}`);
+    
+    const credentials = await ensureAuthenticated();
+    
+    const targetUrl = `https://sites.motor.com/m1/api/source/${contentSource}/vehicle/${vehicleId}/estimated-work-times`;
+    
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': `https://sites.motor.com/m1/source/${contentSource}/vehicle/${vehicleId}`
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+    
+    console.log(`[LABOR] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+    
+  } catch (error) {
+    console.error('[LABOR] Error:', error.message);
+    res.status(500).json({ error: 'Labor times retrieval failed', message: error.message });
+  }
+});
+
+// ============================================================
+// END NEW ENDPOINTS
+// ============================================================
+
 // AI-powered article formatting enhancement endpoint
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const admin = require('firebase-admin');

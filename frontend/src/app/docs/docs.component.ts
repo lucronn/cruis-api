@@ -34,7 +34,7 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // New Navigation State
     activePill: string = 'All';
-    pillFilters: string[] = ['All', 'Maintenance', 'Brakes', 'Engine', 'Transmission', 'Electrical', 'HVAC', 'Suspension', 'Body'];
+    pillFilters: string[] = ['All', 'Maintenance', 'Updates', 'DTCs', 'TSBs', 'Wiring', 'Labor', 'Brakes', 'Engine', 'Transmission', 'Electrical', 'HVAC', 'Suspension', 'Body'];
 
     // HUD Data
     hudStats: any[] = [];
@@ -60,14 +60,37 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     loadingName = true;
     error: string = '';
 
+    // Image Lightbox State
+    expandedImage: { src: string, alt: string } | null = null;
+
+    expandImage(src: string, alt: string) {
+        this.expandedImage = { src, alt };
+    }
+
+    closeImage() {
+        this.expandedImage = null;
+    }
+
     // Mini 3D car
     private miniScene!: THREE.Scene;
     private miniCamera!: THREE.PerspectiveCamera;
     private miniRenderer!: THREE.WebGLRenderer;
     private miniCarGroup!: THREE.Group;
     private miniFrameId: number = 0;
-    // Labor Data
+
+    // Feature Data
     laborData: any = null;
+    dtcData: any[] = [];
+    tsbData: any[] = [];
+    wiringData: any[] = [];
+    componentLocations: any[] = [];
+
+    // New API Data
+    maintenanceData: { frequency: any[], indicators: any[], intervals: any[] } = { frequency: [], indicators: [], intervals: [] };
+    trackChangeQuarters: any[] = [];
+    trackChangeDeltas: any[] = [];
+    selectedQuarter: string = '';
+    vehicleInfo: any = null;
 
     constructor(
         private route: ActivatedRoute,
@@ -186,7 +209,169 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     selectPill(pill: string) {
         this.activePill = pill;
-        this.filterArticlesByPill();
+        this.error = null;
+
+        switch (pill) {
+            case 'DTCs':
+                this.loadDtcs();
+                break;
+            case 'TSBs':
+                this.loadTsbs();
+                break;
+            case 'Wiring':
+                this.loadWiring();
+                break;
+            case 'Labor':
+                this.loadLabor();
+                break;
+            case 'Updates':
+                this.loadTrackChanges();
+                break;
+            case 'Maintenance':
+                this.loadMaintenance();
+                break;
+            default:
+                this.filterArticlesByPill();
+                break;
+        }
+    }
+
+    loadMaintenance() {
+        this.loading = true;
+
+        // Load all maintenance data types in parallel
+        // Use forkJoin if available or just nested subscribes for simplicity in this context
+        // For now, we'll just load them sequentially or use a simple approach
+
+        this.motorApi.getMaintenanceByFrequency(this.contentSource, this.vehicleId).subscribe(
+            (res: any) => this.maintenanceData.frequency = res?.data || []
+        );
+
+        this.motorApi.getMaintenanceByIndicators(this.contentSource, this.vehicleId).subscribe(
+            (res: any) => this.maintenanceData.indicators = res?.data || []
+        );
+
+        // Default to a common interval like 30k miles for initial view
+        this.motorApi.getMaintenanceByIntervals(this.contentSource, this.vehicleId, 'Mileage', 30000).subscribe(
+            (res: any) => {
+                // If filtered by interval, it might return a direct list or wrapped in data
+                // Based on other endpoints, let's assume wrapped in data if it follows the pattern
+                // or check if it's an array directly.
+                this.maintenanceData.intervals = Array.isArray(res) ? res : (res?.data || []);
+                this.loading = false;
+            },
+            (err) => {
+                console.error('Error loading maintenance:', err);
+                this.loading = false;
+            }
+        );
+    }
+
+    loadTrackChanges() {
+        this.loading = true;
+        this.motorApi.getTrackChangeQuarters().subscribe(
+            (res: any) => {
+                // API returns array of strings directly
+                this.trackChangeQuarters = Array.isArray(res) ? res : (res?.quarters || []);
+                if (this.trackChangeQuarters.length > 0) {
+                    this.selectedQuarter = this.trackChangeQuarters[0];
+                    this.loadDeltaReport(this.selectedQuarter);
+                } else {
+                    this.loading = false;
+                }
+            },
+            (err) => {
+                console.error('Error loading quarters:', err);
+                this.error = 'Failed to load update history.';
+                this.loading = false;
+            }
+        );
+    }
+
+    loadDeltaReport(quarter: string) {
+        this.loading = true;
+        this.selectedQuarter = quarter;
+        this.motorApi.getTrackChangeDeltaReport(this.vehicleId, quarter).subscribe(
+            (res: any) => {
+                this.trackChangeDeltas = res?.changes || [];
+                this.loading = false;
+            },
+            (err) => {
+                console.error('Error loading delta report:', err);
+                this.loading = false;
+            }
+        );
+    }
+
+    loadVehicleInfo() {
+        this.motorApi.getMotorVehicles(this.contentSource, this.vehicleId).subscribe(
+            (res: any) => {
+                const vehicles = res?.data || [];
+                if (vehicles.length > 0) {
+                    this.vehicleInfo = vehicles[0]; // Use first match
+                }
+            }
+        );
+    }
+
+    loadDtcs() {
+        this.loading = true;
+        this.motorApi.getDtcs(this.contentSource, this.vehicleId).subscribe(
+            (response: any) => {
+                this.dtcData = response || [];
+                this.loading = false;
+            },
+            (err: any) => {
+                console.error('Error loading DTCs:', err);
+                this.error = 'Failed to load Diagnostic Trouble Codes.';
+                this.loading = false;
+            }
+        );
+    }
+
+    loadTsbs() {
+        this.loading = true;
+        this.motorApi.getTsbs(this.contentSource, this.vehicleId).subscribe(
+            (response: any) => {
+                this.tsbData = response || [];
+                this.loading = false;
+            },
+            (err: any) => {
+                console.error('Error loading TSBs:', err);
+                this.error = 'Failed to load Technical Service Bulletins.';
+                this.loading = false;
+            }
+        );
+    }
+
+    loadWiring() {
+        this.loading = true;
+        this.motorApi.getWiringDiagrams(this.contentSource, this.vehicleId).subscribe(
+            (response: any) => {
+                this.wiringData = response || [];
+                this.loading = false;
+            },
+            (err: any) => {
+                console.error('Error loading Wiring Diagrams:', err);
+                this.error = 'Failed to load Wiring Diagrams.';
+                this.loading = false;
+            }
+        );
+    }
+
+    loadLabor() {
+        this.loading = true;
+        this.motorApi.getLaborTimes(this.contentSource, this.vehicleId).subscribe(
+            (response: any) => {
+                this.laborData = response || [];
+                this.loading = false;
+            },
+            (err: any) => {
+                console.error('Error loading Labor Times:', err);
+                this.error = 'Failed to load Labor Times.';
+                this.loading = false;
+            }
+        );
     }
 
     filterArticlesByPill() {
@@ -332,62 +517,51 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     locateComponent(article: any) {
         this.viewingArticle = article;
         this.loadingArticle = true;
-        this.loadingMessage = 'Locating components...';
+        this.loadingMessage = 'Loading component locations...';
         this.articleContent = '';
 
-        this.motorApi.getComponentLocations(this.contentSource, this.vehicleId).subscribe(
-            (responseString: string) => {
-                let locations = [];
-                try {
-                    const response = JSON.parse(responseString);
-                    locations = response.body || [];
-                } catch (e) {
-                    console.error('Failed to parse locations JSON:', e);
-                    // It's likely HTML or error text
+        console.log('DocsComponent: Requesting component locations for vehicle:', this.vehicleId);
+        this.motorApi.getComponentLocationsV3(this.contentSource, this.vehicleId).subscribe(
+            (response: any) => {
+                // API V3 returns { componentLocations: [...] }
+                const locations = response?.componentLocations || response || [];
+
+                // Filter locations relevant to the current article
+                const stopWords = ['remove', 'install', 'r&r', 'replace', 'check', 'inspect', 'the', 'a', 'an', 'for', 'of', 'with', 'and', 'to', 'in', 'on', 'at', 'assembly', 'system'];
+                const searchTerms = article.title.toLowerCase().split(/[\s,-]+/)
+                    .filter((w: string) => w.length > 2 && !stopWords.includes(w));
+
+                const relevantLocations = Array.isArray(locations) ? locations.filter((loc: any) => {
+                    const text = (loc.title || loc.description || loc.name || '').toLowerCase();
+                    return searchTerms.some((term: string) => text.includes(term));
+                }) : [];
+
+                const displayLocations = relevantLocations.length > 0 ? relevantLocations : locations;
+                const title = relevantLocations.length > 0 ? `Locations for ${article.title}` : `All Component Locations`;
+
+                if (displayLocations.length === 0) {
                     this.articleContent = this.sanitizer.bypassSecurityTrustHtml(`
                         <div class="error-state">
-                            <i class="fas fa-bug"></i>
-                            <p>API Error: Received invalid data.</p>
-                            <div style="text-align: left; background: #1a1a1a; padding: 10px; border-radius: 4px; margin-top: 10px; overflow: auto; max-height: 200px; font-family: monospace; font-size: 12px; color: #ff0055;">
-                                ${responseString.substring(0, 500).replace(/</g, '&lt;').replace(/>/g, '&gt;')}
-                            </div>
+                            <i class="fas fa-map-marker-alt"></i>
+                            <p>No component locations found.</p>
                         </div>
                     `);
                     this.loadingArticle = false;
                     return;
                 }
 
-                // Smart filtering for locations too
-                const stopWords = ['remove', 'install', 'r&r', 'replace', 'check', 'inspect', 'the', 'a', 'an', 'for', 'of', 'with', 'and', 'to', 'in', 'on', 'at'];
-                const titleWords = article.title.toLowerCase().split(/[\s,-]+/)
-                    .filter((w: string) => w.length > 2 && !stopWords.includes(w));
-
-                const relevantLocations = locations.filter((l: any) => {
-                    const desc = (l.description || l.name || '').toLowerCase();
-                    return titleWords.some((w: string) => desc.includes(w));
-                });
-
-                const displayLocations = relevantLocations.length > 0 ? relevantLocations : locations;
-                const title = relevantLocations.length > 0 ? `Locations for ${article.title}` : `All Locations (No specific matches found)`;
-
-                if (displayLocations.length === 0) {
-                    this.articleContent = this.sanitizer.bypassSecurityTrustHtml('<div class="empty-state"><i class="fas fa-map-marker-alt"></i><p>No component locations found.</p></div>');
-                    this.loadingArticle = false;
-                    return;
-                }
-
                 let html = `
-                    <div class="locations-container">
-                        <h2>${title}</h2>
+                    <div class="locations-container cyberpunk-locations">
+                        <h3><i class="fas fa-map-marked-alt"></i> ${title}</h3>
                         <div class="locations-grid">
                 `;
 
                 displayLocations.forEach((loc: any) => {
                     html += `
                         <div class="location-card">
-                            <h3>${loc.description}</h3>
-                            <p>${loc.location || 'See diagram'}</p>
-                            ${loc.image ? `<img src="${loc.image}" alt="${loc.description}">` : ''}
+                            <h3>${loc.title || 'Unknown Component'}</h3>
+                            <p>${loc.subtitle || ''}</p>
+                            ${loc.thumbnailHref ? `<img src="/${loc.thumbnailHref}" alt="${loc.title}" style="margin-top: 10px; border-radius: 4px; width: 100%; max-width: 240px;">` : ''}
                         </div>
                     `;
                 });
@@ -400,20 +574,23 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.articleContent = this.sanitizer.bypassSecurityTrustHtml(html);
                 this.loadingArticle = false;
             },
-            (err) => {
+            (err: any) => {
                 console.error('Error loading locations:', err);
-                const errorMessage = err.error?.message || err.message || 'Unknown error';
                 this.articleContent = this.sanitizer.bypassSecurityTrustHtml(`
                     <div class="error-state">
-                        <i class="fas fa-exclamation-triangle"></i>
+                        <i class="fas fa-exclamation-circle"></i>
                         <p>Failed to load component locations.</p>
-                        <small style="color: #ff0055; display: block; margin-top: 10px;">${errorMessage}</small>
                     </div>
                 `);
                 this.loadingArticle = false;
             }
         );
     }
+
+    // 3. Render results
+
+
+
 
     loadArticleContent(articleId: string) {
         this.loadingArticle = true;
@@ -462,31 +639,31 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     createPdfViewerHtml(base64Pdf: string, documentId: string): string {
         const pdfDataUri = `data:application/pdf;base64,${base64Pdf}`;
         return `
-            <div class="pdf-viewer">
-                <div class="pdf-info">
-                    <p>📄 <strong>PDF Document</strong> - Document ID: ${documentId}</p>
-                    <a href="${pdfDataUri}" download="document-${documentId}.pdf" class="download-btn">
+    <div class="pdf-viewer">
+        <div class="pdf-info">
+            <p>📄 <strong>PDF Document</strong> - Document ID: ${documentId}</p>
+                <a href="${pdfDataUri}" download="document-${documentId}.pdf" class="download-btn">
                         ⬇ Download PDF
-                    </a>
-                </div>
-                <iframe 
-                    src="${pdfDataUri}" 
-                    width="100%" 
-                    height="800px" 
-                    style="border: 1px solid rgba(0, 243, 255, 0.3); border-radius: 8px; background: white;"
-                    type="application/pdf">
-                    <p>Your browser does not support PDF viewing. 
-                       <a href="${pdfDataUri}" download="document-${documentId}.pdf">Download the PDF</a> instead.
-                    </p>
-                </iframe>
-            </div>
+    </a>
+    </div>
+    <iframe
+src="${pdfDataUri}"
+width="100%"
+height="800px"
+style="border: 1px solid rgba(0, 243, 255, 0.3); border-radius: 8px; background: white;"
+type="application/pdf">
+    <p>Your browser does not support PDF viewing. 
+                       < a href = "${pdfDataUri}" download = "document-${documentId}.pdf" > Download the PDF </a> instead.
+    </p>
+    </iframe>
+    </div>
         `;
     }
 
     transformArticleHtml(html: string): string {
         // Replace <mtr-image-link>
         html = html.replace(/<mtr-image-link id='(.*?)'([^>]*)>([^<]*)<\/mtr-image-link>/g, ($0, id: string, extraAttributes: string, text: string) => {
-            return `<span class='image-hover'>${text}<img src='/api/motor-proxy/api/source/${this.contentSource}/graphic/${id}'${extraAttributes} loading='lazy'></span>`;
+            return `< span class='image-hover' > ${text} <img src='/api/motor-proxy/api/source/${this.contentSource}/graphic/${id}'${extraAttributes} loading = 'lazy' > </span>`;
         });
 
         // Replace <mtr-image> (single quotes)
@@ -556,7 +733,10 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
             const figure = doc.createElement('figure');
             figure.className = 'thumbnail';
-            figure.setAttribute('onclick', "this.classList.toggle('expanded')");
+            // Store source for expansion
+            figure.setAttribute('data-expand-src', img.src);
+            figure.setAttribute('data-expand-alt', img.alt || 'Article Image');
+
             const imgClone = img.cloneNode(true) as HTMLImageElement;
             const figcaption = doc.createElement('figcaption');
             figcaption.textContent = 'Click to enlarge';
@@ -571,8 +751,20 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     handleArticleClick(event: MouseEvent) {
         const target = event.target as HTMLElement;
-        const link = target.closest('.scroll-to-figure');
 
+        // Handle Image Expansion
+        const thumbnail = target.closest('.thumbnail');
+        if (thumbnail) {
+            const src = thumbnail.getAttribute('data-expand-src');
+            const alt = thumbnail.getAttribute('data-expand-alt');
+            if (src) {
+                this.expandImage(src, alt || '');
+                return;
+            }
+        }
+
+        // Handle Internal Links
+        const link = target.closest('.scroll-to-figure');
         if (link) {
             event.preventDefault();
             const targetId = link.getAttribute('data-target-id');
