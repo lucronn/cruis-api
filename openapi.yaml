@@ -1365,12 +1365,6 @@ paths:
                     listPrice: 12.95
                     dealerPrice: 9.71
                     category: "Engine"
-        '500':
-          description: Upstream API error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 
   /api/source/{contentSource}/vehicle/{vehicleId}/article/{articleId}:
     get:

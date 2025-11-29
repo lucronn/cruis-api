@@ -2102,16 +2102,6 @@
                 }
               }
             }
-          },
-          "500": {
-            "description": "Upstream API error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
           }
         }
       }
