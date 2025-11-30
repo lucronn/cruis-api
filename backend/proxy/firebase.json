@@ -1,6 +1,7 @@
 {
   "hosting": {
-    "public": "dist/motor-m1-app",
+    "site": "autolib",
+    "public": "public",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -27,7 +28,8 @@
         "firebase-debug.log",
         "firebase-debug.*.log",
         "*.local",
-        "dist"
+        "dist",
+        "browsers"
       ]
     }
   ]

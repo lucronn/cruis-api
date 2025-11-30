@@ -18,7 +18,7 @@ let serverSession = {
   isAuthenticating: false
 };
 
-const LIBRARY_CARD = '1001600244772';
+const LIBRARY_CARD = process.env.LIBRARY_CARD || '1001600244772';
 
 // PLAYWRIGHT AUTHENTICATION (converted from original Puppeteer logic)
 async function performAuthentication() {
@@ -51,7 +51,13 @@ async function performAuthentication() {
       let page;
 
       console.log('[AUTH] Using playwright-aws-lambda for Firebase...');
-      browser = await playwrightAWSLambda.launchChromium();
+      try {
+        browser = await playwrightAWSLambda.launchChromium();
+      } catch (e) {
+        console.warn('[AUTH] AWS Lambda launch failed, trying local playwright:', e.message);
+        const playwright = require('playwright');
+        browser = await playwright.chromium.launch({ headless: true });
+      }
       page = await browser.newPage();
       await page.setExtraHTTPHeaders({
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36'
@@ -72,7 +78,33 @@ async function performAuthentication() {
 
       console.log('[AUTH] Submitting card number...');
 
-      await page.click('button[data-auto="login-submit-btn"]');
+      // Try to find the submit button with multiple strategies
+      const submitSelectors = [
+        'button[data-auto="login-submit-btn"]', // Original
+        'button[type="submit"]',                // Standard
+        'button:has-text("Sign in")',           // Text-based
+        '.login_login__submit__eHi8C'           // Class found in inspection (fragile but fallback)
+      ];
+
+      let clicked = false;
+      for (const selector of submitSelectors) {
+        try {
+          // Short timeout check for existence
+          const element = await page.waitForSelector(selector, { timeout: 2000 }).catch(() => null);
+          if (element) {
+            console.log(`[AUTH] Found submit button: ${selector}`);
+            await element.click();
+            clicked = true;
+            break;
+          }
+        } catch (e) {
+          console.log(`[AUTH] Failed to click ${selector}: ${e.message}`);
+        }
+      }
+
+      if (!clicked) {
+        throw new Error('Could not find login submit button');
+      }
 
       console.log('[AUTH] Waiting for redirect to Motor...');
 
@@ -709,7 +741,8 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/dtcs', as
           code: a.code || (a.title || '').match(/^[A-Z]?\d+[-\d]*/)?.[0] || '',
           description: a.description || a.title || '',
           subtitle: a.subtitle || '',
-          bucket: a.bucket || ''
+          bucket: a.bucket || '',
+          system: a.subtitle || a.bucket || 'Unknown System'
         }))
       }
     });

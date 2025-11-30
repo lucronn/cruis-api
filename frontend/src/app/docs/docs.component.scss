@@ -235,6 +235,64 @@ $text-secondary: #a0a0a0;
     padding-bottom: 80px; // Space for FAB
 }
 
+// Feature Lists (DTCs, TSBs, etc.)
+.feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.feature-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: $neon-cyan;
+        box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+}
+
+.dtc-card {
+    .code {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: $neon-cyan;
+        letter-spacing: 1px;
+    }
+
+    .system {
+        font-size: 0.8rem;
+        color: $text-secondary;
+        text-transform: uppercase;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+
+    .description {
+        color: $text-primary;
+        margin-bottom: 16px;
+        line-height: 1.5;
+    }
+
+    .dtc-actions {
+        display: flex;
+        gap: 10px;
+    }
+}
+
 // Accordion List
 .article-list {
     display: flex;

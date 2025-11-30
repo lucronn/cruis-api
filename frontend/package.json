@@ -5,6 +5,7 @@
   "scripts": {
     "start": "npm run dev",
     "dev": "NODE_OPTIONS=--openssl-legacy-provider ng serve --port 4200",
+    "start:local": "NODE_OPTIONS=--openssl-legacy-provider ng serve --port 4200 --proxy-config proxy.local.conf.json",
     "build": "NODE_OPTIONS=--openssl-legacy-provider ng build --configuration production",
     "test": "ng test"
   },

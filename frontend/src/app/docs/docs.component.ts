@@ -233,6 +233,7 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         switch (filterTabType || pill) {
             case 'DTCs':
             case 'Diagnostic Codes':
+            case 'Diagnostic Trouble Codes':
                 this.loadDtcs();
                 break;
             case 'TSBs':
