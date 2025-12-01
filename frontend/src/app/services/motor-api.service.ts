@@ -30,6 +30,9 @@ export class MotorApiService {
 
     constructor(private http: HttpClient) { }
 
+    /**
+     * Get all available model years
+     */
     getYears(): Observable<YearsResponse> {
         return this.http.get<YearsResponse>(`${this.baseUrl}/api/years`);
     }
@@ -103,10 +106,13 @@ export class MotorApiService {
 
     getSpecifications(contentSource: string, vehicleId: string): Observable<any> {
         return this.http.get<any>(
-            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/specifications`
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/specs`
         ).pipe(map(response => response.body));
     }
 
+    /**
+     * Get vehicle fluid specifications and capacities
+     */
     getFluids(contentSource: string, vehicleId: string): Observable<any> {
         return this.http.get<any>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/fluids`
@@ -121,15 +127,17 @@ export class MotorApiService {
      * Decode a VIN to get vehicle details
      * Returns: { vehicleId, contentSource, motorVehicleId }
      */
-    decodeVin(vin: string): Observable<any> {
-        return this.http.get<any>(`${this.baseUrl}/api/vin/${vin}/vehicle`);
+    decodeVin(vin: string): Observable<VinDecodeResponse> {
+        return this.http.get<VinDecodeResponse>(`${this.baseUrl}/api/vin/${vin}/vehicle`);
     }
 
     /**
-     * Search for a vehicle by VIN (alias for decodeVin)
+     * Search for a vehicle by VIN with full response handling
+     * Returns: { contentSource, vehicleId, motorVehicleId, year, make, model, etc. }
      */
-    searchByVin(vin: string): Observable<any> {
-        return this.decodeVin(vin);
+    searchVehicleByVin(vin: string): Observable<any> {
+        return this.http.get<VinDecodeResponse>(`${this.baseUrl}/api/vin/${vin}/vehicle`)
+            .pipe(map(response => response.body));
     }
 
     /**
@@ -138,7 +146,7 @@ export class MotorApiService {
     getDtcs(contentSource: string, vehicleId: string): Observable<any> {
         return this.http.get<DtcsResponse>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/dtcs`
-        ).pipe(map(response => response.body));
+        );
     }
 
     /**
@@ -192,6 +200,138 @@ export class MotorApiService {
     getLaborTimes(contentSource: string, vehicleId: string): Observable<any> {
         return this.http.get<any>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/labor-times`
+        ).pipe(map(response => response.body));
+    }
+
+    // ============================================================
+    // SPECIALIZED PROCEDURE ENDPOINTS (Server-side filtering)
+    // These fetch pre-filtered results from backend for better performance
+    // ============================================================
+
+    /**
+     * Get all repair procedures for a vehicle (server-side filtered)
+     */
+    getProcedures(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<ProceduresResponse>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/procedures`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get all diagrams for a vehicle (server-side filtered)
+     */
+    getDiagrams(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/diagrams`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get vehicle specifications (server-side filtered)
+     * Alias for getSpecifications with consistent naming
+     */
+    getSpecs(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<SpecsResponse>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/specs`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get article categories summary
+     */
+    getCategories(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/categories`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get all labor operations (server-side filtered)
+     */
+    getLabor(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/labor`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get labor detail for a specific article
+     */
+    getLaborDetail(contentSource: string, vehicleId: string, articleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/labor/${encodeURIComponent(articleId)}`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get brake service procedures (server-side filtered)
+     */
+    getBrakeService(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/brake-service`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get A/C and heater procedures (server-side filtered)
+     */
+    getAcHeater(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/ac-heater`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get TPMS procedures (server-side filtered)
+     */
+    getTpms(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/tpms`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get computer relearn procedures (server-side filtered)
+     */
+    getRelearn(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/relearn`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get maintenance lamp reset procedures (server-side filtered)
+     */
+    getLampReset(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/lamp-reset`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get battery service procedures (server-side filtered)
+     */
+    getBattery(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/battery`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get steering and suspension procedures (server-side filtered)
+     */
+    getSteeringSuspension(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/steering-suspension`
+        ).pipe(map(response => response.body));
+    }
+
+    /**
+     * Get airbag service procedures (server-side filtered)
+     */
+    getAirbag(contentSource: string, vehicleId: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/airbag`
         ).pipe(map(response => response.body));
     }
 
@@ -285,7 +425,7 @@ export class MotorApiService {
         return this.http.get<any>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/part-vectors`,
             { params: { GroupID: groupId.toString() } }
-        ).pipe(map(res => res.body));
+        );
     }
 
     /**
@@ -303,6 +443,6 @@ export class MotorApiService {
     getRelatedWiring(contentSource: string, vehicleId: string, dtcId: number): Observable<any> {
         return this.http.get<any>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/wiring/related-to/dtc/${dtcId}`
-        ).pipe(map(res => res.body));
+        );
     }
 }

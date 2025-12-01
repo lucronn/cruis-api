@@ -1,4 +1,6 @@
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { RouteReuseStrategy } from '@angular/router';
+import { CustomRouteReuseStrategy } from './core/strategies/custom-route-reuse-strategy';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -11,6 +13,9 @@ import { DocsComponent } from './docs/docs.component';
 import { SearchComponent } from './search/search.component';
 import { DiagnosticsComponent } from './diagnostics/diagnostics.component';
 
+import { NavigationComponent } from './core/components/navigation/navigation.component';
+import { BottomNavComponent } from './core/components/bottom-nav/bottom-nav.component';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -18,7 +23,9 @@ import { DiagnosticsComponent } from './diagnostics/diagnostics.component';
     VehicleSelectorComponent,
     DocsComponent,
     SearchComponent,
-    DiagnosticsComponent
+    DiagnosticsComponent,
+    NavigationComponent,
+    BottomNavComponent
   ],
   imports: [
     BrowserModule,
@@ -26,7 +33,9 @@ import { DiagnosticsComponent } from './diagnostics/diagnostics.component';
     HttpClientModule,
     FormsModule
   ],
-  providers: [],
+  providers: [
+    { provide: RouteReuseStrategy, useClass: CustomRouteReuseStrategy }
+  ],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

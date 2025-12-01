@@ -515,8 +515,15 @@ paths:
         - $ref: '#/components/parameters/vehicleIdPath'
         - name: motorVehicleId
           in: query
+          description: Motor vehicle ID for engine-specific filtering
           schema:
             type: string
+        - name: includeOther
+          in: query
+          description: Include "Other Diagnostics" category in addition to standard DTCs
+          schema:
+            type: boolean
+            default: false
       responses:
         '200':
           description: List of DTCs
@@ -849,6 +856,72 @@ paths:
                     - id: "SPEC:12345"
                       bucket: "Specifications"
                       title: "Torque Specifications"
+
+  /api/source/{contentSource}/vehicle/{vehicleId}/fluids:
+    get:
+      tags: [Procedures]
+      summary: Get fluid specifications
+      description: Returns fluid types, capacities, and specifications for the vehicle
+      operationId: getFluids
+      parameters:
+        - $ref: '#/components/parameters/contentSource'
+        - $ref: '#/components/parameters/vehicleIdPath'
+        - name: motorVehicleId
+          in: query
+          description: Motor vehicle ID for engine-specific fluids
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of fluid specifications
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  header:
+                    $ref: '#/components/schemas/ResponseHeader'
+                  body:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      fluids:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            bucket:
+                              type: string
+                            title:
+                              type: string
+                            subtitle:
+                              type: string
+                            fluidType:
+                              type: string
+                            capacity:
+                              type: string
+                            specification:
+                              type: string
+              example:
+                header:
+                  status: "OK"
+                  statusCode: 200
+                body:
+                  total: 12
+                  fluids:
+                    - id: "FLUID:567"
+                      bucket: "Fluids"
+                      title: "Engine Oil"
+                      capacity: "5.7 quarts"
+                      specification: "0W-20"
+                    - id: "FLUID:568"
+                      bucket: "Fluids"
+                      title: "Coolant"
+                      capacity: "1.7 gallons"
+                      specification: "FL22"
 
   /api/source/{contentSource}/vehicle/{vehicleId}/part-vectors:
     get:

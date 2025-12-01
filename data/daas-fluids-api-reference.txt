@@ -1,0 +1,1390 @@
+Fluids
+API Reference
+Version 1.4
+August 2016
+
+Contents
+Data as a Service Development . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 1
+Development Kits . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 1
+Intended Audience . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 1
+Help and Support. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 2
+Fluids . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+Get Fluid Details By Application . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+Get Fluids Taxonomy . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+Get Fluids Summary . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 7
+Get Fluids Taxonomy With Relation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9
+Get Fluids Summary With Relation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+Common Response Objects . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 13
+ContentCategory . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 13
+EngineInfo . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 13
+EstimatedWorkTimeSummary . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 14
+EstimatedWorkTimeApplicationSummary . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15
+FuelDelivery . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15
+Link . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16
+MappedAttribute . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16
+Note . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16
+PCDBCategory . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16
+PCDBPartInfo . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16
+PositionInfo . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16
+QualifierInfo . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+Skill . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+TaxonomyInfo . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+
+Data as a Service Development
+Development Kits
+To assist application developers in using Data as a Service, MOTOR created Development Kits. The
+Development Kits include documentation and developer resources that are necessary to develop
+applications using the MOTOR web services.
+The typical development kit includes:
+• Development Handbook - Provides information on the API configurations that are required to use
+the web services and global principles that are required for all web services. Topics covered in the
+Handbook include:
+• Authentication information
+• Rate limiting
+• HTTP authorization header
+• Correlation support
+• MOTOR and VCdb standards
+• Error Codes
+• API References - There is an API Reference for each product offered as Data as a Service. The API
+Reference contains detailed informationabout the web services included in each product,
+including:
+• Request details
+• Resource URL
+• Route parameters
+• Query string parameters
+• Sample requests
+• Sample responses in XML
+Note: Examples of the XML responses are provided for reference. They are examples only and
+the data contained within the responses may have been changed since the publication of this
+document.
+
+Intended Audience
+The contents of this document and other documents included in the Development Kit are technical in
+nature and therefore intended for a developer. These documents are written for an audience that
+understands web programming and is familiar with consuming information via web services through
+HTTP Rest requests.
+It is assumed that a developer is familiar with:
+• RESTful web services
+• Object oriented programming concepts
+
+Fluids API Reference
+
+1
+
+• HTTP verbs and how they are used (Create = POST, Retrieve = GET, Update= PUT, Delete =
+DELETE)
+• HTTP message construction and general knowledge of HTTP headers and standards
+• Stateless and cacheable programming
+• Identifying the relationships between resources
+• Secure Socket Layer (SSL) programming
+
+Help and Support
+For support with Data as a Service development, or to obtain your API key, contact the customer
+service team:
+By email: accountservices@motor.com
+By website: "support.motor.com"
+An account is required to request support via the web. If you do not have an account, visit
+support.motor.com and create an account.
+
+Fluids API Reference
+
+2
+
+Fluids
+Get Fluid Details By Application
+Resource URL
+/Information/Vehicles/Attributes/{AttributeType}/{AttributeID}/Content/Details/Of/Fluids/{Applicatio
+nID}
+
+Resource Verb
+GET
+
+Route Details
+Returns the details of the fluids that match a specific application record.
+
+Route Parameters
+Parameter
+AttributeType
+
+Type
+String
+
+AttributeID
+ApplicationID
+
+Integer
+Integer
+
+Description
+Describes the type of primary attribute ID
+supplied in the attributeID route variable.
+The primary attribute ID of a valid vehicle.
+The application ID of an application record.
+
+Required
+Yes
+Yes
+Yes
+
+Query String Parameters
+Parameter
+Active
+AX
+BD
+BR
+BS
+CB
+CO
+DT
+EN
+MB
+SM
+SP
+ST
+TR
+
+Type
+boolean
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+
+Description
+Axle Type ID
+Bed Type ID
+Brake Type ID
+Body Style ID
+Cab Type ID
+Country ID
+Drive Type ID
+Engine ID
+Manufacture Body Code ID
+Sub-Model ID
+Spring ID
+Steering ID
+Transmission ID
+
+Fluids API Reference
+
+Required Default
+No
+No
+No
+No
+No
+No
+No
+No
+No
+No
+No
+No
+No
+No
+
+3
+
+Parameter
+WB
+AttributeStandard
+
+Type
+Integer
+String
+
+Description
+Required Default
+Wheel Base ID
+No
+The standard for the request and No
+MOTOR
+the response returned by the
+service.
+
+Fluids API Reference
+
+4
+
+Get Fluids Taxonomy
+Resource URL
+/Information/Vehicles/Attributes/{AttributeType}/{AttributeID}/Content/Taxonomies/Of/Fluids
+
+Resource Verb
+GET
+
+Route Details
+Returns the taxonomy for fluids.
+
+Route Parameters
+Parameter
+AttributeType
+
+Type
+String
+
+AttributeID
+
+Integer
+
+Description
+Describes the type of primary attribute ID
+supplied in the attributeID route variable.
+The primary attribute ID of a valid vehicle.
+
+Required
+Yes
+Yes
+
+Query String Parameters
+Parameter
+ContentSilos
+GroupID
+ResultType
+
+Type
+String
+Integer
+String
+
+SubGroupID
+SystemID
+AX
+BD
+BR
+BS
+CB
+CO
+DT
+EN
+MB
+
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+
+Description
+
+Required Default
+No
+No
+No
+DrillDown
+
+Taxonomy groupID.
+Determines the result type that
+the service will return. Valid
+values are DrillDown or List.
+When DrillDown is specified, the
+result will only contain the
+highest level of taxonomy, based
+on the supplied FilteredBy
+parameters.
+Taxonomy subgroupID.
+No
+Taxonomy systemID.
+No
+Axle Type ID
+No
+Bed Type ID
+No
+Brake Type ID
+No
+Body Style ID
+No
+Cab Type ID
+No
+Country ID
+No
+Drive Type ID
+No
+Engine ID
+No
+Manufacture Body Code ID
+No
+
+Fluids API Reference
+
+5
+
+Parameter
+SM
+SP
+ST
+TR
+WB
+AttributeStandard
+
+Type
+Integer
+Integer
+Integer
+Integer
+Integer
+String
+
+Description
+Required Default
+Sub-Model ID
+No
+Spring ID
+No
+Steering ID
+No
+Transmission ID
+No
+Wheel Base ID
+No
+The standard for the request and No
+MOTOR
+the response returned by the
+service.
+
+Fluids API Reference
+
+6
+
+Get Fluids Summary
+Resource URL
+/Information/Vehicles/Attributes/{AttributeType}/{AttributeID}/Content/Summaries/Of/Fluids
+
+Resource Verb
+GET
+
+Route Details
+Returns the summary information for fluid applications.
+
+Route Parameters
+Parameter
+AttributeType
+
+Type
+String
+
+AttributeID
+
+Integer
+
+Description
+Describes the type of primary attribute ID
+supplied in the attributeID route variable.
+The primary attribute ID of a valid vehicle.
+
+Required
+Yes
+Yes
+
+Query String Parameters
+Parameter
+ContentSilos
+TaxonomyIDs
+
+GroupID
+ItemsPerPage
+
+Type
+String
+null
+integer
+(int32)
+Array
+Integer
+Integer
+
+PageIndex
+
+Integer
+
+SearchTerm
+
+String
+
+SubGroupID
+SystemID
+AX
+BD
+BR
+BS
+
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+
+Description
+
+Required Default
+No
+No
+
+Taxonomy groupID.
+No
+The number of results to include No
+in each page.
+The index of the page to return. No
+Each page will contain a
+maximum of 30 items in each
+page.
+Searching is performed against No
+the taxonomy literal name field
+and supports partial and
+complete matches.
+Taxonomy subgroupID.
+No
+Taxonomy systemID.
+No
+Axle Type ID
+No
+Bed Type ID
+No
+Brake Type ID
+No
+Body Style ID
+No
+
+Fluids API Reference
+
+7
+
+Parameter
+CB
+CO
+DT
+EN
+MB
+SM
+SP
+ST
+TR
+WB
+AttributeStandard
+
+Type
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+String
+
+Description
+Required Default
+Cab Type ID
+No
+Country ID
+No
+Drive Type ID
+No
+Engine ID
+No
+Manufacture Body Code ID
+No
+Sub-Model ID
+No
+Spring ID
+No
+Steering ID
+No
+Transmission ID
+No
+Wheel Base ID
+No
+The standard for the request and No
+MOTOR
+the response returned by the
+service.
+
+Fluids API Reference
+
+8
+
+Get Fluids Taxonomy With Relation
+Resource URL
+/Information/Vehicles/Attributes/{AttributeType}/{AttributeID}/Content/Taxonomies/Of/Fluids/Relat
+edTo/{ContentType}/{ApplicationID}
+
+Resource Verb
+GET
+
+Route Details
+Returns a complete list or a filtered list of fluids taxonomy related to the supplied attributeID and
+attributeType with relations to other applications.
+
+Route Parameters
+Parameter
+AttributeType
+
+Type
+String
+
+AttributeID
+ContentType
+
+Integer
+String
+
+ApplicationID
+
+Integer
+
+Description
+Describes the type of primary attribute ID
+supplied in the attributeID route variable.
+The primary attribute ID of a valid vehicle.
+A content type describing the relation being
+specified.
+The application ID of an application record.
+
+Required
+Yes
+Yes
+Yes
+Yes
+
+Query String Parameters
+Parameter
+AppRelTypes
+
+Type
+String
+
+ContentSilos
+GroupID
+ResultType
+
+String
+Integer
+String
+
+SubGroupID
+SystemID
+AX
+BD
+BR
+
+Integer
+Integer
+Integer
+Integer
+Integer
+
+Description
+A comma separated list of
+Application Relation Type IDs to
+filter the summary results.
+
+Required Default
+No
+
+No
+No
+No
+
+Taxonomy groupID.
+Determines the result type that
+the service will return. Valid
+values are DrillDown or List.
+When DrillDown is specified, the
+result will only contain the
+highest level of taxonomy, based
+on the supplied FilteredBy
+parameters.
+Taxonomy subgroupID.
+No
+Taxonomy systemID.
+No
+Axle Type ID
+No
+Bed Type ID
+No
+Brake Type ID
+No
+Fluids API Reference
+
+DrillDown
+
+9
+
+Parameter
+BS
+CB
+CO
+DT
+EN
+MB
+SM
+SP
+ST
+TR
+WB
+AttributeStandard
+
+Type
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+String
+
+Description
+Required Default
+Body Style ID
+No
+Cab Type ID
+No
+Country ID
+No
+Drive Type ID
+No
+Engine ID
+No
+Manufacture Body Code ID
+No
+Sub-Model ID
+No
+Spring ID
+No
+Steering ID
+No
+Transmission ID
+No
+Wheel Base ID
+No
+The standard for the request and No
+MOTOR
+the response returned by the
+service.
+
+Fluids API Reference
+
+10
+
+Get Fluids Summary With Relation
+Resource URL
+/Information/Vehicles/Attributes/{AttributeType}/{AttributeID}/Content/Summaries/Of/Fluids/Relate
+dTo/{ContentType}/{ApplicationID}
+
+Resource Verb
+GET
+
+Route Details
+Returns a paged list of summarized fluids for a specified attributeID and attributeType with relations
+to other applications.
+
+Route Parameters
+Parameter
+AttributeType
+
+Type
+String
+
+AttributeID
+ContentType
+
+Integer
+String
+
+ApplicationID
+
+Integer
+
+Description
+Describes the type of primary attribute ID
+supplied in the attributeID route variable.
+The primary attribute ID of a valid vehicle.
+A content type describing the relation being
+specified.
+The application ID of an application record.
+
+Required
+Yes
+Yes
+Yes
+Yes
+
+Query String Parameters
+Parameter
+AppRelTypes
+
+Type
+String
+
+ContentSilos
+TaxonomyIDs
+
+GroupID
+ItemsPerPage
+
+String
+null
+integer
+(int32)
+Array
+Integer
+Integer
+
+PageIndex
+
+Integer
+
+Description
+A comma separated list of
+Application Relation Type IDs to
+filter the summary results.
+
+Required Default
+No
+
+No
+No
+
+Taxonomy groupID.
+No
+The number of results to include No
+in each page.
+The index of the page to return. No
+Each page will contain a
+maximum of 30 items in each
+page.
+
+Fluids API Reference
+
+11
+
+Parameter
+SearchTerm
+
+Type
+String
+
+SubGroupID
+SystemID
+AX
+BD
+BR
+BS
+CB
+CO
+DT
+EN
+MB
+SM
+SP
+ST
+TR
+WB
+AttributeStandard
+
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+Integer
+String
+
+Description
+Required Default
+Searching is performed against No
+the taxonomy literal name field
+and supports partial and
+complete matches.
+Taxonomy subgroupID.
+No
+Taxonomy systemID.
+No
+Axle Type ID
+No
+Bed Type ID
+No
+Brake Type ID
+No
+Body Style ID
+No
+Cab Type ID
+No
+Country ID
+No
+Drive Type ID
+No
+Engine ID
+No
+Manufacture Body Code ID
+No
+Sub-Model ID
+No
+Spring ID
+No
+Steering ID
+No
+Transmission ID
+No
+Wheel Base ID
+No
+The standard for the request and No
+MOTOR
+the response returned by the
+service.
+
+Fluids API Reference
+
+12
+
+Common Response Objects
+ContentCategory
+Parameter
+Article
+
+Type
+String
+
+ID
+
+Integer
+
+Product
+
+String
+
+ProductType
+
+String
+
+Description
+The third level categorization of the application by type
+of content.
+Unique identifier for a combination of Product Type,
+Product, and Article.
+The second level categorization of the application by
+type of content.
+The top level categorization of the application by type of
+content.
+
+EngineInfo
+Parameter
+Aspiration
+
+Type
+String
+
+BlockType
+CID
+
+String
+String
+
+CylinderCC
+
+String
+
+CylinderHeadType
+CylinderLiter
+
+String
+String
+
+Cylinders
+
+String
+
+Description
+Designation
+EngineBoreInch
+
+String
+String
+String
+
+EngineBoreMetric
+
+String
+
+EngineID
+EngineStrokeInch
+
+Integer
+String
+
+Description
+Aspiration or Boost Type name – Normal, Turbocharger,
+Supercharged, etc.
+Engine block type – V, In-line,Rotary, etc.
+Cubic inches of displacement represented as a whole
+number – 350, 400, etc.
+Cubic centimeters represented as a whole number –
+2800, 3200, etc.
+Value of cylinder head name, SOHC, DOHC and OHV.
+Number of engine liters to one decimal point of
+precision - 2.8, 3.0, etc
+Number of engine cylinders represented as a whole
+number – 4, 6, 8, etc.
+Manufacturer unique code, 2-TC, etc.
+Engine cylinder bore in inches to a minimum of two
+decimal points of precision – 1.14, 3.50, etc., or to a
+maximum of four decimal points of significant precision
+– eg. 1.233 not 1.2330.
+Engine cylinder bore in millimeters to a minimum of
+one decimal point of precision – 28.0, 32.5, etc., or to
+a maximum of four decimal points of significant
+precision – eg. 2.093 not 2.0930.
+Unique, system generated identifier
+Engine cylinder stroke in inches to a minimum of two
+decimal points of precision – 1.14, 3.50, etc., or to a
+maximum of four decimal points of significant precision
+– eg. 1.233 not 1.2330.
+
+Fluids API Reference
+
+13
+
+Parameter
+EngineStrokeMetric
+
+Type
+String
+
+EngineVIN
+
+String
+
+FuelDeliveryInfo
+FuelType
+HorsePower
+IgnitionSystem
+
+FuelDelivery
+String
+String
+String
+
+KilowattPower
+
+String
+
+Manufacturer
+
+String
+
+ManufacturerType
+Valves
+
+String
+String
+
+Version
+
+String
+
+Description
+Engine cylinder stroke in millimeters to a minimum of
+one decimal point of precision – 54.0, 67.5, etc., to a
+maximum of four decimal points of significant precision
+– eg. 2.093 not 2.0930.
+Unique, system generated identifier from the EngineVIN
+table.
+Fuel type - Diesel, Gas, etc.
+Basic ignition system type - Distributor-Breaker,
+Distributorless, etc.
+Engine Power output expressed in Kilowatts, including
+a decimal point only when required to represent
+fractional values.
+Name of component manufacturer – Allison, Borg
+Warner, Ford, Toyota, etc.
+Total number of intake and exhaust vales in the engine
+– 8, 16, 24, etc.
+Engine version, i.e. "Windsor", "Cleveland", "Modified",
+etc.
+
+EstimatedWorkTimeSummary
+Parameter
+Notes
+
+Type
+Note Array
+
+AdditionalLaborTime number (double)
+AdditionalLaborTime String
+Description
+AdditionalWarrantyLa number (double)
+borTime
+AllLaborTime
+number (double)
+AllLaborTimeDescripti String
+on
+AllWarrantyLaborTim number (double)
+e
+BaseLaborTime
+number (double)
+BaseLaborTimeDescr String
+iption
+BaseWarrantyLaborTi number (double)
+me
+EstimatedWorkTimeI Integer
+D
+LaborTimeInterval
+String
+
+Description
+Provides additional information about what is and is
+not included in the estimated time.
+MOTOR estimated time to perform the operation on
+additional instances of the part.
+Description of the additional labor time, such as "Each
+Additional".
+OEM warranty time for performing the operation on
+additional instances of the part.
+Description of all labor time, such as "All", "Both", "Both
+Sides".
+Description of all labor time, such as "All", "Both", "Both
+Sides".
+OEM warranty time for performing the operation on all
+instances of the part.
+MOTOR estimated time to perform the operation.
+
+OEM warranty time for performing the operation.
+Identifier of the labor time.
+Unit of measure, will be either Minutes or Hours.
+
+Fluids API Reference
+
+14
+
+Parameter
+RequiredSkill
+ServiceType
+
+Type
+Skill
+String
+
+Description
+Grouping of types of service. Values are: Inspect or
+Service.
+
+EstimatedWorkTimeApplicationSummary
+Parameter
+Category
+IsMatch
+Items
+OptionalWorkTimes
+
+Taxonomy
+ApplicationID
+AppRelationType
+AttributeMappings
+ContentSilos
+DisplayName
+IsActive
+
+Links
+Position
+Qualifiers
+
+Type
+Description
+ContentCategory
+boolean
+EstimatedWorkTimeS
+ummary Array
+EstimatedWorkTimeA
+pplicationSummary
+Array
+TaxonomyInfo
+Integer
+Unique identifier which indexes the defining attributes
+of the data item.
+[ApplicationRelationT
+ype]
+MappedAttribute
+Array
+[ContentSilo] Array
+String
+The name of the application.
+boolean
+If the IsActive flag is returned as 'true', the data
+associated with the flag is applicable. If the IsActive
+flag is returned as 'false', the data has been
+superseded.
+Link Array
+PositionInfo
+QualifierInfo Array
+
+FuelDelivery
+Parameter
+ControlType
+
+Type
+String
+
+FuelDeliveryID
+SubType
+
+Integer
+String
+
+SystemDesign
+
+String
+
+Type
+
+String
+
+Description
+Description of fuel delivery method - Carburetion, Fuel
+Injection, etc.
+Unique, system generated identifier.
+Unique, system generated identifier from the
+FuelDeliverySubType table.
+Unique, system generated identifier from the
+FuelSystemDesign table.
+
+Fluids API Reference
+
+15
+
+Link
+Parameter
+Href
+
+Type
+String
+
+Rel
+
+String
+
+Description
+Contains the URI to identify the location of additional
+information.
+Rel describes the type of link.
+A self link is a link to the object itself. This is a RESTful
+good practice to include a self link so that the object
+can be easily retrieved or referenced later.
+
+MappedAttribute
+Parameter
+ID
+Type
+
+Type
+Integer
+String
+
+Description
+Unique identifier of the referenced attribute.
+A two character abbreviation of the attribute of the
+corresponding ID.
+
+Type
+Integer
+String
+
+Description
+Unique identifier of the note.
+Note text.
+
+Note
+Parameter
+NoteID
+Text
+
+PCDBCategory
+Parameter
+ID
+Name
+SubCategory
+
+Type
+Integer
+String
+[PCDBSubCategory]
+
+Description
+The common language name of the part.
+
+PCDBPartInfo
+Parameter
+Type
+Category
+PCDBCategory
+PartTerminologyID
+Integer
+PartTerminologyNam String
+e
+
+Description
+The identifier of the part.
+The common language name of the part.
+
+PositionInfo
+Parameter
+Name
+PCDBPositionID
+
+Type
+String
+Integer
+
+Description
+Textual description.
+
+Fluids API Reference
+
+16
+
+Parameter
+PositionID
+Type
+
+Type
+Integer
+String
+
+Description
+Unique identifier.
+MOTOR_Position is the default value.
+
+Parameter
+Description
+Family
+
+Type
+String
+String
+
+IsActive
+
+boolean
+
+QualifierID
+Sequence
+
+Integer
+Integer
+
+Type
+
+String
+
+Description
+Textual description of the qualifier, used for display.
+Categorization of the qualifier, the top level is Type,
+followed by Family.
+If true, this information is still applicable. If false, this
+data has been changed and should be queried again to
+retrieve the new data.
+Unique identifier of the qualifier.
+Dictates the order in which the qualifiers are displayed
+within the group.
+Categorization of the qualifier, the top level is Type,
+followed by Family.
+
+QualifierInfo
+
+Skill
+Parameter
+Code
+Description
+Name
+
+Type
+String
+String
+String
+
+Description
+Unique code for each skill name and description.
+Description of the skills required for an application.
+Description of the skill.
+
+TaxonomyInfo
+Parameter
+Action
+CommonName
+GroupID
+GroupName
+InfoObject
+LiteralName
+
+Type
+String
+String
+Integer
+String
+[InformationObject]
+String
+
+SubGroupID
+SubGroupName
+SystemID
+SystemName
+TaxonomyID
+
+Integer
+String
+Integer
+String
+Integer
+
+Description
+
+The identifier of the taxonomy group.
+The name of the taxonomy group.
+The literal name of the maintenance schedule
+application, for example Brake Pad Inspection.
+The identifier of the taxonomy sub group.
+The name of the taxonomy sub group.
+The identifier of the taxonomy system.
+The name of the taxonomy system.
+Unique identifier of the application’s taxonomy record.
+
+©2016 MOTOR Information Systems, a division of Hearst Business Publishing, Inc. All Rights
+Reserved.
+
+Fluids API Reference
+
+17
+
+

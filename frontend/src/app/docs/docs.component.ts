@@ -5,6 +5,7 @@ import { MotorApiService } from '../services/motor-api.service';
 import { catchError, switchMap, map } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { UiService } from '../services/ui.service';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
@@ -63,13 +64,82 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Image Lightbox State
     expandedImage: { src: string, alt: string } | null = null;
+    imageZoom: number = 100;
+    imagePanX: number = 0;
+    imagePanY: number = 0;
+    isPanning: boolean = false;
+    panStartX: number = 0;
+    panStartY: number = 0;
 
     expandImage(src: string, alt: string) {
-        this.expandedImage = { src, alt };
+        // Always try to get high-res version
+        const highResSrc = this.getHighResUrl(src);
+        this.expandedImage = { src: highResSrc, alt };
+        this.resetZoom();
+    }
+
+    getHighResUrl(url: string): string {
+        if (!url) return '';
+        let fullResUrl = url;
+        // Common patterns: /thumbnail/ -> /image/, /resize/ -> /image/, or remove size parameters
+        fullResUrl = fullResUrl.replace('/thumbnail/', '/image/');
+        fullResUrl = fullResUrl.replace('/thumbnails/', '/images/');
+        fullResUrl = fullResUrl.replace('/resize/', '/image/');
+        fullResUrl = fullResUrl.replace('/resized/', '/images/');
+        // Remove size parameters like ?width=200 or ?size=small
+        fullResUrl = fullResUrl.replace(/[?&](width|height|size|w|h)=[^&]*/gi, '');
+        fullResUrl = fullResUrl.replace(/\?&/, '?').replace(/\?$/, '');
+        return fullResUrl;
     }
 
     closeImage() {
         this.expandedImage = null;
+        this.resetZoom();
+    }
+
+    zoomIn() {
+        this.imageZoom = Math.min(this.imageZoom + 25, 400);
+    }
+
+    zoomOut() {
+        this.imageZoom = Math.max(this.imageZoom - 25, 50);
+    }
+
+    resetZoom() {
+        this.imageZoom = 100;
+        this.imagePanX = 0;
+        this.imagePanY = 0;
+    }
+
+    onMouseWheel(event: WheelEvent) {
+        event.preventDefault();
+        if (event.deltaY < 0) {
+            this.zoomIn();
+        } else {
+            this.zoomOut();
+        }
+    }
+
+    startPan(event: MouseEvent) {
+        if (this.imageZoom <= 100) return; // Only pan when zoomed
+        this.isPanning = true;
+        this.panStartX = event.clientX - this.imagePanX;
+        this.panStartY = event.clientY - this.imagePanY;
+
+        const mousemove = (e: MouseEvent) => {
+            if (!this.isPanning) return;
+            this.imagePanX = e.clientX - this.panStartX;
+            this.imagePanY = e.clientY - this.panStartY;
+        };
+
+        const mouseup = () => {
+            this.isPanning = false;
+            document.removeEventListener('mousemove', mousemove);
+            document.removeEventListener('mouseup', mouseup);
+        };
+
+        document.addEventListener('mousemove', mousemove);
+        document.addEventListener('mouseup', mouseup);
     }
 
     // Mini 3D car
@@ -98,6 +168,10 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     vectorIllustration: any = null;
     relatedWiring: any = null;
     loadingVector = false;
+    vectorError: string = '';
+
+    // Mobile Layout State
+    searchFocused = false;
     loadingRelated = false;
 
     constructor(
@@ -105,7 +179,8 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         private router: Router,
         private http: HttpClient,
         private motorApi: MotorApiService,
-        private sanitizer: DomSanitizer
+        private sanitizer: DomSanitizer,
+        private uiService: UiService
     ) { }
 
     ngOnInit() {
@@ -230,7 +305,9 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         const filterTab = this.filterTabs.find(tab => tab.name === pill);
         const filterTabType = filterTab?.type || filterTab?.filterTabType;
 
-        switch (filterTabType || pill) {
+        // Match on pill name first, then filterTabType
+        // This prevents "Basic" filterTabType from overriding specific matches
+        switch (pill) {
             case 'DTCs':
             case 'Diagnostic Codes':
             case 'Diagnostic Trouble Codes':
@@ -238,20 +315,69 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
                 break;
             case 'TSBs':
             case 'Service Bulletins':
+            case 'Technical Service Bulletins':
                 this.loadTsbs();
                 break;
             case 'Diagrams':
+                this.loadDiagrams();
+                break;
             case 'Wiring':
+            case 'Wiring Diagrams':
                 this.loadWiring();
                 break;
             case 'Labor':
+            case 'Labor Times':
                 this.loadLabor();
                 break;
+            case 'Procedures':
+            case 'Repair Procedures':
+                this.loadProcedures();
+                break;
+            case 'Specs':
+            case 'Specifications':
+                this.loadSpecs();
+                break;
             case 'Updates':
+            case 'Track Changes':
                 this.loadTrackChanges();
                 break;
             case 'Maintenance':
+            case 'Maintenance Schedules':
                 this.loadMaintenance();
+                break;
+            case 'Brakes':
+            case 'Brake Service':
+                this.loadBrakeService();
+                break;
+            case 'HVAC':
+            case 'A/C & Heater':
+            case 'Air Conditioning':
+                this.loadAcHeater();
+                break;
+            case 'TPMS':
+            case 'Tire Pressure':
+                this.loadTpms();
+                break;
+            case 'Relearn':
+            case 'Computer Relearn':
+                this.loadRelearn();
+                break;
+            case 'Lamp Reset':
+            case 'Maintenance Lamp':
+                this.loadLampReset();
+                break;
+            case 'Battery':
+            case 'Battery Service':
+                this.loadBattery();
+                break;
+            case 'Suspension':
+            case 'Steering':
+            case 'Steering & Suspension':
+                this.loadSteeringSuspension();
+                break;
+            case 'Airbag':
+            case 'Air Bag':
+                this.loadAirbag();
                 break;
             default:
                 // For other tabs, filter from loaded articles
@@ -338,31 +464,21 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         );
     }
 
+
     loadDtcs() {
         this.loading = true;
-        console.log('[DTC] Loading DTCs for vehicle:', this.vehicleId, 'Source:', this.contentSource);
-
+        this.filteredArticles = [];
         this.motorApi.getDtcs(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                console.log('[DTC] Raw response:', response);
-                // Extract dtcs array from response body
-                this.dtcData = response?.dtcs || [];
-                console.log('[DTC] Extracted DTC count:', this.dtcData.length);
-
-                if (this.dtcData.length === 0) {
-                    console.warn('[DTC] No DTCs found in response');
-                    this.error = 'No diagnostic trouble codes available for this vehicle.';
-                }
-
+                const data = response?.dtcs || [];
+                this.dtcData = data;
+                this.articles = data;
+                this.filteredArticles = data;
                 this.loading = false;
+                if (this.searchQuery) this.onSearchInput();
             },
             (err: any) => {
-                console.error('[DTC] Error loading DTCs:', err);
-                console.error('[DTC] Error details:', {
-                    status: err.status,
-                    message: err.message,
-                    error: err.error
-                });
+                console.error('Error loading DTCs:', err);
                 this.error = `Failed to load Diagnostic Trouble Codes: ${err.status || 'Unknown error'}`;
                 this.loading = false;
             }
@@ -371,11 +487,15 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     loadTsbs() {
         this.loading = true;
+        this.filteredArticles = [];
         this.motorApi.getTsbs(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                // Extract tsbs array from response body
-                this.tsbData = response?.tsbs || [];
+                const data = response?.tsbs || [];
+                this.tsbData = data;
+                this.articles = data;
+                this.filteredArticles = data;
                 this.loading = false;
+                if (this.searchQuery) this.onSearchInput();
             },
             (err: any) => {
                 console.error('Error loading TSBs:', err);
@@ -387,11 +507,15 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     loadWiring() {
         this.loading = true;
+        this.filteredArticles = [];
         this.motorApi.getWiringDiagrams(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                // Extract wiringDiagrams array from response body
-                this.wiringData = response?.wiringDiagrams || [];
+                const data = response?.wiringDiagrams || [];
+                this.wiringData = data;
+                this.articles = data;
+                this.filteredArticles = data;
                 this.loading = false;
+                if (this.searchQuery) this.onSearchInput();
             },
             (err: any) => {
                 console.error('Error loading Wiring Diagrams:', err);
@@ -403,15 +527,216 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     loadLabor() {
         this.loading = true;
+        this.filteredArticles = [];
         this.motorApi.getLaborTimes(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                // Extract labor operations array from response
-                this.laborData = response?.laborOperations || response?.operations || [];
+                const data = response?.laborOperations || response?.operations || [];
+                this.laborData = data;
+                this.articles = data;
+                this.filteredArticles = data;
                 this.loading = false;
+                if (this.searchQuery) this.onSearchInput();
             },
             (err: any) => {
                 console.error('Error loading Labor Times:', err);
                 this.error = 'Failed to load Labor Times.';
+                this.loading = false;
+            }
+        );
+    }
+
+    // ============================================================
+    // SPECIALIZED PROCEDURE LOADERS (Server-side filtering)
+    // ============================================================
+
+    loadProcedures() {
+        this.loading = true;
+        this.motorApi.getProcedures(this.contentSource, this.vehicleId).subscribe(
+            (response: any) => {
+                this.filteredArticles = response?.procedures || response || [];
+                this.loading = false;
+            },
+            (err: any) => {
+                console.error('Error loading Procedures:', err);
+                this.error = 'Failed to load Repair Procedures.';
+                this.loading = false;
+            }
+        );
+    }
+
+    loadDiagrams() {
+        this.loading = true;
+        this.motorApi.getDiagrams(this.contentSource, this.vehicleId).subscribe(
+            (response: any) => {
+                this.filteredArticles = response?.diagrams || response || [];
+                this.loading = false;
+            },
+            (err: any) => {
+                console.error('Error loading Diagrams:', err);
+                this.error = 'Failed to load Diagrams.';
+                this.loading = false;
+            }
+        );
+    }
+
+    loadSpecs() {
+        this.loading = true;
+        this.filteredArticles = [];
+        this.motorApi.getSpecs(this.contentSource, this.vehicleId).subscribe(
+            (response: any) => {
+                const data = response?.specs || response || [];
+                this.articles = data;
+                this.filteredArticles = data;
+                this.loading = false;
+                if (this.searchQuery) this.onSearchInput();
+            },
+            (err: any) => {
+                console.error('Error loading Specs:', err);
+                this.error = 'Failed to load Specifications.';
+                this.loading = false;
+            }
+        );
+    }
+
+    loadBrakeService() {
+        this.loading = true;
+        this.motorApi.getBrakeService(this.contentSource, this.vehicleId).subscribe(
+            (response: any) => {
+                this.filteredArticles = response?.articles || response?.procedures || response || [];
+                this.loading = false;
+            },
+            (err: any) => {
+                console.error('Error loading Brake Service:', err);
+                this.error = 'Failed to load Brake Service Procedures.';
+                this.loading = false;
+            }
+        );
+    }
+
+    loadAcHeater() {
+        this.loading = true;
+        this.filteredArticles = [];
+        this.motorApi.getAcHeater(this.contentSource, this.vehicleId).subscribe(
+            (response: any) => {
+                const data = response?.articles || response?.procedures || response || [];
+                this.articles = data;
+                this.filteredArticles = data;
+                this.loading = false;
+                if (this.searchQuery) this.onSearchInput();
+            },
+            (err: any) => {
+                console.error('Error loading A/C & Heater:', err);
+                this.error = 'Failed to load A/C & Heater Procedures.';
+                this.loading = false;
+            }
+        );
+    }
+
+    loadTpms() {
+        this.loading = true;
+        this.filteredArticles = [];
+        this.motorApi.getTpms(this.contentSource, this.vehicleId).subscribe(
+            (response: any) => {
+                const data = response?.articles || response?.procedures || response || [];
+                this.articles = data;
+                this.filteredArticles = data;
+                this.loading = false;
+                if (this.searchQuery) this.onSearchInput();
+            },
+            (err: any) => {
+                console.error('Error loading TPMS:', err);
+                this.error = 'Failed to load TPMS Procedures.';
+                this.loading = false;
+            }
+        );
+    }
+
+    loadRelearn() {
+        this.loading = true;
+        this.filteredArticles = [];
+        this.motorApi.getRelearn(this.contentSource, this.vehicleId).subscribe(
+            (response: any) => {
+                const data = response?.articles || response?.procedures || response || [];
+                this.articles = data;
+                this.filteredArticles = data;
+                this.loading = false;
+                if (this.searchQuery) this.onSearchInput();
+            },
+            (err: any) => {
+                console.error('Error loading Relearn:', err);
+                this.error = 'Failed to load Relearn Procedures.';
+                this.loading = false;
+            }
+        );
+    }
+
+    loadLampReset() {
+        this.loading = true;
+        this.filteredArticles = [];
+        this.motorApi.getLampReset(this.contentSource, this.vehicleId).subscribe(
+            (response: any) => {
+                const data = response?.articles || response?.procedures || response || [];
+                this.articles = data;
+                this.filteredArticles = data;
+                this.loading = false;
+                if (this.searchQuery) this.onSearchInput();
+            },
+            (err: any) => {
+                console.error('Error loading Lamp Reset:', err);
+                this.error = 'Failed to load Maintenance Lamp Reset Procedures.';
+                this.loading = false;
+            }
+        );
+    }
+
+    loadBattery() {
+        this.loading = true;
+        this.filteredArticles = [];
+        this.motorApi.getBattery(this.contentSource, this.vehicleId).subscribe(
+            (response: any) => {
+                const data = response?.articles || response?.procedures || response || [];
+                this.articles = data;
+                this.filteredArticles = data;
+                this.loading = false;
+                if (this.searchQuery) this.onSearchInput();
+            },
+            (err: any) => {
+                console.error('Error loading Battery:', err);
+                this.error = 'Failed to load Battery Service Procedures.';
+                this.loading = false;
+            }
+        );
+    }
+
+    loadSteeringSuspension() {
+        this.loading = true;
+        this.filteredArticles = [];
+        this.motorApi.getSteeringSuspension(this.contentSource, this.vehicleId).subscribe(
+            (response: any) => {
+                const data = response?.articles || response?.procedures || response || [];
+                this.articles = data;
+                this.filteredArticles = data;
+                this.loading = false;
+                if (this.searchQuery) this.onSearchInput();
+            },
+            (err: any) => {
+                console.error('Error loading Steering & Suspension:', err);
+                this.error = 'Failed to load Steering & Suspension Procedures.';
+                this.loading = false;
+            }
+        );
+    }
+
+    loadAirbag() {
+        this.loading = true;
+        this.motorApi.getAirbag(this.contentSource, this.vehicleId).subscribe(
+            (response: any) => {
+                this.filteredArticles = response?.articles || response?.procedures || response || [];
+                this.loading = false;
+            },
+            (err: any) => {
+                console.error('Error loading Airbag:', err);
+                this.error = 'Failed to load Airbag Service Procedures.';
                 this.loading = false;
             }
         );
@@ -423,9 +748,12 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     toggleXRayMode(article: any) {
         this.xRayMode = !this.xRayMode;
+        this.vectorError = '';
 
         if (this.xRayMode && article) {
             this.loadingVector = true;
+            this.vectorIllustration = null;
+
             // Assuming article has a GroupID or we use a default for demo
             // In a real scenario, we'd get the GroupID from the article metadata
             const groupId = article.groupId || 12345;
@@ -443,11 +771,17 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
                             data.imageUrl = window.location.origin + data.imageUrl;
                         }
                     }
+
+                    if (!data || (!data.svgContent && !data.imageUrl)) {
+                        this.vectorError = 'No X-Ray schematic available for this component.';
+                    }
+
                     this.vectorIllustration = data;
                     this.loadingVector = false;
                 },
                 (err) => {
                     console.error('Error loading vector illustration', err);
+                    this.vectorError = 'Failed to load X-Ray schematic.';
                     this.loadingVector = false;
                 }
             );
@@ -547,6 +881,11 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
                 article.bucket?.toLowerCase().includes(query)
             );
         }
+    }
+
+    clearSearch() {
+        this.searchQuery = '';
+        this.onSearchInput();
     }
 
     viewArticle(article: any) {
@@ -734,6 +1073,7 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
                     this.articleContent = this.sanitizer.bypassSecurityTrustHtml(pdfHtml);
                     this.loadingArticle = false;
                 } else if (articleId.startsWith('L:') && response && response.mainOperation) {
+                    // STRICT CHECK: Only treat as Labor if ID starts with 'L:'
                     this.laborData = response;
                     this.articleContent = '';
                     this.loadingArticle = false;
@@ -758,27 +1098,67 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     createPdfViewerHtml(base64Pdf: string, documentId: string): string {
-        const pdfDataUri = `data:application/pdf;base64,${base64Pdf}`;
-        return `
-    <div class="pdf-viewer">
-        <div class="pdf-info">
-            <p>📄 <strong>PDF Document</strong> - Document ID: ${documentId}</p>
+        // Use Blob URL for better browser support with large files
+        try {
+            const blob = this.base64ToBlob(base64Pdf, 'application/pdf');
+            const blobUrl = URL.createObjectURL(blob);
+            const pdfDataUri = `data:application/pdf;base64,${base64Pdf}`; // Keep as fallback for download
+
+            return `
+        <div class="pdf-viewer">
+            <div class="pdf-info">
+                <p>📄 <strong>PDF Document</strong> - Document ID: ${documentId}</p>
                 <a href="${pdfDataUri}" download="document-${documentId}.pdf" class="download-btn">
-                        ⬇ Download PDF
-    </a>
-    </div>
-    <iframe
-src="${pdfDataUri}"
-width="100%"
-height="800px"
-style="border: 1px solid rgba(0, 243, 255, 0.3); border-radius: 8px; background: white;"
-type="application/pdf">
-    <p>Your browser does not support PDF viewing. 
-                       < a href = "${pdfDataUri}" download = "document-${documentId}.pdf" > Download the PDF </a> instead.
-    </p>
-    </iframe>
-    </div>
-        `;
+                    ⬇ Download PDF
+                </a>
+            </div>
+            <object
+                data="${blobUrl}"
+                type="application/pdf"
+                width="100%"
+                height="800px"
+                style="border: 1px solid rgba(0, 243, 255, 0.3); border-radius: 8px; background: white;">
+                <p>Unable to display PDF. 
+                    <a href="${pdfDataUri}" download="document-${documentId}.pdf">Download the PDF</a> instead.
+                </p>
+            </object>
+        </div>
+            `;
+        } catch (e) {
+            console.error('Error creating PDF Blob:', e);
+            // Fallback to data URI if blob creation fails
+            const pdfDataUri = `data:application/pdf;base64,${base64Pdf}`;
+            return `
+        <div class="pdf-viewer">
+            <div class="pdf-info">
+                <p>📄 <strong>PDF Document</strong> - Document ID: ${documentId}</p>
+                <a href="${pdfDataUri}" download="document-${documentId}.pdf" class="download-btn">
+                    ⬇ Download PDF
+                </a>
+            </div>
+            <object
+                data="${pdfDataUri}"
+                type="application/pdf"
+                width="100%"
+                height="800px"
+                style="border: 1px solid rgba(0, 243, 255, 0.3); border-radius: 8px; background: white;">
+                <p>Unable to display PDF. 
+                    <a href="${pdfDataUri}" download="document-${documentId}.pdf">Download the PDF</a> instead.
+                </p>
+            </object>
+        </div>
+            `;
+        }
+    }
+
+    private base64ToBlob(base64: string, type: string = 'application/pdf'): Blob {
+        const binStr = atob(base64);
+        const len = binStr.length;
+        const arr = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            arr[i] = binStr.charCodeAt(i);
+        }
+        return new Blob([arr], { type: type });
     }
 
     transformArticleHtml(html: string): string {
@@ -921,6 +1301,26 @@ type="application/pdf">
             queryParams: { articleId: null },
             queryParamsHandling: 'merge'
         });
+    }
+
+    // Mobile Search Handlers
+    onSearchFocus() {
+        this.searchFocused = true;
+    }
+
+    onSearchBlur() {
+        // Small delay to allow click events to process
+        setTimeout(() => {
+            this.searchFocused = false;
+        }, 200);
+    }
+
+    navigateToDashboard() {
+        this.router.navigate(['/']);
+    }
+
+    toggleMenu() {
+        this.uiService.toggleMenu();
     }
 
     async toggleAiEnhancement() {

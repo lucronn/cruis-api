@@ -219,6 +219,7 @@ export class VehicleSelectorComponent implements OnInit {
     }
 
     selectSuggestion(item: any) {
+        clearTimeout(this.searchDebounce);
         if (this.suggestionType === 'history') {
             // Restore from history
             this.navigateToVehicle(item.vehicleId, {
@@ -272,7 +273,7 @@ export class VehicleSelectorComponent implements OnInit {
         };
 
         // Save history
-        this.saveToRecentVehicles(vehicleId, year, make, modelName);
+        this.saveToRecentVehicles(vehicleId, year, make, modelName, this.selectedContentSource);
         localStorage.setItem('currentVehicle', JSON.stringify(vehicleParams));
 
         this.router.navigate(['/docs'], {
@@ -280,14 +281,15 @@ export class VehicleSelectorComponent implements OnInit {
         });
     }
 
-    saveToRecentVehicles(vehicleId: string, year: string, make: string, model: string) {
+    saveToRecentVehicles(vehicleId: string, year: string, make: string, model: string, contentSource: string) {
         const vehicle = {
             id: Date.now(),
             vehicleId: vehicleId,
             vehicleName: `${year} ${make} ${model}`,
             year: year,
             make: make,
-            model: model
+            model: model,
+            contentSource: contentSource
         };
 
         const stored = sessionStorage.getItem('selectedVehicles');

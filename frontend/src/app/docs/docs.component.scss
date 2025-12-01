@@ -63,10 +63,32 @@ $text-secondary: #a0a0a0;
 // 1. HUD Header
 .hud-header {
     background: linear-gradient(180deg, rgba(0, 0, 0, 0.9) 0%, rgba(10, 10, 10, 0.95) 100%);
-    padding: 16px 16px 0;
+    padding: 16px 70px 0 16px; // Added right padding for menu button
     border-bottom: 1px solid $glass-border;
     z-index: 100;
     backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+
+    @media (max-width: 768px) {
+        &.collapsed {
+            padding-top: 0;
+            padding-bottom: 0;
+
+            .hud-top-row {
+                margin-bottom: 0;
+                opacity: 0;
+                height: 0;
+                overflow: hidden;
+            }
+
+            .stat-carousel {
+                opacity: 0;
+                height: 0;
+                padding-bottom: 0;
+                overflow: hidden;
+            }
+        }
+    }
 }
 
 .hud-top-row {
@@ -116,6 +138,115 @@ $text-secondary: #a0a0a0;
         width: 60px;
         height: 40px;
     }
+
+    .dashboard-link {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: $neon-cyan;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        margin-left: 10px;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background: rgba(0, 243, 255, 0.2);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+        }
+    }
+
+    .search-trigger {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: $neon-cyan;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        margin-left: 10px;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background: rgba(0, 243, 255, 0.2);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+        }
+    }
+}
+
+// Integrated Search Bar
+.integrated-search-bar {
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 102;
+
+    .search-field {
+        position: relative;
+        width: 100%;
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: $neon-cyan;
+            pointer-events: none;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px 40px 12px 44px; // Space for icon and clear btn
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+
+            &::placeholder {
+                color: rgba(255, 255, 255, 0.4);
+            }
+
+            &:focus {
+                background: rgba(0, 0, 0, 0.8);
+                border-color: $neon-cyan;
+                box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
+            }
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: $text-secondary;
+            padding: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &:hover {
+                color: #fff;
+            }
+        }
+    }
+
+    .search-stats {
+        margin-top: 8px;
+        font-size: 12px;
+        color: $neon-cyan;
+        padding-left: 12px;
+    }
 }
 
 .stat-carousel {
@@ -123,7 +254,16 @@ $text-secondary: #a0a0a0;
     overflow-x: auto;
     gap: 12px;
     padding-bottom: 16px;
-    scrollbar-width: none; // Hide scrollbar Firefox
+    scrollbar-width: none;
+    transition: all 0.3s ease;
+
+    &.hidden {
+        height: 0;
+        padding-bottom: 0;
+        opacity: 0;
+        overflow: hidden;
+        margin: 0;
+    }
 
     &::-webkit-scrollbar {
         display: none;
@@ -418,122 +558,14 @@ $text-secondary: #a0a0a0;
     }
 }
 
-// 4. FAB Search
-.fab-search {
-    position: absolute;
-    bottom: calc(24px + env(safe-area-inset-bottom)); // Respect safe area
-    right: 24px;
-    height: 48px; // Pill shape height
-    padding: 0 20px;
-    border-radius: 24px;
-    background: $neon-cyan;
-    border: none;
-    color: #000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    box-shadow: 0 4px 20px rgba(0, 243, 255, 0.4);
-    z-index: 200;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
-    i {
-        font-size: 18px;
-    }
 
-    .fab-label {
-        font-size: 14px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
 
-    &:active {
-        transform: scale(0.95);
-    }
-}
 
-// Bottom Search Sheet
-.bottom-search-sheet {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: #1a1a1a;
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-    padding: 24px;
-    z-index: 300;
-    transform: translateY(100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
-    border-top: 1px solid $neon-cyan;
 
-    &.active {
-        transform: translateY(0);
-    }
 
-    .search-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
 
-        h3 {
-            margin: 0;
-            color: $text-primary;
-        }
 
-        .close-sheet {
-            background: none;
-            border: none;
-            color: $text-secondary;
-            font-size: 20px;
-            padding: 8px;
-        }
-    }
-
-    .search-input-wrapper {
-        position: relative;
-
-        .search-icon {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: $neon-cyan;
-        }
-
-        .bottom-search-input {
-            width: 100%;
-            background: #000;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 16px 16px 16px 48px;
-            border-radius: 12px;
-            color: #fff;
-            font-size: 16px;
-            outline: none;
-
-            &:focus {
-                border-color: $neon-cyan;
-                box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
-            }
-        }
-    }
-}
-
-.sheet-backdrop {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
-    z-index: 250;
-    animation: fadeIn 0.3s ease;
-}
 
 @keyframes fadeIn {
     from {
@@ -583,23 +615,50 @@ $text-secondary: #a0a0a0;
         background: $dark-bg; // Dark background for Cyberpunk theme
         color: $text-primary; // Light text
 
-        .loading-article {
+        .loading-state {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100%;
-            color: $text-primary;
+            padding: 40px;
+            color: $neon-cyan;
+            gap: 15px;
 
             .cyber-spinner {
                 width: 40px;
                 height: 40px;
-                border: 3px solid rgba(0, 243, 255, 0.3);
-                border-radius: 50%;
+                border: 3px solid rgba(0, 243, 255, 0.1);
                 border-top-color: $neon-cyan;
+                border-radius: 50%;
                 animation: spin 1s linear infinite;
-                margin-bottom: 16px;
             }
+        }
+
+        .error-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: #ff4444;
+            gap: 10px;
+            text-align: center;
+
+            i {
+                font-size: 2rem;
+                margin-bottom: 10px;
+            }
+        }
+
+        .vector-diagram-svg {
+            max-width: 100%;
+            height: auto;
+            margin: 20px auto;
+            display: block;
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            border-radius: 8px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
         }
 
         .article-body {
@@ -654,12 +713,18 @@ $text-secondary: #a0a0a0;
 
                 table {
                     width: 100% !important;
-                    display: block; // Allow table to scroll if needed
-                    overflow-x: auto;
+                    max-width: 100%;
                     border-collapse: collapse;
                     margin: 20px 0;
                     background: rgba(255, 255, 255, 0.05);
                     border-radius: 8px;
+                    table-layout: auto; // Allow table to size columns properly
+
+                    // Wrapper for horizontal scroll on mobile only
+                    @media (max-width: 768px) {
+                        display: block;
+                        overflow-x: auto;
+                    }
 
                     th,
                     td {
@@ -667,6 +732,15 @@ $text-secondary: #a0a0a0;
                         text-align: left;
                         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
                         min-width: 100px; // Ensure columns don't collapse too much
+                    }
+
+                    // Alternating row shading
+                    tbody tr:nth-child(odd) {
+                        background: rgba(255, 255, 255, 0.03);
+                    }
+
+                    tbody tr:nth-child(even) {
+                        background: rgba(0, 0, 0, 0.1);
                     }
 
                     th {
@@ -1103,6 +1177,12 @@ $text-secondary: #a0a0a0;
         /* Fallback */
         height: calc(100dvh - 60px);
         position: relative;
+
+        // Mobile Safe Area Fix
+        @media (max-width: 768px) {
+            height: calc(100dvh - 60px);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
     }
 
     // Sidebar (Category List) - Mobile
@@ -1110,6 +1190,15 @@ $text-secondary: #a0a0a0;
         width: 100%;
         height: 100%;
         border-radius: 0;
+        border: none;
+        background: transparent; // Let overlay bg show
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        padding-bottom: env(safe-area-inset-bottom); // Ensure sidebar content isn't hidden
         border: none;
         background: transparent; // Let overlay bg show
         position: absolute;
@@ -1653,6 +1742,10 @@ $text-secondary: #a0a0a0;
         overflow: hidden;
         background: rgba(0, 0, 0, 0.5);
         border-radius: 4px;
+        min-height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
         img.xray-image {
             max-width: 100%;
@@ -1773,42 +1866,131 @@ $text-secondary: #a0a0a0;
 
     .lightbox-content {
         position: relative;
-        max-width: 95vw;
-        max-height: 95vh;
+        width: 95vw;
+        height: 95vh;
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: center;
 
-        img {
-            max-width: 100%;
-            max-height: 85vh;
-            object-fit: contain;
-            border-radius: 8px;
-            box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .zoom-controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            top: auto;
+            /* Reset top */
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 12px 24px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            z-index: 10001;
+            /* Ensure above everything */
+
+            .zoom-btn {
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                color: #fff;
+                font-size: 1.2rem;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s;
+
+                &:hover {
+                    background: rgba(0, 243, 255, 0.2);
+                    color: $neon-cyan;
+                    border-color: $neon-cyan;
+                }
+
+                &:active {
+                    transform: scale(0.95);
+                }
+            }
+
+            .zoom-level {
+                color: $neon-cyan;
+                font-family: monospace;
+                font-size: 1rem;
+                min-width: 50px;
+                text-align: center;
+                font-weight: bold;
+            }
+        }
+
+        .image-container {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Removed border/background to focus on image */
+
+            img {
+                max-width: 100%;
+                max-height: 100%;
+                object-fit: contain;
+                transition: transform 0.1s ease-out;
+                transform-origin: center center;
+                user-select: none;
+                -webkit-user-drag: none;
+            }
         }
 
         .lightbox-caption {
-            margin-top: 15px;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 0;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 8px 16px;
+            border-radius: 20px;
             color: #fff;
             font-size: 1rem;
             text-align: center;
-            opacity: 0.8;
+            z-index: 10000;
+            pointer-events: none;
+            /* Let clicks pass through */
+        }
+
+        .lightbox-hint {
+            display: none;
+            /* Hide hint to clean up UI */
         }
 
         .close-lightbox {
-            position: absolute;
-            top: -40px;
-            right: 0;
-            background: none;
-            border: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             color: #fff;
-            font-size: 2rem;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            transition: color 0.3s;
+            transition: all 0.3s;
+            z-index: 10002;
 
             &:hover {
-                color: #00f3ff;
+                background: rgba(255, 0, 0, 0.2);
+                border-color: #ff4444;
+                color: #ff4444;
             }
         }
     }
@@ -1920,6 +2102,7 @@ $text-secondary: #a0a0a0;
         margin-bottom: 1.2rem;
         line-height: 1.3;
     }
+
 
     h2 {
         font-size: 1.5rem;

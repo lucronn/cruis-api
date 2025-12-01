@@ -1,0 +1,13 @@
+{
+  "projects": {},
+  "targets": {
+    "studio-534897447-7a1e7": {
+      "hosting": {
+        "autolib": [
+          "autolib"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

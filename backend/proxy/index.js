@@ -630,6 +630,247 @@ app.get('/api/motor-proxy/api/vin-decode/:vin', async (req, res) => {
   }
 });
 
+// Years - GET /api/motor-proxy/api/years
+// Returns all available vehicle model years
+app.get('/api/motor-proxy/api/years', async (req, res) => {
+  try {
+    console.log('[YEARS] Getting available years');
+
+    const credentials = await ensureAuthenticated();
+
+    const targetUrl = 'https://sites.motor.com/m1/api/years';
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[YEARS] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[YEARS] Error:', error.message);
+    res.status(500).json({ error: 'Years fetch failed', message: error.message });
+  }
+});
+
+// Makes - GET /api/motor-proxy/api/year/{year}/makes
+// Returns all vehicle makes available for a specific year
+app.get('/api/motor-proxy/api/year/:year/makes', async (req, res) => {
+  try {
+    const { year } = req.params;
+    console.log(`[MAKES] Getting makes for year: ${year}`);
+
+    const credentials = await ensureAuthenticated();
+
+    const targetUrl = `https://sites.motor.com/m1/api/year/${year}/makes`;
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[MAKES] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[MAKES] Error:', error.message);
+    res.status(500).json({ error: 'Makes fetch failed', message: error.message });
+  }
+});
+
+// Models - GET /api/motor-proxy/api/year/{year}/make/{make}/models
+// Returns all models with engine options for a specific year and make
+app.get('/api/motor-proxy/api/year/:year/make/:make/models', async (req, res) => {
+  try {
+    const { year, make } = req.params;
+    console.log(`[MODELS] Getting models for ${year} ${make}`);
+
+    const credentials = await ensureAuthenticated();
+
+    const targetUrl = `https://sites.motor.com/m1/api/year/${year}/make/${encodeURIComponent(make)}/models`;
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[MODELS] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[MODELS] Error:', error.message);
+    res.status(500).json({ error: 'Models fetch failed', message: error.message });
+  }
+});
+
+// Alternative Motor Models endpoint - GET /api/motor-proxy/api/motor/year/{year}/make/{make}/models
+app.get('/api/motor-proxy/api/motor/year/:year/make/:make/models', async (req, res) => {
+  try {
+    const { year, make } = req.params;
+    console.log(`[MOTOR-MODELS] Getting motor models for ${year} ${make}`);
+
+    const credentials = await ensureAuthenticated();
+
+    const targetUrl = `https://sites.motor.com/m1/api/year/${year}/make/${encodeURIComponent(make)}/models`;
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[MOTOR-MODELS] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[MOTOR-MODELS] Error:', error.message);
+    res.status(500).json({ error: 'Motor models fetch failed', message: error.message });
+  }
+});
+
+// Vehicle Name - GET /api/motor-proxy/api/source/{contentSource}/{vehicleId}/name
+// Returns the display name for a vehicle
+app.get('/api/motor-proxy/api/source/:contentSource/:vehicleId/name', async (req, res) => {
+  try {
+    const { contentSource, vehicleId } = req.params;
+    console.log(`[VEHICLE-NAME] Getting name for ${contentSource}/${vehicleId}`);
+
+    const credentials = await ensureAuthenticated();
+
+    const targetUrl = `https://sites.motor.com/m1/api/source/${contentSource}/${encodeURIComponent(vehicleId)}/name`;
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[VEHICLE-NAME] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[VEHICLE-NAME] Error:', error.message);
+    res.status(500).json({ error: 'Vehicle name fetch failed', message: error.message });
+  }
+});
+
+// Motor Vehicles - GET /api/motor-proxy/api/source/{contentSource}/{vehicleId}/motorvehicles
+// Returns engine and submodel information
+app.get('/api/motor-proxy/api/source/:contentSource/:vehicleId/motorvehicles', async (req, res) => {
+  try {
+    const { contentSource, vehicleId } = req.params;
+    console.log(`[MOTOR-VEHICLES] Getting motor vehicle details for ${contentSource}/${vehicleId}`);
+
+    const credentials = await ensureAuthenticated();
+
+    const targetUrl = `https://sites.motor.com/m1/api/source/${contentSource}/${encodeURIComponent(vehicleId)}/motorvehicles`;
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[MOTOR-VEHICLES] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[MOTOR-VEHICLES] Error:', error.message);
+    res.status(500).json({ error: 'Motor vehicles fetch failed', message: error.message });
+  }
+});
+
+// Articles Search - GET /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/articles/v2
+// Search for articles matching a vehicle and optional search term
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/articles/v2', async (req, res) => {
+  try {
+    const { contentSource, vehicleId } = req.params;
+    const { searchTerm, motorVehicleId } = req.query;
+    console.log(`[ARTICLES] Searching articles for ${contentSource}/${vehicleId} (search: "${searchTerm || ''}")`);
+
+    const credentials = await ensureAuthenticated();
+
+    const params = new URLSearchParams();
+    if (searchTerm) params.append('searchTerm', searchTerm);
+    if (motorVehicleId) params.append('motorVehicleId', motorVehicleId);
+
+    const targetUrl = `https://sites.motor.com/m1/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/articles/v2?${params}`;
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[ARTICLES] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[ARTICLES] Error:', error.message);
+    res.status(500).json({ error: 'Articles search failed', message: error.message });
+  }
+});
+
 // ============================================================
 // FILTERED ARTICLE ENDPOINTS (DTCs, TSBs, etc.)
 // These filter the /articles/v2 response by bucket type
@@ -738,11 +979,10 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/dtcs', as
         total: dtcTab ? dtcTab.articlesCount : dtcArticles.length,
         dtcs: dtcArticles.map(a => ({
           id: a.id,
-          code: a.code || (a.title || '').match(/^[A-Z]?\d+[-\d]*/)?.[0] || '',
+          code: a.code || '',
           description: a.description || a.title || '',
           subtitle: a.subtitle || '',
-          bucket: a.bucket || '',
-          system: a.subtitle || a.bucket || 'Unknown System'
+          bucket: a.bucket || ''
         }))
       }
     });
@@ -1117,6 +1357,43 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/airbag', 
   }
 });
 
+// Fluids - GET /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/fluids
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/fluids', async (req, res) => {
+  try {
+    const { contentSource, vehicleId } = req.params;
+    const { motorVehicleId } = req.query;
+    console.log(`[FLUIDS] Getting fluids for ${contentSource}/${vehicleId}`);
+
+    const credentials = await ensureAuthenticated();
+
+    const params = new URLSearchParams();
+    if (motorVehicleId) params.append('motorVehicleId', motorVehicleId);
+
+    const targetUrl = `https://sites.motor.com/m1/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/fluids?${params}`;
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[FLUIDS] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[FLUIDS] Error:', error.message);
+    res.status(500).json({ error: 'Fluids fetch failed', message: error.message });
+  }
+});
+
 // Article Categories Summary - GET /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/categories
 app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/categories', async (req, res) => {
   try {
@@ -1158,8 +1435,7 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/categorie
       body: {
         categories: filterTabs.map(t => ({
           name: t.name,
-          count: t.articlesCount,
-          buckets: t.buckets
+          count: t.articlesCount || t.count || 0
         }))
       }
     });
@@ -1237,10 +1513,10 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/wiring', 
     // Wiring diagrams are part of the "Diagrams" category in articles
     const result = await fetchArticlesByBucket(credentials, contentSource, vehicleId, motorVehicleId, 'Diagram');
 
-    // Further filter for wiring-specific diagrams if possible
+    // Filter for wiring diagrams using exact bucket match first, then title fallback
     const wiringDiagrams = result.articles.filter(a =>
-      a.title?.toLowerCase().includes('wiring') ||
-      a.bucket?.toLowerCase().includes('wiring')
+      a.bucket === 'Wiring Diagrams' ||
+      a.title?.toLowerCase().includes('wiring')
     );
 
     console.log(`[WIRING] Found ${wiringDiagrams.length} wiring diagrams out of ${result.articles.length} total diagrams`);
@@ -1273,11 +1549,9 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/component
     // Component locations are part of the "Diagrams" category
     const result = await fetchArticlesByBucket(credentials, contentSource, vehicleId, motorVehicleId, 'Diagram');
 
-    // Filter for component location diagrams
+    // Filter for component location diagrams using exact bucket match
     const componentDiagrams = result.articles.filter(a =>
-      a.title?.toLowerCase().includes('component') ||
-      a.title?.toLowerCase().includes('location') ||
-      a.bucket?.toLowerCase().includes('component')
+      a.bucket === 'Component Location Diagrams'
     );
 
     console.log(`[COMPONENTS] Found ${componentDiagrams.length} component diagrams out of ${result.articles.length} total diagrams`);
@@ -1315,9 +1589,13 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/labor-tim
     res.json({
       header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
       body: {
-        note: 'Labor times are associated with individual procedures. Use /labor/{articleId} to get labor time for a specific article.',
         total: result.total,
-        procedures: result.articles.slice(0, 50) // Return first 50 as sample
+        note: 'Labor times are associated with individual procedures. Use /labor/{articleId} to get labor time for a specific article.',
+        laborOperations: result.articles.map(a => ({
+          id: a.id,
+          title: a.title,
+          bucket: a.bucket
+        }))
       }
     });
 
@@ -1357,6 +1635,783 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/labor-tim
   } catch (error) {
     console.error('[LABOR] Error:', error.message);
     res.status(500).json({ error: 'Labor times retrieval failed', message: error.message });
+  }
+});
+
+// Parts - GET /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/parts
+// Returns OEM parts with pricing for the vehicle
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/parts', async (req, res) => {
+  try {
+    const { contentSource, vehicleId } = req.params;
+    const { motorVehicleId, searchTerm } = req.query;
+    console.log(`[PARTS] Getting parts for ${contentSource}/${vehicleId} (search: "${searchTerm || ''}")`);
+
+    const credentials = await ensureAuthenticated();
+
+    const params = new URLSearchParams();
+    if (motorVehicleId) params.append('motorVehicleId', motorVehicleId);
+    if (searchTerm) params.append('searchTerm', searchTerm);
+
+    const targetUrl = `https://sites.motor.com/m1/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/parts?${params}`;
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[PARTS] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[PARTS] Error:', error.message);
+    res.status(500).json({ error: 'Parts fetch failed', message: error.message });
+  }
+});
+
+// Labor Detail - GET /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/labor/{articleId}
+// Returns detailed labor information for a specific article
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/labor/:articleId', async (req, res) => {
+  try {
+    const { contentSource, vehicleId, articleId } = req.params;
+    const { motorVehicleId, prettyPrint, searchTerm } = req.query;
+    console.log(`[LABOR-DETAIL] Getting labor detail for ${contentSource}/${vehicleId}/${articleId}`);
+
+    const credentials = await ensureAuthenticated();
+
+    const params = new URLSearchParams();
+    if (motorVehicleId) params.append('motorVehicleId', motorVehicleId);
+    if (prettyPrint) params.append('prettyPrint', prettyPrint);
+    if (searchTerm) params.append('searchTerm', searchTerm);
+
+    const targetUrl = `https://sites.motor.com/m1/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/labor/${articleId}?${params}`;
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[LABOR-DETAIL] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[LABOR-DETAIL] Error:', error.message);
+    res.status(500).json({ error: 'Labor detail fetch failed', message: error.message });
+  }
+});
+
+// Article - GET /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/article/{articleId}
+// Returns the full HTML content of an article
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/article/:articleId', async (req, res) => {
+  try {
+    const { contentSource, vehicleId, articleId } = req.params;
+    const { motorVehicleId, prettyPrint, bucketName, articleSubtype, searchTerm } = req.query;
+    console.log(`[ARTICLE] Getting article ${contentSource}/${vehicleId}/${articleId}`);
+
+    const credentials = await ensureAuthenticated();
+
+    const params = new URLSearchParams();
+    if (motorVehicleId) params.append('motorVehicleId', motorVehicleId);
+    if (prettyPrint) params.append('prettyPrint', prettyPrint);
+    if (bucketName) params.append('bucketName', bucketName);
+    if (articleSubtype) params.append('articleSubtype', articleSubtype);
+    if (searchTerm) params.append('searchTerm', searchTerm);
+
+    const targetUrl = `https://sites.motor.com/m1/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/article/${articleId}?${params}`;
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'text/html, application/json, */*',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true,
+      responseType: 'text' // Articles return HTML
+    });
+
+    console.log(`[ARTICLE] Response: ${response.status}, Content-Type: ${response.headers['content-type']}`);
+
+    // Forward response with correct content type
+    res.status(response.status);
+    if (response.headers['content-type']) {
+      res.set('Content-Type', response.headers['content-type']);
+    }
+    res.send(response.data);
+
+  } catch (error) {
+    console.error('[ARTICLE] Error:', error.message);
+    res.status(500).json({ error: 'Article fetch failed', message: error.message });
+  }
+});
+
+// Graphic - GET /api/motor-proxy/api/source/{contentSource}/graphic/{graphicId}
+// Returns a diagram or image with optional resizing
+app.get('/api/motor-proxy/api/source/:contentSource/graphic/:graphicId', async (req, res) => {
+  try {
+    const { contentSource, graphicId } = req.params;
+    const { w, h } = req.query;
+    console.log(`[GRAPHIC] Getting graphic ${contentSource}/${graphicId} (${w}x${h || 'auto'})`);
+
+    const credentials = await ensureAuthenticated();
+
+    const params = new URLSearchParams();
+    if (w) params.append('w', w);
+    if (h) params.append('h', h);
+
+    const targetUrl = `https://sites.motor.com/m1/api/source/${contentSource}/graphic/${graphicId}?${params}`;
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'image/*, */*',
+        'Cookie': credentials._cookieString,
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      responseType: 'arraybuffer', // Handle binary image data
+      validateStatus: () => true
+    });
+
+    console.log(`[GRAPHIC] Response: ${response.status}, Content-Type: ${response.headers['content-type']}`);
+
+    // Forward response with correct content type
+    res.status(response.status);
+    if (response.headers['content-type']) {
+      res.set('Content-Type', response.headers['content-type']);
+    }
+    if (response.headers['cache-control']) {
+      res.set('Cache-Control', response.headers['cache-control']);
+    }
+    res.send(Buffer.from(response.data));
+
+  } catch (error) {
+    console.error('[GRAPHIC] Error:', error.message);
+    res.status(500).json({ error: 'Graphic fetch failed', message: error.message });
+  }
+});
+
+// Article Title - GET /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/article/{articleId}/title
+// Returns just the title of an article (optimization endpoint)
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/article/:articleId/title', async (req, res) => {
+  try {
+    const { contentSource, vehicleId, articleId } = req.params;
+    console.log(`[ARTICLE-TITLE] Getting title for ${contentSource}/${vehicleId}/${articleId}`);
+
+    const credentials = await ensureAuthenticated();
+
+    const targetUrl = `https://sites.motor.com/m1/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/article/${articleId}/title`;
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[ARTICLE-TITLE] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[ARTICLE-TITLE] Error:', error.message);
+    res.status(500).json({ error: 'Article title fetch failed', message: error.message });
+  }
+});
+
+// Article XML - GET /api/motor-proxy/api/source/{contentSource}/xml/{articleId}
+// Returns raw XML content of an article
+app.get('/api/motor-proxy/api/source/:contentSource/xml/:articleId', async (req, res) => {
+  try {
+    const { contentSource, articleId } = req.params;
+    console.log(`[ARTICLE-XML] Getting XML for ${contentSource}/${articleId}`);
+
+    const credentials = await ensureAuthenticated();
+
+    const targetUrl = `https://sites.motor.com/m1/api/source/${contentSource}/xml/${articleId}`;
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/xml, text/xml, */*',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      responseType: 'text',
+      validateStatus: () => true
+    });
+
+    console.log(`[ARTICLE-XML] Response: ${response.status}`);
+    res.status(response.status);
+    if (response.headers['content-type']) {
+      res.set('Content-Type', response.headers['content-type']);
+    }
+    res.send(response.data);
+
+  } catch (error) {
+    console.error('[ARTICLE-XML] Error:', error.message);
+    res.status(500).json({ error: 'Article XML fetch failed', message: error.message });
+  }
+});
+
+// Maintenance Schedules by Frequency - GET /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/maintenanceSchedules/frequency
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/maintenanceSchedules/frequency', async (req, res) => {
+  try {
+    const { contentSource, vehicleId } = req.params;
+    const { frequencyTypeCode, severity, searchTerm } = req.query;
+    console.log(`[MAINT-FREQ] Getting maintenance schedules by frequency for ${contentSource}/${vehicleId}`);
+
+    const credentials = await ensureAuthenticated();
+
+    const params = new URLSearchParams();
+    if (frequencyTypeCode) params.append('frequencyTypeCode', frequencyTypeCode);
+    if (severity) params.append('severity', severity);
+    if (searchTerm) params.append('searchTerm', searchTerm);
+
+    const targetUrl = `https://sites.motor.com/m1/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/maintenanceSchedules/frequency?${params}`;
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[MAINT-FREQ] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[MAINT-FREQ] Error:', error.message);
+    res.status(500).json({ error: 'Maintenance frequency fetch failed', message: error.message });
+  }
+});
+
+// Maintenance Schedules by Intervals - GET /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/maintenanceSchedules/intervals
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/maintenanceSchedules/intervals', async (req, res) => {
+  try {
+    const { contentSource, vehicleId } = req.params;
+    const { intervalType, interval, severity, searchTerm } = req.query;
+    console.log(`[MAINT-INT] Getting maintenance schedules by intervals for ${contentSource}/${vehicleId}`);
+
+    const credentials = await ensureAuthenticated();
+
+    const params = new URLSearchParams();
+    if (intervalType) params.append('intervalType', intervalType);
+    if (interval) params.append('interval', interval);
+    if (severity) params.append('severity', severity);
+    if (searchTerm) params.append('searchTerm', searchTerm);
+
+    const targetUrl = `https://sites.motor.com/m1/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/maintenanceSchedules/intervals?${params}`;
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[MAINT-INT] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[MAINT-INT] Error:', error.message);
+    res.status(500).json({ error: 'Maintenance intervals fetch failed', message: error.message });
+  }
+});
+
+// Maintenance Schedules by Indicators - GET /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/maintenanceSchedules/indicators
+app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/maintenanceSchedules/indicators', async (req, res) => {
+  try {
+    const { contentSource, vehicleId } = req.params;
+    const { severity, searchTerm } = req.query;
+    console.log(`[MAINT-IND] Getting maintenance schedules by indicators for ${contentSource}/${vehicleId}`);
+
+    const credentials = await ensureAuthenticated();
+
+    const params = new URLSearchParams();
+    if (severity) params.append('severity', severity);
+    if (searchTerm) params.append('searchTerm', searchTerm);
+
+    const targetUrl = `https://sites.motor.com/m1/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/maintenanceSchedules/indicators?${params}`;
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[MAINT-IND] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[MAINT-IND] Error:', error.message);
+    res.status(500).json({ error: 'Maintenance indicators fetch failed', message: error.message });
+  }
+});
+
+// Save Bookmark - POST /api/motor-proxy/api/source/{contentSource}/vehicle/{vehicleId}/article/{articleId}/bookmark
+app.post('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/article/:articleId/bookmark', async (req, res) => {
+  try {
+    const { contentSource, vehicleId, articleId } = req.params;
+    console.log(`[BOOKMARK-SAVE] Saving bookmark for ${contentSource}/${vehicleId}/${articleId}`);
+
+    const credentials = await ensureAuthenticated();
+
+    const targetUrl = `https://sites.motor.com/m1/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/article/${articleId}/bookmark`;
+
+    const response = await axios({
+      method: 'POST',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      data: req.body,
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[BOOKMARK-SAVE] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[BOOKMARK-SAVE] Error:', error.message);
+    res.status(500).json({ error: 'Bookmark save failed', message: error.message });
+  }
+});
+
+// Get Bookmark - GET /api/motor-proxy/api/bookmark/{bookmarkId}
+app.get('/api/motor-proxy/api/bookmark/:bookmarkId', async (req, res) => {
+  try {
+    const { bookmarkId } = req.params;
+    console.log(`[BOOKMARK-GET] Getting bookmark ${bookmarkId}`);
+
+    const credentials = await ensureAuthenticated();
+
+    const targetUrl = `https://sites.motor.com/m1/api/bookmark/${bookmarkId}`;
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[BOOKMARK-GET] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[BOOKMARK-GET] Error:', error.message);
+    res.status(500).json({ error: 'Bookmark fetch failed', message: error.message });
+  }
+});
+
+// Processing Quarters - GET /api/motor-proxy/api/source/track-change/processingquarters
+app.get('/api/motor-proxy/api/source/track-change/processingquarters', async (req, res) => {
+  try {
+    console.log('[QUARTERS] Getting processing quarters');
+
+    const credentials = await ensureAuthenticated();
+
+    const targetUrl = 'https://sites.motor.com/m1/api/source/track-change/processingquarters';
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[QUARTERS] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[QUARTERS] Error:', error.message);
+    res.status(500).json({ error: 'Processing quarters fetch failed', message: error.message });
+  }
+});
+
+// Delta Report - GET /api/motor-proxy/api/source/track-change/deltareport
+app.get('/api/motor-proxy/api/source/track-change/deltareport', async (req, res) => {
+  try {
+    const { vehicleId, quarter, processingQuarter } = req.query;
+    console.log(`[DELTA] Getting delta report for ${vehicleId} (${quarter || processingQuarter})`);
+
+    const credentials = await ensureAuthenticated();
+
+    const params = new URLSearchParams();
+    if (vehicleId) params.append('vehicleId', vehicleId);
+    if (quarter) params.append('quarter', quarter);
+    if (processingQuarter) params.append('processingQuarter', processingQuarter);
+
+    const targetUrl = `https://sites.motor.com/m1/api/source/track-change/deltareport?${params}`;
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[DELTA] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[DELTA] Error:', error.message);
+    res.status(500).json({ error: 'Delta report fetch failed', message: error.message });
+  }
+});
+
+// Bulk Vehicles - POST /api/motor-proxy/api/source/{contentSource}/vehicles
+app.post('/api/motor-proxy/api/source/:contentSource/vehicles', async (req, res) => {
+  try {
+    const { contentSource } = req.params;
+    console.log(`[BULK-VEHICLES] Getting bulk vehicle info for ${contentSource}`);
+
+    const credentials = await ensureAuthenticated();
+
+    const targetUrl = `https://sites.motor.com/m1/api/source/${contentSource}/vehicles`;
+
+    const response = await axios({
+      method: 'POST',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      data: req.body,
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[BULK-VEHICLES] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[BULK-VEHICLES] Error:', error.message);
+    res.status(500).json({ error: 'Bulk vehicles fetch failed', message: error.message });
+  }
+});
+
+// Manufacturer Graphic (Deprecated) - GET /api/motor-proxy/api/manufacturer/{manufacturerId}/graphic/{id}
+app.get('/api/motor-proxy/api/manufacturer/:manufacturerId/graphic/:id', async (req, res) => {
+  try {
+    const { manufacturerId, id } = req.params;
+    const { w, h } = req.query;
+    console.log(`[MFGR-GRAPHIC] Getting manufacturer graphic ${manufacturerId}/${id} (deprecated)`);
+
+    const credentials = await ensureAuthenticated();
+
+    const params = new URLSearchParams();
+    if (w) params.append('w', w);
+    if (h) params.append('h', h);
+
+    const targetUrl = `https://sites.motor.com/m1/api/manufacturer/${manufacturerId}/graphic/${id}?${params}`;
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'image/*, */*',
+        'Cookie': credentials._cookieString,
+        'Referer': 'https://sites.motor.com/m1/vehicles'
+      },
+      timeout: 30000,
+      responseType: 'arraybuffer',
+      validateStatus: () => true
+    });
+
+    console.log(`[MFGR-GRAPHIC] Response: ${response.status}`);
+    res.status(response.status);
+    if (response.headers['content-type']) {
+      res.set('Content-Type', response.headers['content-type']);
+    }
+    res.send(Buffer.from(response.data));
+
+  } catch (error) {
+    console.error('[MFGR-GRAPHIC] Error:', error.message);
+    res.status(500).json({ error: 'Manufacturer graphic fetch failed', message: error.message });
+  }
+});
+
+// UI Endpoints - Favicon
+app.get('/api/motor-proxy/api/ui/favicon', async (req, res) => {
+  try {
+    console.log('[UI-FAVICON] Getting favicon');
+
+    const credentials = await ensureAuthenticated();
+
+    const targetUrl = 'https://sites.motor.com/m1/api/ui/favicon';
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'image/*',
+        'Cookie': credentials._cookieString
+      },
+      timeout: 30000,
+      responseType: 'arraybuffer',
+      validateStatus: () => true
+    });
+
+    console.log(`[UI-FAVICON] Response: ${response.status}`);
+    res.status(response.status);
+    if (response.headers['content-type']) {
+      res.set('Content-Type', response.headers['content-type']);
+    }
+    res.send(Buffer.from(response.data));
+
+  } catch (error) {
+    console.error('[UI-FAVICON] Error:', error.message);
+    res.status(500).send('Favicon fetch failed');
+  }
+});
+
+// UI Bootstrap CSS
+app.get('/api/motor-proxy/api/ui/css/bootstrap', async (req, res) => {
+  try {
+    console.log('[UI-CSS] Getting Bootstrap CSS');
+
+    const credentials = await ensureAuthenticated();
+
+    const targetUrl = 'https://sites.motor.com/m1/api/ui/css/bootstrap';
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'text/css',
+        'Cookie': credentials._cookieString
+      },
+      timeout: 30000,
+      responseType: 'text',
+      validateStatus: () => true
+    });
+
+    console.log(`[UI-CSS] Response: ${response.status}`);
+    res.status(response.status);
+    res.set('Content-Type', 'text/css');
+    res.send(response.data);
+
+  } catch (error) {
+    console.error('[UI-CSS] Error:', error.message);
+    res.status(500).send('CSS fetch failed');
+  }
+});
+
+// UI Banner HTML
+app.get('/api/motor-proxy/api/ui/banner.html', async (req, res) => {
+  try {
+    console.log('[UI-BANNER] Getting banner HTML');
+
+    const credentials = await ensureAuthenticated();
+
+    const targetUrl = 'https://sites.motor.com/m1/api/ui/banner.html';
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'text/html',
+        'Cookie': credentials._cookieString
+      },
+      timeout: 30000,
+      responseType: 'text',
+      validateStatus: () => true
+    });
+
+    console.log(`[UI-BANNER] Response: ${response.status}`);
+    res.status(response.status);
+    res.set('Content-Type', 'text/html');
+    res.send(response.data);
+
+  } catch (error) {
+    console.error('[UI-BANNER] Error:', error.message);
+    res.status(500).send('Banner fetch failed');
+  }
+});
+
+// UI User Settings
+app.get('/api/motor-proxy/api/ui/usersettings', async (req, res) => {
+  try {
+    console.log('[UI-SETTINGS] Getting user settings');
+
+    const credentials = await ensureAuthenticated();
+
+    const targetUrl = 'https://sites.motor.com/m1/api/ui/usersettings';
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[UI-SETTINGS] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[UI-SETTINGS] Error:', error.message);
+    res.status(500).json({ error: 'Settings fetch failed', message: error.message });
+  }
+});
+
+// UI Feedback Configurations
+app.get('/api/motor-proxy/api/ui/feedbackconfigurations', async (req, res) => {
+  try {
+    console.log('[UI-FEEDBACK-CFG] Getting feedback configurations');
+
+    const credentials = await ensureAuthenticated();
+
+    const targetUrl = 'https://sites.motor.com/m1/api/ui/feedbackconfigurations';
+
+    const response = await axios({
+      method: 'GET',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[UI-FEEDBACK-CFG] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[UI-FEEDBACK-CFG] Error:', error.message);
+    res.status(500).json({ error: 'Feedback config fetch failed', message: error.message });
+  }
+});
+
+// UI Save Feedback
+app.post('/api/motor-proxy/api/ui/savefeedback', async (req, res) => {
+  try {
+    console.log('[UI-FEEDBACK-SAVE] Saving user feedback');
+
+    const credentials = await ensureAuthenticated();
+
+    const targetUrl = 'https://sites.motor.com/m1/api/ui/savefeedback';
+
+    const response = await axios({
+      method: 'POST',
+      url: targetUrl,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Cookie': credentials._cookieString,
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      data: req.body,
+      timeout: 30000,
+      validateStatus: () => true
+    });
+
+    console.log(`[UI-FEEDBACK-SAVE] Response: ${response.status}`);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    console.error('[UI-FEEDBACK-SAVE] Error:', error.message);
+    res.status(500).json({ error: 'Feedback save failed', message: error.message });
   }
 });
 

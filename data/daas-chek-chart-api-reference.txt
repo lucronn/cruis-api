@@ -1,0 +1,852 @@
+Chek-Chart
+API Reference
+Version 1.2
+August 2016
+
+Contents
+Data as a Service Development . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 1
+Development Kits . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 1
+Intended Audience . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 1
+Help and Support. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 2
+Chek-Chart . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+Get Vehicles By Chek-Chart . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+Get Chek-Chart Vehicle Engines . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4
+Get Chek-Chart Vehicle Years . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+Get Chek-Chart Vehicle Makes . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 6
+Get Chek-Chart Vehicle Models . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 7
+Common Response Objects . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+ContentCategory . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+EngineInfo . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+EstimatedWorkTimeSummary . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9
+EstimatedWorkTimeApplicationSummary . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+FuelDelivery . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+Link . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+MappedAttribute . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+Note . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+PCDBCategory . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+PCDBPartInfo . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+PositionInfo . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+QualifierInfo . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12
+Skill . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12
+TaxonomyInfo . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12
+
+Data as a Service Development
+Development Kits
+To assist application developers in using Data as a Service, MOTOR created Development Kits. The
+Development Kits include documentation and developer resources that are necessary to develop
+applications using the MOTOR web services.
+The typical development kit includes:
+• Development Handbook - Provides information on the API configurations that are required to use
+the web services and global principles that are required for all web services. Topics covered in the
+Handbook include:
+• Authentication information
+• Rate limiting
+• HTTP authorization header
+• Correlation support
+• MOTOR and VCdb standards
+• Error Codes
+• API References - There is an API Reference for each product offered as Data as a Service. The API
+Reference contains detailed informationabout the web services included in each product,
+including:
+• Request details
+• Resource URL
+• Route parameters
+• Query string parameters
+• Sample requests
+• Sample responses in XML
+Note: Examples of the XML responses are provided for reference. They are examples only and
+the data contained within the responses may have been changed since the publication of this
+document.
+
+Intended Audience
+The contents of this document and other documents included in the Development Kit are technical in
+nature and therefore intended for a developer. These documents are written for an audience that
+understands web programming and is familiar with consuming information via web services through
+HTTP Rest requests.
+It is assumed that a developer is familiar with:
+• RESTful web services
+• Object oriented programming concepts
+
+Chek-Chart API Reference
+
+1
+
+• HTTP verbs and how they are used (Create = POST, Retrieve = GET, Update= PUT, Delete =
+DELETE)
+• HTTP message construction and general knowledge of HTTP headers and standards
+• Stateless and cacheable programming
+• Identifying the relationships between resources
+• Secure Socket Layer (SSL) programming
+
+Help and Support
+For support with Data as a Service development, or to obtain your API key, contact the customer
+service team:
+By email: accountservices@motor.com
+By website: "support.motor.com"
+An account is required to request support via the web. If you do not have an account, visit
+support.motor.com and create an account.
+
+Chek-Chart API Reference
+
+2
+
+Chek-Chart
+Get Vehicles By Chek-Chart
+Resource URL
+/Information/ChekChart/Years/{Year}/Makes/{MakeCode}/Models/{ModelCode}/Engines/{EngineCode}/Vehicles
+
+Resource Verb
+GET
+
+Route Parameters
+Parameter
+Year
+
+Type
+Integer
+
+MakeCode
+ModelCode
+
+String
+String
+
+EngineCode
+
+String
+
+Description
+A four-digit vehicle year. Valid years start at 1961
+and go through the current calendar year + 1.
+A two-letter code indicating the vehicle make.
+A five-character code indicating the vehicle
+model.
+A one-character code indicating the vehicle
+engine.
+
+Required
+Yes
+Yes
+Yes
+Yes
+
+Query String Parameters
+Parameter
+OutputStandard
+
+Type
+String
+
+Description
+
+Chek-Chart API Reference
+
+Required Default
+No
+MOTOR
+
+3
+
+Get Chek-Chart Vehicle Engines
+Resource URL
+/Information/Chek-Chart/Years/{Year}/Makes/{MakeCode}/Models/{ModelCode}/Engines
+
+Resource Verb
+GET
+
+Route Parameters
+Parameter
+Year
+
+Type
+Integer
+
+MakeCode
+ModelCode
+
+String
+String
+
+Description
+A four-digit vehicle year. Valid years start at 1961
+and go through the current calendar year + 1.
+A two-letter code indicating the vehicle make.
+A five-character code indicating the vehicle
+model.
+
+Required
+Yes
+Yes
+Yes
+
+Query String Parameters
+Parameter
+WithRel
+
+Type
+String
+
+Description
+Required Default
+In the query, specify the
+No
+relations that should exist for
+vehicle. This service will only
+return makes which have a
+record in the Estimated Work
+Times Data as a Service product.
+The only valid value is EWT.
+
+Chek-Chart API Reference
+
+4
+
+Get Chek-Chart Vehicle Years
+Resource URL
+/Information/Chek-Chart/Years
+
+Resource Verb
+GET
+
+Query String Parameters
+Parameter
+Max
+
+Type
+Integer
+
+Min
+
+Integer
+
+WithRel
+
+String
+
+Description
+Required Default
+Specify the maximum year that No
+should be returned. The year
+should be no greater than the
+current calendar year +1.
+Specify the minimum year that No
+can be used. The earliest year is
+1961.
+In the query, specify the
+No
+relations that should exist for
+vehicle. This service will only
+return makes which have a
+record in the Estimated Work
+Times Data as a Service product.
+The only valid value is EWT.
+
+Chek-Chart API Reference
+
+5
+
+Get Chek-Chart Vehicle Makes
+Resource URL
+/Information/Chek-Chart/Years/{Year}/Makes
+
+Resource Verb
+GET
+
+Route Parameters
+Parameter
+Year
+
+Type
+Integer
+
+Description
+Required
+A four-digit vehicle year. Valid years start at 1961 Yes
+and go through the current calendar year + 1.
+
+Query String Parameters
+Parameter
+WithRel
+
+Type
+String
+
+Description
+Required Default
+In the query, specify the
+No
+relations that should exist for
+vehicle. This service will only
+return makes which have a
+record in the Estimated Work
+Times Data as a Service product.
+The only valid value is EWT.
+
+Chek-Chart API Reference
+
+6
+
+Get Chek-Chart Vehicle Models
+Resource URL
+/Information/Chek-Chart/Years/{Year}/Makes/{MakeCode}/Models
+
+Resource Verb
+GET
+
+Route Parameters
+Parameter
+Year
+
+Type
+Integer
+
+MakeCode
+
+String
+
+Description
+Required
+A four-digit vehicle year. Valid years start at 1961 Yes
+and go through the current calendar year + 1.
+A two-letter code indicating the vehicle make.
+Yes
+
+Query String Parameters
+Parameter
+WithRel
+
+Type
+String
+
+Description
+Required Default
+In the query, specify the
+No
+relations that should exist for
+vehicle. This service will only
+return makes which have a
+record in the Estimated Work
+Times Data as a Service product.
+The only valid value is EWT.
+
+Chek-Chart API Reference
+
+7
+
+Common Response Objects
+ContentCategory
+Parameter
+Article
+
+Type
+String
+
+ID
+
+Integer
+
+Product
+
+String
+
+ProductType
+
+String
+
+Description
+The third level categorization of the application by type
+of content.
+Unique identifier for a combination of Product Type,
+Product, and Article.
+The second level categorization of the application by
+type of content.
+The top level categorization of the application by type of
+content.
+
+EngineInfo
+Parameter
+Aspiration
+
+Type
+String
+
+BlockType
+CID
+
+String
+String
+
+CylinderCC
+
+String
+
+CylinderHeadType
+CylinderLiter
+
+String
+String
+
+Cylinders
+
+String
+
+Description
+Designation
+EngineBoreInch
+
+String
+String
+String
+
+EngineBoreMetric
+
+String
+
+EngineID
+EngineStrokeInch
+
+Integer
+String
+
+Description
+Aspiration or Boost Type name – Normal, Turbocharger,
+Supercharged, etc.
+Engine block type – V, In-line,Rotary, etc.
+Cubic inches of displacement represented as a whole
+number – 350, 400, etc.
+Cubic centimeters represented as a whole number –
+2800, 3200, etc.
+Value of cylinder head name, SOHC, DOHC and OHV.
+Number of engine liters to one decimal point of
+precision - 2.8, 3.0, etc
+Number of engine cylinders represented as a whole
+number – 4, 6, 8, etc.
+Manufacturer unique code, 2-TC, etc.
+Engine cylinder bore in inches to a minimum of two
+decimal points of precision – 1.14, 3.50, etc., or to a
+maximum of four decimal points of significant precision
+– eg. 1.233 not 1.2330.
+Engine cylinder bore in millimeters to a minimum of
+one decimal point of precision – 28.0, 32.5, etc., or to
+a maximum of four decimal points of significant
+precision – eg. 2.093 not 2.0930.
+Unique, system generated identifier
+Engine cylinder stroke in inches to a minimum of two
+decimal points of precision – 1.14, 3.50, etc., or to a
+maximum of four decimal points of significant precision
+– eg. 1.233 not 1.2330.
+
+Chek-Chart API Reference
+
+8
+
+Parameter
+EngineStrokeMetric
+
+Type
+String
+
+EngineVIN
+
+String
+
+FuelDeliveryInfo
+FuelType
+HorsePower
+IgnitionSystem
+
+FuelDelivery
+String
+String
+String
+
+KilowattPower
+
+String
+
+Manufacturer
+
+String
+
+ManufacturerType
+Valves
+
+String
+String
+
+Version
+
+String
+
+Description
+Engine cylinder stroke in millimeters to a minimum of
+one decimal point of precision – 54.0, 67.5, etc., to a
+maximum of four decimal points of significant precision
+– eg. 2.093 not 2.0930.
+Unique, system generated identifier from the EngineVIN
+table.
+Fuel type - Diesel, Gas, etc.
+Basic ignition system type - Distributor-Breaker,
+Distributorless, etc.
+Engine Power output expressed in Kilowatts, including
+a decimal point only when required to represent
+fractional values.
+Name of component manufacturer – Allison, Borg
+Warner, Ford, Toyota, etc.
+Total number of intake and exhaust vales in the engine
+– 8, 16, 24, etc.
+Engine version, i.e. "Windsor", "Cleveland", "Modified",
+etc.
+
+EstimatedWorkTimeSummary
+Parameter
+Notes
+
+Type
+Note Array
+
+AdditionalLaborTime number (double)
+AdditionalLaborTime String
+Description
+AdditionalWarrantyLa number (double)
+borTime
+AllLaborTime
+number (double)
+AllLaborTimeDescripti String
+on
+AllWarrantyLaborTim number (double)
+e
+BaseLaborTime
+number (double)
+BaseLaborTimeDescr String
+iption
+BaseWarrantyLaborTi number (double)
+me
+EstimatedWorkTimeI Integer
+D
+LaborTimeInterval
+String
+
+Description
+Provides additional information about what is and is
+not included in the estimated time.
+MOTOR estimated time to perform the operation on
+additional instances of the part.
+Description of the additional labor time, such as "Each
+Additional".
+OEM warranty time for performing the operation on
+additional instances of the part.
+Description of all labor time, such as "All", "Both", "Both
+Sides".
+Description of all labor time, such as "All", "Both", "Both
+Sides".
+OEM warranty time for performing the operation on all
+instances of the part.
+MOTOR estimated time to perform the operation.
+
+OEM warranty time for performing the operation.
+Identifier of the labor time.
+Unit of measure, will be either Minutes or Hours.
+
+Chek-Chart API Reference
+
+9
+
+Parameter
+RequiredSkill
+ServiceType
+
+Type
+Skill
+String
+
+Description
+Grouping of types of service. Values are: Inspect or
+Service.
+
+EstimatedWorkTimeApplicationSummary
+Parameter
+Category
+IsMatch
+Items
+OptionalWorkTimes
+
+Taxonomy
+ApplicationID
+AppRelationType
+AttributeMappings
+ContentSilos
+DisplayName
+IsActive
+
+Links
+Position
+Qualifiers
+
+Type
+Description
+ContentCategory
+boolean
+EstimatedWorkTimeS
+ummary Array
+EstimatedWorkTimeA
+pplicationSummary
+Array
+TaxonomyInfo
+Integer
+Unique identifier which indexes the defining attributes
+of the data item.
+[ApplicationRelationT
+ype]
+MappedAttribute
+Array
+[ContentSilo] Array
+String
+The name of the application.
+boolean
+If the IsActive flag is returned as 'true', the data
+associated with the flag is applicable. If the IsActive
+flag is returned as 'false', the data has been
+superseded.
+Link Array
+PositionInfo
+QualifierInfo Array
+
+FuelDelivery
+Parameter
+ControlType
+
+Type
+String
+
+FuelDeliveryID
+SubType
+
+Integer
+String
+
+SystemDesign
+
+String
+
+Type
+
+String
+
+Description
+Description of fuel delivery method - Carburetion, Fuel
+Injection, etc.
+Unique, system generated identifier.
+Unique, system generated identifier from the
+FuelDeliverySubType table.
+Unique, system generated identifier from the
+FuelSystemDesign table.
+
+Chek-Chart API Reference
+
+10
+
+Link
+Parameter
+Href
+
+Type
+String
+
+Rel
+
+String
+
+Description
+Contains the URI to identify the location of additional
+information.
+Rel describes the type of link.
+A self link is a link to the object itself. This is a RESTful
+good practice to include a self link so that the object
+can be easily retrieved or referenced later.
+
+MappedAttribute
+Parameter
+ID
+Type
+
+Type
+Integer
+String
+
+Description
+Unique identifier of the referenced attribute.
+A two character abbreviation of the attribute of the
+corresponding ID.
+
+Type
+Integer
+String
+
+Description
+Unique identifier of the note.
+Note text.
+
+Note
+Parameter
+NoteID
+Text
+
+PCDBCategory
+Parameter
+ID
+Name
+SubCategory
+
+Type
+Integer
+String
+[PCDBSubCategory]
+
+Description
+The common language name of the part.
+
+PCDBPartInfo
+Parameter
+Type
+Category
+PCDBCategory
+PartTerminologyID
+Integer
+PartTerminologyNam String
+e
+
+Description
+The identifier of the part.
+The common language name of the part.
+
+PositionInfo
+Parameter
+Name
+PCDBPositionID
+
+Type
+String
+Integer
+
+Description
+Textual description.
+
+Chek-Chart API Reference
+
+11
+
+Parameter
+PositionID
+Type
+
+Type
+Integer
+String
+
+Description
+Unique identifier.
+MOTOR_Position is the default value.
+
+Parameter
+Description
+Family
+
+Type
+String
+String
+
+IsActive
+
+boolean
+
+QualifierID
+Sequence
+
+Integer
+Integer
+
+Type
+
+String
+
+Description
+Textual description of the qualifier, used for display.
+Categorization of the qualifier, the top level is Type,
+followed by Family.
+If true, this information is still applicable. If false, this
+data has been changed and should be queried again to
+retrieve the new data.
+Unique identifier of the qualifier.
+Dictates the order in which the qualifiers are displayed
+within the group.
+Categorization of the qualifier, the top level is Type,
+followed by Family.
+
+QualifierInfo
+
+Skill
+Parameter
+Code
+Description
+Name
+
+Type
+String
+String
+String
+
+Description
+Unique code for each skill name and description.
+Description of the skills required for an application.
+Description of the skill.
+
+TaxonomyInfo
+Parameter
+Action
+CommonName
+GroupID
+GroupName
+InfoObject
+LiteralName
+
+Type
+String
+String
+Integer
+String
+[InformationObject]
+String
+
+SubGroupID
+SubGroupName
+SystemID
+SystemName
+TaxonomyID
+
+Integer
+String
+Integer
+String
+Integer
+
+Description
+
+The identifier of the taxonomy group.
+The name of the taxonomy group.
+The literal name of the maintenance schedule
+application, for example Brake Pad Inspection.
+The identifier of the taxonomy sub group.
+The name of the taxonomy sub group.
+The identifier of the taxonomy system.
+The name of the taxonomy system.
+Unique identifier of the application’s taxonomy record.
+
+©2016 MOTOR Information Systems, a division of Hearst Business Publishing, Inc. All Rights
+Reserved.
+
+Chek-Chart API Reference
+
+12
+
+

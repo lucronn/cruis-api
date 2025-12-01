@@ -1,0 +1,14 @@
+<div class="bottom-nav-bar">
+    <button class="nav-item" [class.active]="activeTab === 'home'" (click)="navigateToHome()">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+    </button>
+    <button class="nav-item" [class.active]="activeTab === 'vehicle'" (click)="navigateToVehicle()">
+        <i class="fas fa-car"></i>
+        <span>Vehicle</span>
+    </button>
+    <button class="nav-item" (click)="toggleMenu()">
+        <i class="fas fa-bars"></i>
+        <span>Menu</span>
+    </button>
+</div>

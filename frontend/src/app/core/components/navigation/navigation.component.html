@@ -1,0 +1,17 @@
+<button class="nav-toggle" (click)="toggleMenu()" [class.open]="isOpen" *ngIf="isVisible"
+    aria-label="Toggle Navigation">
+    <i class="fas" [class.fa-bars]="!isOpen" [class.fa-times]="isOpen"></i>
+</button>
+
+<div class="nav-overlay" *ngIf="isOpen" (click)="closeMenu()"></div>
+
+<nav class="nav-drawer" [class.open]="isOpen">
+    <div class="nav-header">
+        <h2>MENU</h2>
+    </div>
+    <ul class="nav-links">
+        <li><a routerLink="/dashboard" (click)="closeMenu()"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a routerLink="/vehicles" (click)="closeMenu()"><i class="fas fa-car"></i> Select Vehicle</a></li>
+        <!-- Add more links as needed -->
+    </ul>
+</nav>

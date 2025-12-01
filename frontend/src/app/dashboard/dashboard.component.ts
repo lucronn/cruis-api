@@ -13,6 +13,7 @@ interface RecentVehicle {
     year?: string;
     make?: string;
     model?: string;
+    contentSource?: string;
 }
 
 @Component({
@@ -138,7 +139,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
                 year: vehicle.year,
                 make: vehicle.make,
                 model: vehicle.model,
-                contentSource: 'MOTOR' // Default
+                contentSource: vehicle.contentSource || 'MOTOR' // Default to MOTOR if missing
             }
         });
     }
