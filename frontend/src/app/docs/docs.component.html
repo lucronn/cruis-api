@@ -134,6 +134,13 @@
             <p>No procedures found for "{{ activePill }}"</p>
         </div>
 
+        <!-- Error State -->
+        <div class="error-state" *ngIf="error && !loading">
+            <i class="fas fa-exclamation-circle"></i>
+            <p>{{ error }}</p>
+            <button class="retry-btn" (click)="retryCurrentLoad()">Retry</button>
+        </div>
+
         <!-- Loading State -->
         <div class="loading-state" *ngIf="loading">
             <div class="spinner"></div>

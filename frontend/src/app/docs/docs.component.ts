@@ -297,6 +297,11 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             });
     }
 
+    retryCurrentLoad() {
+        this.error = null;
+        this.selectPill(this.activePill);
+    }
+
     selectPill(pill: string) {
         this.activePill = pill;
         this.error = null;
@@ -388,17 +393,40 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     loadMaintenance() {
         this.loading = true;
+        this.error = null;
 
         // Load all maintenance data types in parallel
         // Use forkJoin if available or just nested subscribes for simplicity in this context
         // For now, we'll just load them sequentially or use a simple approach
+        let completed = 0;
+        const totalRequests = 3;
+        const checkComplete = () => {
+            completed++;
+            if (completed >= totalRequests) {
+                this.loading = false;
+            }
+        };
 
         this.motorApi.getMaintenanceByFrequency(this.contentSource, this.vehicleId).subscribe(
-            (res: any) => this.maintenanceData.frequency = res?.data || []
+            (res: any) => {
+                this.maintenanceData.frequency = res?.data || [];
+                checkComplete();
+            },
+            (err: any) => {
+                console.error('Error loading maintenance by frequency:', err);
+                checkComplete();
+            }
         );
 
         this.motorApi.getMaintenanceByIndicators(this.contentSource, this.vehicleId).subscribe(
-            (res: any) => this.maintenanceData.indicators = res?.data || []
+            (res: any) => {
+                this.maintenanceData.indicators = res?.data || [];
+                checkComplete();
+            },
+            (err: any) => {
+                console.error('Error loading maintenance by indicators:', err);
+                checkComplete();
+            }
         );
 
         // Default to a common interval like 30k miles for initial view
@@ -408,17 +436,19 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
                 // Based on other endpoints, let's assume wrapped in data if it follows the pattern
                 // or check if it's an array directly.
                 this.maintenanceData.intervals = Array.isArray(res) ? res : (res?.data || []);
-                this.loading = false;
+                checkComplete();
             },
-            (err) => {
-                console.error('Error loading maintenance:', err);
-                this.loading = false;
+            (err: any) => {
+                console.error('Error loading maintenance by intervals:', err);
+                this.error = `Failed to load maintenance schedules: ${err.message || err.statusText || 'Unknown error'}`;
+                checkComplete();
             }
         );
     }
 
     loadTrackChanges() {
         this.loading = true;
+        this.error = null;
         this.motorApi.getTrackChangeQuarters().subscribe(
             (res: any) => {
                 // API returns array of strings directly
@@ -430,9 +460,9 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
                     this.loading = false;
                 }
             },
-            (err) => {
+            (err: any) => {
                 console.error('Error loading quarters:', err);
-                this.error = 'Failed to load update history.';
+                this.error = `Failed to load update history: ${err.message || err.statusText || 'Unknown error'}`;
                 this.loading = false;
             }
         );
@@ -441,13 +471,15 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     loadDeltaReport(quarter: string) {
         this.loading = true;
         this.selectedQuarter = quarter;
+        this.error = null;
         this.motorApi.getTrackChangeDeltaReport(this.vehicleId, quarter).subscribe(
             (res: any) => {
                 this.trackChangeDeltas = res?.changes || [];
                 this.loading = false;
             },
-            (err) => {
+            (err: any) => {
                 console.error('Error loading delta report:', err);
+                this.error = `Failed to load change report: ${err.message || err.statusText || 'Unknown error'}`;
                 this.loading = false;
             }
         );
@@ -468,6 +500,7 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     loadDtcs() {
         this.loading = true;
         this.filteredArticles = [];
+        this.error = null;
         this.motorApi.getDtcs(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
                 const data = response?.dtcs || [];
@@ -479,8 +512,9 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             },
             (err: any) => {
                 console.error('Error loading DTCs:', err);
-                this.error = `Failed to load Diagnostic Trouble Codes: ${err.status || 'Unknown error'}`;
+                this.error = `Failed to load Diagnostic Trouble Codes: ${err.message || err.statusText || 'Unknown error'}`;
                 this.loading = false;
+                this.filteredArticles = [];
             }
         );
     }
@@ -488,6 +522,7 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     loadTsbs() {
         this.loading = true;
         this.filteredArticles = [];
+        this.error = null;
         this.motorApi.getTsbs(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
                 const data = response?.tsbs || [];
@@ -499,8 +534,9 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             },
             (err: any) => {
                 console.error('Error loading TSBs:', err);
-                this.error = 'Failed to load Technical Service Bulletins.';
+                this.error = `Failed to load Technical Service Bulletins: ${err.message || err.statusText || 'Unknown error'}`;
                 this.loading = false;
+                this.filteredArticles = [];
             }
         );
     }
@@ -508,6 +544,7 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     loadWiring() {
         this.loading = true;
         this.filteredArticles = [];
+        this.error = null;
         this.motorApi.getWiringDiagrams(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
                 const data = response?.wiringDiagrams || [];
@@ -519,8 +556,9 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             },
             (err: any) => {
                 console.error('Error loading Wiring Diagrams:', err);
-                this.error = 'Failed to load Wiring Diagrams.';
+                this.error = `Failed to load Wiring Diagrams: ${err.message || err.statusText || 'Unknown error'}`;
                 this.loading = false;
+                this.filteredArticles = [];
             }
         );
     }
@@ -528,6 +566,7 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     loadLabor() {
         this.loading = true;
         this.filteredArticles = [];
+        this.error = null;
         this.motorApi.getLaborTimes(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
                 const data = response?.laborOperations || response?.operations || [];
@@ -539,8 +578,9 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             },
             (err: any) => {
                 console.error('Error loading Labor Times:', err);
-                this.error = 'Failed to load Labor Times.';
+                this.error = `Failed to load Labor Times: ${err.message || err.statusText || 'Unknown error'}`;
                 this.loading = false;
+                this.filteredArticles = [];
             }
         );
     }
@@ -551,6 +591,8 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     loadProcedures() {
         this.loading = true;
+        this.error = null;
+        this.filteredArticles = [];
         this.motorApi.getProcedures(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
                 this.filteredArticles = response?.procedures || response || [];
@@ -558,14 +600,17 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             },
             (err: any) => {
                 console.error('Error loading Procedures:', err);
-                this.error = 'Failed to load Repair Procedures.';
+                this.error = `Failed to load Repair Procedures: ${err.message || err.statusText || 'Unknown error'}`;
                 this.loading = false;
+                this.filteredArticles = [];
             }
         );
     }
 
     loadDiagrams() {
         this.loading = true;
+        this.error = null;
+        this.filteredArticles = [];
         this.motorApi.getDiagrams(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
                 this.filteredArticles = response?.diagrams || response || [];
@@ -573,8 +618,9 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             },
             (err: any) => {
                 console.error('Error loading Diagrams:', err);
-                this.error = 'Failed to load Diagrams.';
+                this.error = `Failed to load Diagrams: ${err.message || err.statusText || 'Unknown error'}`;
                 this.loading = false;
+                this.filteredArticles = [];
             }
         );
     }
@@ -582,6 +628,7 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     loadSpecs() {
         this.loading = true;
         this.filteredArticles = [];
+        this.error = null;
         this.motorApi.getSpecs(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
                 const data = response?.specs || response || [];
@@ -592,14 +639,17 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             },
             (err: any) => {
                 console.error('Error loading Specs:', err);
-                this.error = 'Failed to load Specifications.';
+                this.error = `Failed to load Specifications: ${err.message || err.statusText || 'Unknown error'}`;
                 this.loading = false;
+                this.filteredArticles = [];
             }
         );
     }
 
     loadBrakeService() {
         this.loading = true;
+        this.error = null;
+        this.filteredArticles = [];
         this.motorApi.getBrakeService(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
                 this.filteredArticles = response?.articles || response?.procedures || response || [];
@@ -607,8 +657,9 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             },
             (err: any) => {
                 console.error('Error loading Brake Service:', err);
-                this.error = 'Failed to load Brake Service Procedures.';
+                this.error = `Failed to load Brake Service Procedures: ${err.message || err.statusText || 'Unknown error'}`;
                 this.loading = false;
+                this.filteredArticles = [];
             }
         );
     }
@@ -616,6 +667,7 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     loadAcHeater() {
         this.loading = true;
         this.filteredArticles = [];
+        this.error = null;
         this.motorApi.getAcHeater(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
                 const data = response?.articles || response?.procedures || response || [];
@@ -626,8 +678,9 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             },
             (err: any) => {
                 console.error('Error loading A/C & Heater:', err);
-                this.error = 'Failed to load A/C & Heater Procedures.';
+                this.error = `Failed to load A/C & Heater Procedures: ${err.message || err.statusText || 'Unknown error'}`;
                 this.loading = false;
+                this.filteredArticles = [];
             }
         );
     }
@@ -635,6 +688,7 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     loadTpms() {
         this.loading = true;
         this.filteredArticles = [];
+        this.error = null;
         this.motorApi.getTpms(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
                 const data = response?.articles || response?.procedures || response || [];
@@ -645,8 +699,9 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             },
             (err: any) => {
                 console.error('Error loading TPMS:', err);
-                this.error = 'Failed to load TPMS Procedures.';
+                this.error = `Failed to load TPMS Procedures: ${err.message || err.statusText || 'Unknown error'}`;
                 this.loading = false;
+                this.filteredArticles = [];
             }
         );
     }
@@ -654,6 +709,7 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     loadRelearn() {
         this.loading = true;
         this.filteredArticles = [];
+        this.error = null;
         this.motorApi.getRelearn(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
                 const data = response?.articles || response?.procedures || response || [];
@@ -664,8 +720,9 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             },
             (err: any) => {
                 console.error('Error loading Relearn:', err);
-                this.error = 'Failed to load Relearn Procedures.';
+                this.error = `Failed to load Relearn Procedures: ${err.message || err.statusText || 'Unknown error'}`;
                 this.loading = false;
+                this.filteredArticles = [];
             }
         );
     }
@@ -673,6 +730,7 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     loadLampReset() {
         this.loading = true;
         this.filteredArticles = [];
+        this.error = null;
         this.motorApi.getLampReset(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
                 const data = response?.articles || response?.procedures || response || [];
@@ -683,8 +741,9 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             },
             (err: any) => {
                 console.error('Error loading Lamp Reset:', err);
-                this.error = 'Failed to load Maintenance Lamp Reset Procedures.';
+                this.error = `Failed to load Maintenance Lamp Reset Procedures: ${err.message || err.statusText || 'Unknown error'}`;
                 this.loading = false;
+                this.filteredArticles = [];
             }
         );
     }
@@ -692,6 +751,7 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     loadBattery() {
         this.loading = true;
         this.filteredArticles = [];
+        this.error = null;
         this.motorApi.getBattery(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
                 const data = response?.articles || response?.procedures || response || [];
@@ -702,8 +762,9 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             },
             (err: any) => {
                 console.error('Error loading Battery:', err);
-                this.error = 'Failed to load Battery Service Procedures.';
+                this.error = `Failed to load Battery Service Procedures: ${err.message || err.statusText || 'Unknown error'}`;
                 this.loading = false;
+                this.filteredArticles = [];
             }
         );
     }
@@ -711,6 +772,7 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     loadSteeringSuspension() {
         this.loading = true;
         this.filteredArticles = [];
+        this.error = null;
         this.motorApi.getSteeringSuspension(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
                 const data = response?.articles || response?.procedures || response || [];
@@ -721,14 +783,17 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             },
             (err: any) => {
                 console.error('Error loading Steering & Suspension:', err);
-                this.error = 'Failed to load Steering & Suspension Procedures.';
+                this.error = `Failed to load Steering & Suspension Procedures: ${err.message || err.statusText || 'Unknown error'}`;
                 this.loading = false;
+                this.filteredArticles = [];
             }
         );
     }
 
     loadAirbag() {
         this.loading = true;
+        this.error = null;
+        this.filteredArticles = [];
         this.motorApi.getAirbag(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
                 this.filteredArticles = response?.articles || response?.procedures || response || [];
@@ -736,8 +801,9 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             },
             (err: any) => {
                 console.error('Error loading Airbag:', err);
-                this.error = 'Failed to load Airbag Service Procedures.';
+                this.error = `Failed to load Airbag Service Procedures: ${err.message || err.statusText || 'Unknown error'}`;
                 this.loading = false;
+                this.filteredArticles = [];
             }
         );
     }
@@ -1164,7 +1230,7 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     transformArticleHtml(html: string): string {
         // Replace <mtr-image-link>
         html = html.replace(/<mtr-image-link id='(.*?)'([^>]*)>([^<]*)<\/mtr-image-link>/g, ($0, id: string, extraAttributes: string, text: string) => {
-            return `< span class='image-hover' > ${text} <img src='/api/motor-proxy/api/source/${this.contentSource}/graphic/${id}'${extraAttributes} loading = 'lazy' > </span>`;
+            return `<span class='image-hover'>${text}<img src='/api/motor-proxy/api/source/${this.contentSource}/graphic/${id}'${extraAttributes} loading='lazy'></span>`;
         });
 
         // Replace <mtr-image> (single quotes)
@@ -1190,11 +1256,25 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         html = html.replace(/<image\s/gi, '<img ');
         html = html.replace(/<\/image>/gi, '');
 
-        // Replace relative URLs
+        // Replace relative URLs - ensure proper proxy paths
+        // Handle relative api/ paths
         html = html.replace(/src=['"]api\//g, 'src="/api/motor-proxy/api/');
-        html = html.replace(/src=["']\/api\/motor-proxy\/api\/([^"']+)["']/g, 'src="/api/motor-proxy/api/$1"');
         html = html.replace(/href=['"]api\//g, 'href="/api/motor-proxy/api/');
-        html = html.replace(/href=["']\/api\/motor-proxy\/api\/([^"']+)["']/g, 'href="/api/motor-proxy/api/$1"');
+        
+        // Normalize any existing /api/motor-proxy/api/ paths (remove duplicates, fix slashes)
+        html = html.replace(/src=["'](\/api\/motor-proxy\/api\/)+/g, 'src="/api/motor-proxy/api/');
+        html = html.replace(/href=["'](\/api\/motor-proxy\/api\/)+/g, 'href="/api/motor-proxy/api/');
+        
+        // Ensure images from the API use proper proxy paths
+        // Handle absolute URLs that should go through proxy
+        html = html.replace(/src=["']https?:\/\/[^"']*\/api\/source\//g, (match) => {
+            // Extract the path after /api/source/
+            const pathMatch = match.match(/\/api\/source\/(.+)/);
+            if (pathMatch) {
+                return `src="/api/motor-proxy/api/source/${pathMatch[1]}`;
+            }
+            return match;
+        });
 
         // Clean up messy inline styles - REMOVED to preserve API formatting
         // html = html.replace(/style="[^"]*display:block;[^"]*"/gi, 'style="display:block; max-width:100%; margin:20px auto; text-align:center;"');
@@ -1232,25 +1312,74 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
                 return;
             }
 
+            // Ensure proper alt text
+            if (!img.alt) {
+                img.alt = 'Article diagram or illustration';
+            }
+
+            // Add error handler to image
+            img.onerror = function(this: HTMLImageElement) {
+                this.style.display = 'none';
+                const errorDiv = doc.createElement('div');
+                errorDiv.className = 'image-error';
+                errorDiv.innerHTML = `
+                    <div class="error-icon">⚠️</div>
+                    <div class="error-text">Image unavailable</div>
+                `;
+                this.parentNode?.insertBefore(errorDiv, this);
+            };
+
+            // Ensure image src goes through proxy
+            let imgSrc = img.getAttribute('src') || img.src;
+            if (imgSrc && !imgSrc.startsWith('data:') && !imgSrc.startsWith('http')) {
+                if (!imgSrc.startsWith('/api/motor-proxy/')) {
+                    if (imgSrc.startsWith('api/') || imgSrc.startsWith('/api/')) {
+                        imgSrc = imgSrc.replace(/^\/?api\//, '/api/motor-proxy/api/');
+                    } else {
+                        // Assume it's a graphic ID
+                        imgSrc = `/api/motor-proxy/api/source/${this.contentSource}/graphic/${imgSrc.replace(/^\//, '')}`;
+                    }
+                    img.src = imgSrc;
+                }
+            }
+
             const figure = doc.createElement('figure');
             figure.className = 'thumbnail';
 
             // Convert thumbnail URL to full-resolution URL
+            // Ensure URL goes through proxy if it doesn't already
+            let fullResUrl = img.src || imgSrc;
+            
+            // If URL is relative or uses api/, ensure it goes through proxy
+            if (fullResUrl && !fullResUrl.startsWith('data:') && !fullResUrl.startsWith('http')) {
+                if (fullResUrl.startsWith('api/') || fullResUrl.startsWith('/api/')) {
+                    if (!fullResUrl.startsWith('/api/motor-proxy/')) {
+                        fullResUrl = fullResUrl.replace(/^\/?api\//, '/api/motor-proxy/api/');
+                    }
+                }
+            }
+            
             // Common patterns: /thumbnail/ -> /image/, /resize/ -> /image/, or remove size parameters
-            let fullResUrl = img.src;
             fullResUrl = fullResUrl.replace('/thumbnail/', '/image/');
             fullResUrl = fullResUrl.replace('/thumbnails/', '/images/');
             fullResUrl = fullResUrl.replace('/resize/', '/image/');
             fullResUrl = fullResUrl.replace('/resized/', '/images/');
+            
             // Remove size parameters like ?width=200 or ?size=small
             fullResUrl = fullResUrl.replace(/[?&](width|height|size|w|h)=[^&]*/gi, '');
             fullResUrl = fullResUrl.replace(/\?&/, '?').replace(/\?$/, '');
+            
+            // Ensure proxy path doesn't have double slashes
+            fullResUrl = fullResUrl.replace(/(\/api\/motor-proxy\/api\/)+/g, '/api/motor-proxy/api/');
 
             // Store full-resolution URL for expansion
             figure.setAttribute('data-expand-src', fullResUrl);
-            figure.setAttribute('data-expand-alt', img.alt || 'Article Image');
+            figure.setAttribute('data-expand-alt', img.alt || 'Article diagram or illustration');
 
             const imgClone = img.cloneNode(true) as HTMLImageElement;
+            // Copy error handler to clone
+            imgClone.onerror = img.onerror;
+            
             const figcaption = doc.createElement('figcaption');
             figcaption.textContent = 'Click to enlarge';
             figure.appendChild(imgClone);

@@ -146,7 +146,7 @@ export class MotorApiService {
     getDtcs(contentSource: string, vehicleId: string): Observable<any> {
         return this.http.get<DtcsResponse>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/dtcs`
-        );
+        ).pipe(map(response => response.body));
     }
 
     /**

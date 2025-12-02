@@ -28,14 +28,20 @@ else
 	echo "⚠️  No frontend directory found; skipping frontend build"
 fi
 
-# Copy build to backend/proxy (for Firebase hosting)
-echo "📋 Copying build to backend/proxy..."
+# Copy build to motorproxy/dist (for Firebase hosting) - matches firebase.json config
+echo "📋 Copying build to motorproxy/dist..."
 if [ -d frontend/dist/motor-m1-app ]; then
-	rm -rf backend/proxy/dist/motor-m1-app || true
-	mkdir -p backend/proxy/dist
-	cp -R frontend/dist/motor-m1-app backend/proxy/dist/
+	rm -rf motorproxy/dist/motor-m1-app || true
+	mkdir -p motorproxy/dist
+	cp -R frontend/dist/motor-m1-app motorproxy/dist/
 else
 	echo "⚠️  Build output not found at frontend/dist/motor-m1-app — skipping copy"
+fi
+
+# Ensure firebase.json exists in root (copy from config if needed)
+if [ ! -f firebase.json ] && [ -f config/firebase.json ]; then
+	cp config/firebase.json firebase.json
+	echo "📋 Copied firebase.json from config/ to root"
 fi
 
 # Deploy to Firebase
