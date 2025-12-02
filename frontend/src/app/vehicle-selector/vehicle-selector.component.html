@@ -1,60 +1,103 @@
-<div class="vehicle-selector">
-    <div class="header">
-        <h1 class="glow-text">SELECT VEHICLE</h1>
-        <p class="subtitle">ENTER YEAR, MAKE, AND MODEL</p>
-    </div>
-
-    <div class="search-container">
-        <div class="search-box">
-            <input type="text" class="search-input" placeholder="e.g. 2015 Ford F-150" [(ngModel)]="searchTerm"
-                (input)="onSearchInput()" autofocus>
-            <div class="search-icon" *ngIf="!loading">🔍</div>
-            <div class="spinner" *ngIf="loading"></div>
+<div class="vehicle-selector-page">
+    <div class="selector-container">
+        <!-- Header -->
+        <div class="header-section">
+            <h1 class="glow-text">SELECT VEHICLE</h1>
+            <p class="subtitle">STEP-BY-STEP IDENTIFICATION</p>
         </div>
 
-        <div class="parsed-badges" *ngIf="parsedYear">
-            <span class="badge year">{{ parsedYear }}</span>
-            <span class="badge make" *ngIf="parsedMake">{{ parsedMake.label }}</span>
-            <span class="badge model" *ngIf="parsedModel">{{ parsedModel.label }}</span>
-        </div>
-    </div>
+        <!-- Breadcrumbs / Progress -->
+        <div class="breadcrumbs">
+            <div class="crumb" [class.active]="currentStep === 'year'" (click)="reset()">
+                <span class="crumb-label">YEAR</span>
+                <span class="crumb-value" *ngIf="selectedYear">{{ selectedYear }}</span>
+                <span class="crumb-value placeholder" *ngIf="!selectedYear">Select</span>
+            </div>
+            <div class="crumb-divider">/</div>
+            
+            <div class="crumb" [class.active]="currentStep === 'make'" [class.disabled]="!selectedYear" (click)="selectedYear ? currentStep = 'make' : null">
+                <span class="crumb-label">MAKE</span>
+                <span class="crumb-value" *ngIf="selectedMake">{{ selectedMake.label }}</span>
+                <span class="crumb-value placeholder" *ngIf="!selectedMake">Select</span>
+            </div>
+            <div class="crumb-divider">/</div>
 
-    <div class="results-container">
-        <div *ngIf="error" class="error-message">
-            ⚠️ {{ error }}
-        </div>
-
-        <div class="suggestions-list" *ngIf="suggestions.length > 0">
-            <h3 class="list-header">
-                {{ suggestionType === 'history' ? 'RECENT VEHICLES' :
-                suggestionType === 'year' ? 'SELECT YEAR' :
-                suggestionType === 'make' ? 'SELECT MAKE' :
-                suggestionType === 'model' ? 'SELECT MODEL' : 'SELECT ENGINE' }}
-            </h3>
-
-            <div class="suggestion-item" *ngFor="let item of suggestions"
-                (click)="suggestionType === 'engine' ? selectEngine(item) : selectSuggestion(item)">
-
-                <div class="item-icon">
-                    {{ suggestionType === 'history' ? '🕒' : '' }}
-                </div>
-
-                <div class="item-info">
-                    <div class="item-label">
-                        {{ suggestionType === 'history' ? item.vehicleName : item.label }}
-                    </div>
-                    <div class="item-sub" *ngIf="suggestionType === 'history'">
-                        {{ item.vehicleId }}
-                    </div>
-                </div>
-
-                <div class="item-arrow">→</div>
+            <div class="crumb" [class.active]="currentStep === 'model'" [class.disabled]="!selectedMake">
+                <span class="crumb-label">MODEL</span>
+                <span class="crumb-value" *ngIf="selectedModel">{{ selectedModel.label }}</span>
+                <span class="crumb-value placeholder" *ngIf="!selectedModel">Select</span>
             </div>
         </div>
 
-        <div class="empty-state" *ngIf="suggestions.length === 0 && !loading && !error">
-            <p>Start typing to search for a vehicle.</p>
-            <p class="hint">Example: "2020 Toyota Camry"</p>
+        <!-- Back Button (Mobile Friendly) -->
+        <div class="navigation-controls" *ngIf="currentStep !== 'year'">
+            <button class="btn-back" (click)="goBack()">
+                <i class="fas fa-arrow-left"></i> BACK
+            </button>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading-container" *ngIf="loading">
+            <div class="spinner"></div>
+            <p>Loading data...</p>
+        </div>
+
+        <!-- Error State -->
+        <div class="error-container" *ngIf="error">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>{{ error }}</p>
+            <button class="btn-retry" (click)="currentStep === 'make' ? loadMakes(selectedYear!) : (currentStep === 'model' ? loadModels(selectedYear!, selectedMake!.label) : null)">Retry</button>
+        </div>
+
+        <!-- Selection Lists -->
+        <div class="selection-area" *ngIf="!loading && !error">
+            
+            <!-- RECENT VEHICLES (Only on Year step) -->
+            <div class="recent-list" *ngIf="currentStep === 'year' && recentVehicles.length > 0">
+                <h3 class="list-header">RECENT VEHICLES</h3>
+                <div class="list-item recent" *ngFor="let vehicle of recentVehicles" (click)="onHistorySelect(vehicle)">
+                    <div class="item-content">
+                        <span class="item-main">{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}</span>
+                        <span class="item-sub">ID: {{ vehicle.vehicleId }}</span>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                <div class="divider">OR SELECT NEW</div>
+            </div>
+
+            <!-- YEAR LIST -->
+            <div class="option-list" *ngIf="currentStep === 'year'">
+                <div class="list-item" *ngFor="let year of years" (click)="onYearSelect(year)">
+                    <span class="item-label">{{ year.label }}</span>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+
+            <!-- MAKE LIST -->
+            <div class="option-list" *ngIf="currentStep === 'make'">
+                <div class="list-item" *ngFor="let make of makes" (click)="onMakeSelect(make)">
+                    <span class="item-label">{{ make.label }}</span>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+
+            <!-- MODEL LIST -->
+            <div class="option-list" *ngIf="currentStep === 'model'">
+                <div class="list-item" *ngFor="let model of models" (click)="onModelSelect(model)">
+                    <span class="item-label">{{ model.label }}</span>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+
+            <!-- ENGINE LIST -->
+            <div class="option-list" *ngIf="currentStep === 'engine'">
+                <h3 class="list-header">SELECT ENGINE</h3>
+                <div class="list-item" *ngFor="let engine of engines" (click)="onEngineSelect(engine)">
+                    <span class="item-label">{{ engine.label }}</span>
+                    <i class="fas fa-check"></i>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>

@@ -244,23 +244,73 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             });
     }
 
-    loadHudData() {
+    async loadHudData() {
         this.loadingHud = true;
-        // Mocking HUD data for now as specific endpoints might return complex structures
-        // In a real scenario, we would parse the responses from getSpecifications/getFluids
-        // For this demo, we'll simulate some likely useful data
+        this.hudStats = [];
 
-        // Simulate API delay
-        setTimeout(() => {
-            this.hudStats = [
-                { icon: '💧', label: 'Oil', value: '5.7 Qts 0W-20' },
-                { icon: '🔧', label: 'Wheels', value: '85 ft/lbs' },
-                { icon: '🔋', label: 'Battery', value: 'H6-AGM' },
-                { icon: '⚙️', label: 'Spark', value: '.044"' },
-                { icon: '❄️', label: 'Coolant', value: 'FL22' }
-            ];
+        try {
+            // Fetch Fluids and Specs in parallel
+            const [fluidsRes, specsRes] = await Promise.all([
+                this.motorApi.getFluids(this.contentSource, this.vehicleId).toPromise().catch(() => null),
+                this.motorApi.getSpecs(this.contentSource, this.vehicleId).toPromise().catch(() => null)
+            ]);
+
+            const stats = [];
+
+            // 1. Oil Capacity & Type
+            if (fluidsRes && fluidsRes.data) {
+                const oil = fluidsRes.data.find((f: any) => f.type.toLowerCase().includes('oil') && f.category.toLowerCase().includes('engine'));
+                if (oil) {
+                    stats.push({
+                        icon: '💧',
+                        label: 'Oil',
+                        value: `${oil.capacity} ${oil.viscosity || ''}`.trim()
+                    });
+                }
+
+                const coolant = fluidsRes.data.find((f: any) => f.type.toLowerCase().includes('coolant'));
+                if (coolant) {
+                    stats.push({
+                        icon: '❄️',
+                        label: 'Coolant',
+                        value: coolant.type || coolant.capacity
+                    });
+                }
+            }
+
+            // 2. Torque Specs (Wheels)
+            if (specsRes && specsRes.data) {
+                const wheelTorque = specsRes.data.find((s: any) => s.name.toLowerCase().includes('wheel nut') || s.name.toLowerCase().includes('lug nut'));
+                if (wheelTorque) {
+                    stats.push({
+                        icon: '🔧',
+                        label: 'Wheels',
+                        value: wheelTorque.value
+                    });
+                }
+
+                const sparkPlug = specsRes.data.find((s: any) => s.name.toLowerCase().includes('spark plug') && s.name.toLowerCase().includes('gap'));
+                if (sparkPlug) {
+                    stats.push({
+                        icon: '⚡',
+                        label: 'Spark Gap',
+                        value: sparkPlug.value
+                    });
+                }
+            }
+
+            // Fallback/Default if empty (to show something)
+            if (stats.length === 0) {
+                stats.push({ icon: '🚗', label: 'Vehicle', value: 'Ready' });
+            }
+
+            this.hudStats = stats;
+
+        } catch (err) {
+            console.error('Error loading HUD data', err);
+        } finally {
             this.loadingHud = false;
-        }, 1000);
+        }
     }
 
     loadArticles(searchTerm: string = '') {

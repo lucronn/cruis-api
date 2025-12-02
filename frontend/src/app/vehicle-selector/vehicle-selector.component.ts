@@ -2,8 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { MotorApiService } from '../services/motor-api.service';
 import { VehicleEngine } from '~/generated/api/models';
-import { catchError, map } from 'rxjs/operators';
-import { of } from 'rxjs';
 
 interface VehicleOption {
     id: string;
@@ -11,32 +9,34 @@ interface VehicleOption {
     engines?: VehicleEngine[];
 }
 
+type SelectionStep = 'year' | 'make' | 'model' | 'engine';
+
 @Component({
     selector: 'app-vehicle-selector',
     templateUrl: './vehicle-selector.component.html',
     styleUrls: ['./vehicle-selector.component.scss']
 })
 export class VehicleSelectorComponent implements OnInit {
-    searchTerm: string = '';
     loading = false;
     error: string | null = null;
 
-    // Data cache
+    // Selection State
+    currentStep: SelectionStep = 'year';
+    
+    // Selected Values
+    selectedYear: string | null = null;
+    selectedMake: VehicleOption | null = null;
+    selectedModel: VehicleOption | null = null;
+    selectedContentSource: string = 'MOTOR';
+
+    // Data Lists
     years: VehicleOption[] = [];
     makes: VehicleOption[] = [];
     models: VehicleOption[] = [];
+    engines: any[] = []; // For multi-engine models
 
-    // Search State
-    parsedYear: string | null = null;
-    parsedMake: VehicleOption | null = null;
-    parsedModel: VehicleOption | null = null;
-    selectedContentSource: string = 'MOTOR'; // Default, will be updated from API
-
-    // Suggestions to display
-    suggestions: any[] = [];
-    suggestionType: 'year' | 'make' | 'model' | 'engine' | 'history' = 'history';
-
-    private searchDebounce: any;
+    // History
+    recentVehicles: any[] = [];
 
     constructor(
         private router: Router,
@@ -44,9 +44,13 @@ export class VehicleSelectorComponent implements OnInit {
     ) { }
 
     ngOnInit() {
-        this.loadYears();
         this.loadRecentVehicles();
+        this.loadYears();
     }
+
+    // ==========================================
+    // DATA LOADING
+    // ==========================================
 
     loadYears() {
         const currentYear = new Date().getFullYear();
@@ -60,127 +64,11 @@ export class VehicleSelectorComponent implements OnInit {
         this.years = yearList;
     }
 
-    loadRecentVehicles() {
-        const stored = sessionStorage.getItem('selectedVehicles');
-        if (stored) {
-            try {
-                const recent = JSON.parse(stored);
-                if (recent.length > 0) {
-                    this.suggestions = recent;
-                    this.suggestionType = 'history';
-                }
-            } catch (e) {
-                console.error('Error parsing recent vehicles');
-            }
-        }
-    }
-
-    onSearchInput() {
-        clearTimeout(this.searchDebounce);
-        this.error = null;
-
-        if (!this.searchTerm.trim()) {
-            this.resetSearch();
-            this.loadRecentVehicles();
-            return;
-        }
-
-        this.searchDebounce = setTimeout(() => {
-            this.processSearchTerm(this.searchTerm);
-        }, 300);
-    }
-
-    async processSearchTerm(term: string) {
-        const parts = term.trim().split(/\s+/);
-
-        // 1. Detect Year (First 4 digit number)
-        const yearMatch = term.match(/\b(19|20)\d{2}\b/);
-        const year = yearMatch ? yearMatch[0] : null;
-
-        if (year && year !== this.parsedYear) {
-            this.parsedYear = year;
-            // Reset downstream
-            this.parsedMake = null;
-            this.parsedModel = null;
-            this.makes = [];
-            this.models = [];
-
-            // Load Makes for this year
-            await this.fetchMakes(parseInt(year));
-        } else if (!year) {
-            // Still typing year?
-            this.parsedYear = null;
-            this.suggestions = this.years.filter(y => y.label.startsWith(term));
-            this.suggestionType = 'year';
-            return;
-        }
-
-        // 2. Detect Make
-        if (this.parsedYear && this.makes.length > 0) {
-            // Remove year from term to find make
-            const termWithoutYear = term.replace(this.parsedYear, '').trim();
-
-            if (!termWithoutYear) {
-                // User typed year, show makes
-                this.suggestions = this.makes;
-                this.suggestionType = 'make';
-                return;
-            }
-
-            // Find matching make
-            const matchedMake = this.makes.find(m =>
-                m.label.toLowerCase() === termWithoutYear.toLowerCase()
-            );
-
-            if (matchedMake) {
-                if (this.parsedMake?.id !== matchedMake.id) {
-                    this.parsedMake = matchedMake;
-                    this.parsedModel = null;
-                    this.models = [];
-                    await this.fetchModels(parseInt(this.parsedYear), matchedMake.label);
-                }
-            } else {
-                // Filter makes
-                const filteredMakes = this.makes.filter(m =>
-                    m.label.toLowerCase().includes(termWithoutYear.toLowerCase())
-                );
-
-                if (filteredMakes.length > 0) {
-                    this.suggestions = filteredMakes;
-                    this.suggestionType = 'make';
-                    this.parsedMake = null; // Reset if they backspaced
-                    return;
-                }
-            }
-        }
-
-        // 3. Detect Model
-        if (this.parsedYear && this.parsedMake && this.models.length > 0) {
-            const termWithoutYearAndMake = term
-                .replace(this.parsedYear, '')
-                .replace(this.parsedMake.label, '') // Case sensitive replace might fail if user typed lowercase
-                .replace(new RegExp(this.parsedMake.label, 'i'), '')
-                .trim();
-
-            if (!termWithoutYearAndMake) {
-                this.suggestions = this.models;
-                this.suggestionType = 'model';
-                return;
-            }
-
-            const filteredModels = this.models.filter(m =>
-                m.label.toLowerCase().includes(termWithoutYearAndMake.toLowerCase())
-            );
-
-            this.suggestions = filteredModels;
-            this.suggestionType = 'model';
-        }
-    }
-
-    async fetchMakes(year: number) {
+    async loadMakes(year: string) {
         this.loading = true;
+        this.error = null;
         try {
-            const response = await this.motorApi.getMakes(year).toPromise();
+            const response = await this.motorApi.getMakes(parseInt(year)).toPromise();
             if (response && response.body) {
                 this.makes = response.body.map(m => ({
                     id: m.makeName,
@@ -189,130 +77,159 @@ export class VehicleSelectorComponent implements OnInit {
             }
         } catch (err) {
             console.error('Error fetching makes', err);
-            this.error = 'Could not fetch makes';
+            this.error = 'Could not fetch makes. Please try again.';
         } finally {
             this.loading = false;
         }
     }
 
-    async fetchModels(year: number, make: string) {
+    async loadModels(year: string, make: string) {
         this.loading = true;
+        this.error = null;
         try {
-            const response = await this.motorApi.getModels(year, make).toPromise();
+            const response = await this.motorApi.getModels(parseInt(year), make).toPromise();
             if (response && response.body) {
                 this.models = response.body.models.map(m => ({
                     id: m.id,
                     label: m.model,
                     engines: m.engines
                 }));
-                // Store content source if needed
                 if (response.body.contentSource) {
                     this.selectedContentSource = response.body.contentSource;
                 }
             }
         } catch (err) {
             console.error('Error fetching models', err);
-            this.error = 'Could not fetch models';
+            this.error = 'Could not fetch models. Please try again.';
         } finally {
             this.loading = false;
         }
     }
 
-    selectSuggestion(item: any) {
-        clearTimeout(this.searchDebounce);
-        if (this.suggestionType === 'history') {
-            // Restore from history
-            this.navigateToVehicle(item.vehicleId, {
-                id: item.model, // approximate
-                label: item.model
-            }, item.year, item.make, item.model);
-            return;
-        }
-
-        if (this.suggestionType === 'year') {
-            this.searchTerm = `${item.label} `;
-            this.processSearchTerm(this.searchTerm);
-        } else if (this.suggestionType === 'make') {
-            this.searchTerm = `${this.parsedYear} ${item.label} `;
-            this.processSearchTerm(this.searchTerm);
-        } else if (this.suggestionType === 'model') {
-            // Model selected!
-            this.searchTerm = `${this.parsedYear} ${this.parsedMake?.label} ${item.label}`;
-            this.handleModelSelection(item);
+    loadRecentVehicles() {
+        const stored = sessionStorage.getItem('selectedVehicles');
+        if (stored) {
+            try {
+                this.recentVehicles = JSON.parse(stored);
+            } catch (e) {
+                console.error('Error parsing recent vehicles');
+            }
         }
     }
 
-    handleModelSelection(model: VehicleOption) {
+    // ==========================================
+    // SELECTION HANDLERS
+    // ==========================================
+
+    onYearSelect(year: VehicleOption) {
+        this.selectedYear = year.id;
+        this.currentStep = 'make';
+        this.loadMakes(year.id);
+    }
+
+    onMakeSelect(make: VehicleOption) {
+        this.selectedMake = make;
+        this.currentStep = 'model';
+        if (this.selectedYear) {
+            this.loadModels(this.selectedYear, make.label);
+        }
+    }
+
+    onModelSelect(model: VehicleOption) {
+        this.selectedModel = model;
+
+        // Check for engines
         if (model.engines && model.engines.length > 1) {
-            // Show engines
-            this.suggestions = model.engines.map(e => ({
+            this.engines = model.engines.map(e => ({
                 ...e,
-                label: e.name, // Normalize for template
-                isEngine: true,
-                model: model // Keep ref
+                label: e.name,
+                model: model
             }));
-            this.suggestionType = 'engine';
+            this.currentStep = 'engine';
         } else if (model.engines && model.engines.length === 1) {
-            this.navigateToVehicle(model.engines[0].id, model, this.parsedYear!, this.parsedMake!.label, model.label);
+            // Auto-select single engine
+            this.finalizeSelection(model.engines[0].id, model.label);
         } else {
-            this.navigateToVehicle(model.id, model, this.parsedYear!, this.parsedMake!.label, model.label);
+            // No engine info, just proceed with model ID
+            this.finalizeSelection(model.id, model.label);
         }
     }
 
-    selectEngine(engine: any) {
-        this.navigateToVehicle(engine.id, engine.model, this.parsedYear!, this.parsedMake!.label, engine.model.label);
+    onEngineSelect(engine: any) {
+        this.finalizeSelection(engine.id, this.selectedModel?.label || '');
     }
 
-    navigateToVehicle(vehicleId: string, model: VehicleOption, year: string, make: string, modelName: string) {
+    onHistorySelect(vehicle: any) {
+        this.navigateToVehicle(vehicle.vehicleId, vehicle.year, vehicle.make, vehicle.model, vehicle.contentSource);
+    }
+
+    // ==========================================
+    // NAVIGATION & RESET
+    // ==========================================
+
+    finalizeSelection(vehicleId: string, modelName: string) {
+        if (!this.selectedYear || !this.selectedMake) return;
+        
+        this.saveToRecentVehicles(vehicleId, this.selectedYear, this.selectedMake.label, modelName, this.selectedContentSource);
+        this.navigateToVehicle(vehicleId, this.selectedYear, this.selectedMake.label, modelName, this.selectedContentSource);
+    }
+
+    navigateToVehicle(vehicleId: string, year: string, make: string, model: string, contentSource: string) {
         const vehicleParams = {
-            year: year,
-            make: make,
-            model: modelName,
-            vehicleId: vehicleId,
-            contentSource: this.selectedContentSource
+            year,
+            make,
+            model,
+            vehicleId,
+            contentSource
         };
 
-        // Save history
-        this.saveToRecentVehicles(vehicleId, year, make, modelName, this.selectedContentSource);
         localStorage.setItem('currentVehicle', JSON.stringify(vehicleParams));
-
-        this.router.navigate(['/docs'], {
-            queryParams: vehicleParams
-        });
+        this.router.navigate(['/docs'], { queryParams: vehicleParams });
     }
 
     saveToRecentVehicles(vehicleId: string, year: string, make: string, model: string, contentSource: string) {
         const vehicle = {
             id: Date.now(),
-            vehicleId: vehicleId,
+            vehicleId,
             vehicleName: `${year} ${make} ${model}`,
-            year: year,
-            make: make,
-            model: model,
-            contentSource: contentSource
+            year,
+            make,
+            model,
+            contentSource
         };
 
-        const stored = sessionStorage.getItem('selectedVehicles');
-        let vehicles = [];
-
-        if (stored) {
-            try {
-                vehicles = JSON.parse(stored);
-            } catch (e) { }
-        }
-
-        vehicles = vehicles.filter((v: any) => v.vehicleId !== vehicle.vehicleId);
+        let vehicles = [...this.recentVehicles];
+        // Remove duplicate if exists
+        vehicles = vehicles.filter(v => v.vehicleId !== vehicleId);
+        // Add to top
         vehicles.unshift(vehicle);
+        // Limit to 10
         vehicles = vehicles.slice(0, 10);
+        
+        this.recentVehicles = vehicles;
         sessionStorage.setItem('selectedVehicles', JSON.stringify(vehicles));
     }
 
-    resetSearch() {
-        this.searchTerm = '';
-        this.parsedYear = null;
-        this.parsedMake = null;
-        this.parsedModel = null;
-        this.suggestions = [];
-        this.loadRecentVehicles();
+    reset() {
+        this.currentStep = 'year';
+        this.selectedYear = null;
+        this.selectedMake = null;
+        this.selectedModel = null;
+        this.makes = [];
+        this.models = [];
+        this.engines = [];
+    }
+
+    goBack() {
+        if (this.currentStep === 'engine') {
+            this.currentStep = 'model';
+            this.selectedModel = null;
+        } else if (this.currentStep === 'model') {
+            this.currentStep = 'make';
+            this.selectedMake = null;
+        } else if (this.currentStep === 'make') {
+            this.currentStep = 'year';
+            this.selectedYear = null;
+        }
     }
 }
