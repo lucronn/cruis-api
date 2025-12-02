@@ -1,52 +1,45 @@
-@import '../../../../styles/variables';
+@import '../../../../styles/theme';
 
-.bottom-nav-bar {
+.bottom-nav {
     position: fixed;
     bottom: 0;
     left: 0;
-    width: 100%;
-    background: rgba(10, 10, 10, 0.95);
+    right: 0;
+    height: 70px;
+    background-color: rgba($color-bg-secondary, 0.95);
     backdrop-filter: blur(10px);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid $color-border;
     display: flex;
     justify-content: space-around;
-    padding: 12px 0;
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
-    z-index: 1002; // Above everything
+    align-items: center;
+    z-index: $z-nav;
+    padding-bottom: env(safe-area-inset-bottom);
+}
 
-    .nav-item {
-        background: none;
-        border: none;
-        color: $color-text-secondary;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        padding: 8px 24px;
+.nav-item {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: $color-text-secondary;
+    padding: $space-2 $space-4;
+    cursor: pointer;
+    transition: color 0.2s;
+    width: 100%;
 
-        i {
-            font-size: 20px;
-        }
+    .icon {
+        font-size: 1.5rem;
+        margin-bottom: 2px;
+    }
 
-        span {
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+    .label {
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
 
-        &.active,
-        &:hover {
-            color: $color-primary;
-
-            i {
-                text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
-            }
-        }
-
-        &:active {
-            transform: scale(0.95);
-        }
+    &.active, &:active {
+        color: $color-primary;
     }
 }

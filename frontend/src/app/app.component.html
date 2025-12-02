@@ -1,3 +1,41 @@
-<app-navigation></app-navigation>
-<router-outlet></router-outlet>
-<app-bottom-nav></app-bottom-nav>
+<!-- Global Shell -->
+<div class="app-container">
+    <!-- Header / Top Bar -->
+    <header class="app-header">
+        <div class="logo-area">
+            <span class="logo-text">AutoLib</span>
+        </div>
+
+        <div class="vehicle-context" (click)="openVehicleSelector()">
+            <div *ngIf="currentVehicle$ | async as vehicle; else noVehicle">
+                <div class="v-name">{{ vehicle.year }} {{ vehicle.make }}</div>
+                <div class="v-model">{{ vehicle.model }}</div>
+            </div>
+            <ng-template #noVehicle>
+                <div class="select-prompt">Select Vehicle ▾</div>
+            </ng-template>
+        </div>
+
+        <div class="actions">
+            <button class="btn-icon" *ngIf="currentVehicle$ | async" (click)="toggleQuickLook()">
+                <i class="fas fa-bolt"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <router-outlet></router-outlet>
+    </main>
+
+    <!-- Navigation Drawer -->
+    <app-navigation></app-navigation>
+
+    <!-- Bottom Navigation -->
+    <app-bottom-nav></app-bottom-nav>
+
+    <!-- Modals & Overlays -->
+    <app-vehicle-selector-modal></app-vehicle-selector-modal>
+    <app-quick-look></app-quick-look>
+    <app-search-overlay></app-search-overlay>
+</div>
