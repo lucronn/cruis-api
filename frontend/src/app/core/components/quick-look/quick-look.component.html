@@ -1,0 +1,52 @@
+<div class="modal-overlay" *ngIf="isOpen$ | async" (click)="close()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>Quick Specs</h3>
+            <button class="btn-ghost" (click)="close()">✕</button>
+        </div>
+
+        <div class="modal-body">
+            <div *ngIf="loading" class="spinner">Loading specs...</div>
+
+            <div *ngIf="!loading && !vehicle" class="empty-state">
+                <p>No vehicle selected.</p>
+            </div>
+
+            <div *ngIf="!loading && vehicle" class="specs-grid">
+                <!-- Engine Oil -->
+                <div class="spec-card">
+                    <div class="spec-icon oil"><i class="fas fa-oil-can"></i></div>
+                    <div class="spec-label">Engine Oil</div>
+                    <div class="spec-value">{{ specs?.oilCapacity || '--' }}</div>
+                    <div class="spec-sub">{{ specs?.oilViscosity || '--' }}</div>
+                </div>
+
+                <!-- Torque -->
+                <div class="spec-card">
+                    <div class="spec-icon torque"><i class="fas fa-wrench"></i></div>
+                    <div class="spec-label">Wheel Torque</div>
+                    <div class="spec-value">{{ specs?.lugNutTorque || '--' }}</div>
+                </div>
+
+                <!-- Battery -->
+                <div class="spec-card">
+                    <div class="spec-icon battery"><i class="fas fa-car-battery"></i></div>
+                    <div class="spec-label">Battery</div>
+                    <div class="spec-value">{{ specs?.batteryGroup || '--' }}</div>
+                    <div class="spec-sub">{{ specs?.batterycca || '' }} CCA</div>
+                </div>
+
+                <!-- Fluids -->
+                <div class="spec-card full-width" *ngIf="fluids">
+                    <div class="spec-header">Fluid Capacities</div>
+                    <div class="fluid-list">
+                         <div class="fluid-row" *ngFor="let fluid of fluids | slice:0:3">
+                             <span>{{ fluid.type }}</span>
+                             <strong>{{ fluid.capacity }}</strong>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

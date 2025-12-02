@@ -1,0 +1,46 @@
+<div class="modal-overlay" *ngIf="isOpen$ | async" (click)="close()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>Select Vehicle</h3>
+            <button class="btn-ghost" (click)="close()">✕</button>
+        </div>
+
+        <div class="modal-body">
+            <!-- Step 1: Year -->
+            <div *ngIf="step === 'year'" class="selection-list">
+                <div class="list-header">Select Year</div>
+                <div *ngIf="loading" class="spinner">Loading...</div>
+                <button *ngFor="let year of years" class="list-item" (click)="selectYear(year)">
+                    {{ year }}
+                </button>
+            </div>
+
+            <!-- Step 2: Make -->
+            <div *ngIf="step === 'make'" class="selection-list">
+                <div class="list-header">
+                    <button class="btn-ghost back-btn" (click)="setStep('year')">←</button>
+                    Select Make ({{ selectedYear }})
+                </div>
+                <div *ngIf="loading" class="spinner">Loading...</div>
+                <button *ngFor="let make of makes" class="list-item" (click)="selectMake(make)">
+                    {{ make.makeName }}
+                </button>
+            </div>
+
+            <!-- Step 3: Model -->
+            <div *ngIf="step === 'model'" class="selection-list">
+                <div class="list-header">
+                    <button class="btn-ghost back-btn" (click)="setStep('make')">←</button>
+                    Select Model ({{ selectedMake?.makeName }})
+                </div>
+                <div *ngIf="loading" class="spinner">Loading...</div>
+                <button *ngFor="let model of models" class="list-item" (click)="selectModel(model)">
+                    {{ model.model }}
+                </button>
+            </div>
+
+             <!-- Step 4: Engine (if needed, otherwise auto-select or just finish) -->
+             <!-- Simplified for now: Assuming Model selection is enough or leads to engine selection if multiple -->
+        </div>
+    </div>
+</div>

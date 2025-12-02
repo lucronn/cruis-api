@@ -1,14 +1,22 @@
-<div class="bottom-nav-bar">
-    <button class="nav-item" [class.active]="activeTab === 'home'" (click)="navigateToHome()">
-        <i class="fas fa-home"></i>
-        <span>Home</span>
+<div class="bottom-nav">
+    <button class="nav-item" (click)="goHome()" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+        <div class="icon"><i class="fas fa-home"></i></div>
+        <div class="label">Home</div>
     </button>
-    <button class="nav-item" [class.active]="activeTab === 'vehicle'" (click)="navigateToVehicle()">
-        <i class="fas fa-car"></i>
-        <span>Vehicle</span>
+
+    <button class="nav-item" (click)="openSearch()">
+        <div class="icon"><i class="fas fa-search"></i></div>
+        <div class="label">Search</div>
     </button>
-    <button class="nav-item" (click)="toggleMenu()">
-        <i class="fas fa-bars"></i>
-        <span>Menu</span>
+
+    <!-- Only show Quick Look if a vehicle is selected -->
+    <button class="nav-item" *ngIf="vehicleService.currentVehicle$ | async" (click)="openQuickLook()">
+        <div class="icon"><i class="fas fa-bolt"></i></div>
+        <div class="label">Specs</div>
+    </button>
+
+    <button class="nav-item" (click)="openMenu()">
+        <div class="icon"><i class="fas fa-bars"></i></div>
+        <div class="label">Menu</div>
     </button>
 </div>
