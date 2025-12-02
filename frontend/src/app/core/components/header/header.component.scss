@@ -1,12 +1,19 @@
-@import 'styles/variables';
+@import 'styles/modern-variables';
 
 .app-header {
     height: 64px;
-    background-color: var(--neutral-0);
-    border-bottom: 1px solid var(--neutral-200);
+    background-color: var(--color-bg-surface);
+    border-bottom: 1px solid var(--color-border);
     position: sticky;
     top: 0;
-    z-index: var(--z-sticky);
+    z-index: var(--z-header);
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(8px);
+    background-color: rgba(255, 255, 255, 0.95);
+
+    @media (max-width: 767px) {
+        height: 56px; // More compact on mobile
+    }
 }
 
 .header-container {
@@ -17,6 +24,11 @@
     padding: 0 var(--space-4);
     max-width: 100%;
     margin: 0 auto;
+    gap: var(--space-4);
+
+    @media (min-width: 1024px) {
+        padding: 0 var(--space-6);
+    }
 }
 
 .header-left {
@@ -33,16 +45,23 @@
 }
 
 .brand-badge {
-    width: 32px;
-    height: 32px;
-    background-color: var(--primary-600);
-    color: white;
+    width: 36px;
+    height: 36px;
+    min-width: var(--touch-target-min); // Accessibility
+    min-height: var(--touch-target-min);
+    background-color: var(--color-primary);
+    color: var(--color-text-inverse);
     border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
-    font-size: 14px;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-sm);
+    transition: background-color var(--transition-base);
+
+    &:hover {
+        background-color: var(--color-primary-hover);
+    }
 }
 
 .brand-text {
@@ -56,23 +75,29 @@
 }
 
 .brand-title {
-    font-weight: 700;
-    font-size: 16px;
-    color: var(--neutral-900);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-base);
+    color: var(--color-text-main);
+    line-height: var(--line-height-tight);
 }
 
 .brand-subtitle {
-    font-size: 12px;
-    color: var(--neutral-500);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    line-height: var(--line-height-tight);
 }
 
 .header-search {
     flex: 1;
     max-width: 600px;
-    margin: 0 var(--space-8);
+    margin: 0 var(--space-4);
 
-    @media (max-width: 768px) {
-        display: none; // Hide search input on mobile
+    @media (min-width: 768px) {
+        margin: 0 var(--space-8);
+    }
+
+    @media (max-width: 767px) {
+        display: none; // Hide search input on mobile - use icon instead
     }
 }
 
@@ -80,6 +105,33 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
+}
+
+.sidebar-toggle-desktop,
+.header-menu-toggle {
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    transition: background-color var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+        background-color: var(--color-bg-hover);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-border-focus);
+        outline-offset: 2px;
+    }
+
+    svg {
+        width: 24px;
+        height: 24px;
+        color: var(--color-text-main);
+    }
 }
 
 .sidebar-toggle-desktop {

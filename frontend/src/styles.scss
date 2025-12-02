@@ -1,5 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import 'styles/variables';
+@import 'styles/modern-variables';
+@import 'styles/utilities';
 
 *,
 *::before,
@@ -9,15 +11,20 @@
     padding: 0;
 }
 
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
 html,
 body {
     height: 100%;
     width: 100%;
-    font-family: $font-body;
-    font-size: 16px;
-    line-height: 1.6;
-    color: $color-text-primary;
-    background-color: $color-bg-primary;
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
+    color: var(--color-text-main);
+    background-color: var(--color-bg-app);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -28,61 +35,121 @@ h3,
 h4,
 h5,
 h6 {
-    font-family: $font-heading;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    font-family: var(--font-family-heading);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+    color: var(--color-text-main);
+    margin: 0;
 }
 
 h1 {
-    font-size: 2.5rem;
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
 }
 
 h2 {
-    font-size: 2rem;
+    font-size: var(--font-size-3xl);
 }
 
 h3 {
-    font-size: 1.5rem;
+    font-size: var(--font-size-2xl);
+}
+
+h4 {
+    font-size: var(--font-size-xl);
+}
+
+h5 {
+    font-size: var(--font-size-lg);
+}
+
+h6 {
+    font-size: var(--font-size-base);
 }
 
 code {
-    font-family: $font-mono;
-    background: $color-bg-elevated;
-    padding: 0.25rem 0.5rem;
-    border-radius: $radius-sm;
+    font-family: var(--font-family-mono);
+    background: var(--color-bg-elevated);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    font-size: 0.875em;
 }
 
 a {
-    color: $color-primary;
+    color: var(--color-primary);
     text-decoration: none;
-    transition: all 0.3s;
+    transition: color var(--transition-base);
 
     &:hover {
-        color: $color-secondary;
-        text-shadow: $glow-secondary;
+        color: var(--color-primary-hover);
+        text-decoration: underline;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-border-focus);
+        outline-offset: 2px;
+        border-radius: var(--radius-sm);
     }
 }
 
 button {
     font-family: inherit;
     cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+    margin: 0;
+    min-height: var(--touch-target-min);
+    min-width: var(--touch-target-min);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-base);
+
+    &:focus-visible {
+        outline: 2px solid var(--color-border-focus);
+        outline-offset: 2px;
+        border-radius: var(--radius-sm);
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
 }
 
 // Utility Classes
 .container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 0 $space-4;
+    padding: 0 var(--space-4);
+
+    @media (min-width: 768px) {
+        padding: 0 var(--space-6);
+    }
 }
 
-.glow-text {
-    text-shadow: $glow-primary;
+// Focus visible for keyboard navigation
+*:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
 }
 
-.neon-border {
-    border: 1px solid $color-primary;
-    box-shadow: inset 0 0 10px $color-primary-glow, $glow-primary;
+// Skip link for accessibility
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    padding: var(--space-2) var(--space-4);
+    text-decoration: none;
+    z-index: 9999;
+
+    &:focus {
+        top: 0;
+    }
 }
 
 // Scrollbars
@@ -92,14 +159,14 @@ button {
 }
 
 ::-webkit-scrollbar-track {
-    background: $color-bg-secondary;
+    background: var(--color-bg-elevated);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: $color-primary;
-    border-radius: $radius-sm;
+    background: var(--color-border);
+    border-radius: var(--radius-sm);
 
     &:hover {
-        background: $color-secondary;
+        background: var(--color-border-hover);
     }
 }

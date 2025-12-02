@@ -1,0 +1,163 @@
+// Utility Classes for UX Improvements
+// Based on UI/UX Audit Recommendations
+
+// ============================================
+// Loading States
+// ============================================
+
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--color-bg-elevated) 25%,
+        var(--color-bg-hover) 50%,
+        var(--color-bg-elevated) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+    border-radius: var(--radius-md);
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+// Loading spinner
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--color-border);
+    border-top-color: var(--color-primary);
+    border-radius: var(--radius-full);
+    animation: spinner-rotate 0.6s linear infinite;
+}
+
+@keyframes spinner-rotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// ============================================
+// Transitions
+// ============================================
+
+.transition-fast {
+    transition: all var(--transition-fast);
+}
+
+.transition-base {
+    transition: all var(--transition-base);
+}
+
+.transition-slow {
+    transition: all var(--transition-slow);
+}
+
+// ============================================
+// Focus States (Accessibility)
+// ============================================
+
+.focus-ring {
+    &:focus-visible {
+        outline: 2px solid var(--color-border-focus);
+        outline-offset: 2px;
+        border-radius: var(--radius-sm);
+    }
+}
+
+// ============================================
+// Touch Targets (Mobile Accessibility)
+// ============================================
+
+.touch-target {
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.touch-target-comfortable {
+    min-width: var(--touch-target-comfortable);
+    min-height: var(--touch-target-comfortable);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+// ============================================
+// Responsive Utilities
+// ============================================
+
+.hide-mobile {
+    @media (max-width: 767px) {
+        display: none !important;
+    }
+}
+
+.hide-desktop {
+    @media (min-width: 768px) {
+        display: none !important;
+    }
+}
+
+// ============================================
+// Text Utilities
+// ============================================
+
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.text-truncate-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+// ============================================
+// Scroll Behavior
+// ============================================
+
+.smooth-scroll {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+
+// ============================================
+// Visibility Utilities
+// ============================================
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+// Screen reader only - visible to screen readers but not visually
+.sr-only {
+    @extend .visually-hidden;
+}
+

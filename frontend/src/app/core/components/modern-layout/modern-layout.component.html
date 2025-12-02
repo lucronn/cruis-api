@@ -5,17 +5,29 @@
             <div class="logo">MOTOR</div>
         </div>
 
-        <nav class="sidebar-nav">
-            <a routerLink="/vehicles" routerLinkActive="active" class="nav-item">
-                <span class="icon-car"></span>
+        <nav class="sidebar-nav" role="navigation" aria-label="Main navigation">
+            <a routerLink="/vehicles" routerLinkActive="active" class="nav-item" aria-label="Vehicles">
+                <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M5 17H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1"></path>
+                    <polygon points="12 15 17 21 7 21 12 15"></polygon>
+                </svg>
                 <span>Vehicles</span>
             </a>
-            <a routerLink="/search" routerLinkActive="active" class="nav-item" (click)="openSearch()">
-                <span class="icon-search"></span>
+            <a routerLink="/search" routerLinkActive="active" class="nav-item" (click)="openSearch()" aria-label="Search">
+                <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
                 <span>Search</span>
             </a>
-            <a routerLink="/docs" routerLinkActive="active" class="nav-item">
-                <span class="icon-docs"></span>
+            <a routerLink="/docs" routerLinkActive="active" class="nav-item" aria-label="Documents">
+                <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
                 <span>Documents</span>
             </a>
         </nav>
@@ -33,10 +45,18 @@
     <!-- Main Content Area -->
     <main class="main-content">
         <!-- Mobile Header -->
-        <header class="mobile-header md:hidden">
-            <div class="logo">MOTOR</div>
-            <button class="btn-icon" (click)="toggleMobileMenu()">
-                <span class="icon-menu"></span>
+        <header class="mobile-header md:hidden" role="banner">
+            <a routerLink="/vehicles" class="logo" aria-label="Home">MOTOR</a>
+            <button 
+                class="btn-icon" 
+                (click)="toggleMobileMenu()"
+                [attr.aria-label]="isMobileMenuOpen ? 'Close menu' : 'Open menu'"
+                [attr.aria-expanded]="isMobileMenuOpen">
+                <svg class="icon-menu" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
             </button>
         </header>
 
@@ -46,21 +66,36 @@
         </div>
 
         <!-- Mobile Bottom Nav -->
-        <nav class="bottom-nav md:hidden">
-            <a routerLink="/vehicles" routerLinkActive="active" class="nav-item" (click)="openVehicleSelector()">
-                <span class="icon-car"></span>
+        <nav class="bottom-nav md:hidden" role="navigation" aria-label="Bottom navigation">
+            <a routerLink="/vehicles" routerLinkActive="active" class="nav-item" (click)="openVehicleSelector()" aria-label="Vehicles">
+                <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M5 17H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1"></path>
+                    <polygon points="12 15 17 21 7 21 12 15"></polygon>
+                </svg>
                 <span class="label">Vehicles</span>
             </a>
-            <a routerLink="/search" routerLinkActive="active" class="nav-item" (click)="openSearch()">
-                <span class="icon-search"></span>
+            <a routerLink="/search" routerLinkActive="active" class="nav-item" (click)="openSearch()" aria-label="Search">
+                <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
                 <span class="label">Search</span>
             </a>
-            <a routerLink="/docs" routerLinkActive="active" class="nav-item">
-                <span class="icon-docs"></span>
+            <a routerLink="/docs" routerLinkActive="active" class="nav-item" aria-label="Documents">
+                <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
                 <span class="label">Docs</span>
             </a>
-            <a routerLink="/profile" routerLinkActive="active" class="nav-item">
-                <span class="icon-user"></span>
+            <a routerLink="/profile" routerLinkActive="active" class="nav-item" aria-label="Profile">
+                <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
                 <span class="label">Profile</span>
             </a>
         </nav>
