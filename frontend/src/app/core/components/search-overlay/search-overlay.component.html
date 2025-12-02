@@ -1,0 +1,43 @@
+<div class="modal-overlay" *ngIf="isOpen$ | async" (click)="close()">
+    <div class="search-sheet" (click)="$event.stopPropagation()">
+        <div class="search-header">
+            <div class="input-wrapper">
+                <span class="search-icon"><i class="fas fa-search"></i></span>
+                <input type="text" #searchInput
+                       placeholder="Search repairs, parts, TSBs..."
+                       [(ngModel)]="searchTerm"
+                       (keyup.enter)="search()"
+                       autofocus>
+                <button class="clear-btn" *ngIf="searchTerm" (click)="clear()">✕</button>
+            </div>
+            <button class="cancel-btn" (click)="close()">Cancel</button>
+        </div>
+
+        <div class="search-body">
+            <div *ngIf="loading" class="spinner">Searching...</div>
+
+            <!-- Recent Searches (if no search term) -->
+            <div *ngIf="!searchTerm && !results.length" class="recent-searches">
+                <div class="section-title">Recent Searches</div>
+                <div class="recent-item" *ngFor="let item of recentSearches" (click)="applySearch(item)">
+                    <i class="fas fa-history"></i> {{ item }}
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div *ngIf="results.length > 0" class="results-list">
+                <div *ngFor="let result of results" class="result-item" (click)="openResult(result)">
+                    <div class="result-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="result-content">
+                        <div class="result-title">{{ result.title }}</div>
+                        <div class="result-meta">{{ result.category }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="searched && results.length === 0 && !loading" class="empty-state">
+                No results found.
+            </div>
+        </div>
+    </div>
+</div>

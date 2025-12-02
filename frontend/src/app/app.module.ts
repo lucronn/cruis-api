@@ -15,6 +15,9 @@ import { DiagnosticsComponent } from './diagnostics/diagnostics.component';
 
 import { NavigationComponent } from './core/components/navigation/navigation.component';
 import { BottomNavComponent } from './core/components/bottom-nav/bottom-nav.component';
+import { VehicleSelectorModalComponent } from './core/components/vehicle-selector-modal/vehicle-selector-modal.component';
+import { QuickLookComponent } from './core/components/quick-look/quick-look.component';
+import { SearchOverlayComponent } from './core/components/search-overlay/search-overlay.component';
 
 @NgModule({
   declarations: [
@@ -25,7 +28,10 @@ import { BottomNavComponent } from './core/components/bottom-nav/bottom-nav.comp
     SearchComponent,
     DiagnosticsComponent,
     NavigationComponent,
-    BottomNavComponent
+    BottomNavComponent,
+    VehicleSelectorModalComponent,
+    QuickLookComponent,
+    SearchOverlayComponent
   ],
   imports: [
     BrowserModule,

@@ -1,0 +1,121 @@
+@import '../../../../styles/theme';
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: $z-modal;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end; /* Bottom sheet on mobile */
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease-out;
+
+    @media (min-width: $screen-md) {
+        align-items: center; /* Center on desktop */
+    }
+}
+
+.modal-content {
+    background-color: $color-bg-elevated;
+    width: 100%;
+    max-width: 600px;
+    height: 80vh; /* Tall enough for lists */
+    border-radius: $radius-lg $radius-lg 0 0;
+    display: flex;
+    flex-direction: column;
+    box-shadow: $shadow-modal;
+    animation: slideUp 0.3s ease-out;
+
+    @media (min-width: $screen-md) {
+        border-radius: $radius-lg;
+        height: 70vh;
+        max-height: 800px;
+    }
+}
+
+.modal-header {
+    padding: $space-4;
+    border-bottom: 1px solid $color-border;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: $color-bg-secondary;
+    border-radius: $radius-lg $radius-lg 0 0;
+
+    h3 {
+        margin: 0;
+        font-size: 1.25rem;
+    }
+
+    .btn-ghost {
+        font-size: 1.5rem;
+        padding: $space-2;
+        line-height: 1;
+    }
+}
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.selection-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.list-header {
+    padding: $space-4;
+    background-color: $color-bg-primary;
+    color: $color-text-secondary;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    border-bottom: 1px solid $color-border;
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+
+    .back-btn {
+        padding: 0 $space-2;
+        font-size: 1.25rem;
+    }
+}
+
+.list-item {
+    padding: $space-4;
+    text-align: left;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid $color-border;
+    color: $color-text-primary;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:active, &:hover {
+        background-color: $color-bg-secondary;
+        color: $color-primary;
+    }
+}
+
+.spinner {
+    padding: $space-4;
+    text-align: center;
+    color: $color-text-secondary;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
