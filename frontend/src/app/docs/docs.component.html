@@ -39,8 +39,7 @@
     <!-- Main Content Area -->
     <div class="content-area">
         <!-- Article List (Accordion Style) -->
-        <div class="article-list"
-            *ngIf="!viewingArticle && activePill !== 'DTCs' && activePill !== 'Diagnostic Codes' && activePill !== 'Diagnostic Trouble Codes' && activePill !== 'TSBs' && activePill !== 'Wiring' && activePill !== 'Labor' && activePill !== 'Maintenance'">
+        <div class="article-list" *ngIf="!viewingArticle && viewMode === 'articles'">
             <div class="accordion-card" *ngFor="let article of filteredArticles" [class.expanded]="article.expanded">
                 <div class="accordion-header" (click)="toggleAccordion(article)">
                     <div class="accordion-title-group">
@@ -116,7 +115,7 @@
 
         <!-- Empty State -->
         <div class="empty-state"
-            *ngIf="filteredArticles.length === 0 && !loading && !viewingArticle && activePill !== 'DTCs' && activePill !== 'Diagnostic Codes' && activePill !== 'Diagnostic Trouble Codes' && activePill !== 'TSBs' && activePill !== 'Wiring' && activePill !== 'Labor' && activePill !== 'Maintenance' && activePill !== 'Maintenance Schedules' && activePill !== 'Specs' && activePill !== 'Specifications'">
+            *ngIf="filteredArticles.length === 0 && !loading && !viewingArticle && viewMode === 'articles'">
             <i class="fas fa-search"></i>
             <p>No procedures found for "{{ activePill }}"</p>
         </div>
@@ -128,8 +127,7 @@
         </div>
 
         <!-- DTC List -->
-        <div class="feature-list dtc-list"
-            *ngIf="activePill === 'DTCs' || activePill === 'Diagnostic Codes' || activePill === 'Diagnostic Trouble Codes'">
+        <div class="feature-list dtc-list" *ngIf="viewMode === 'dtcs'">
             <div class="feature-card dtc-card" *ngFor="let dtc of filteredArticles">
                 <div class="card-header">
                     <span class="code">{{ dtc.code }}</span>
@@ -169,7 +167,7 @@
         </div>
 
         <!-- TSB List -->
-        <div class="feature-list tsb-list" *ngIf="activePill === 'TSBs' || activePill === 'Service Bulletins'">
+        <div class="feature-list tsb-list" *ngIf="viewMode === 'tsbs'">
             <div class="feature-card tsb-card" *ngFor="let tsb of filteredArticles">
                 <div class="card-header">
                     <span class="bulletin-id">{{ tsb.id }}</span>
@@ -190,7 +188,7 @@
         </div>
 
         <!-- Wiring Diagrams -->
-        <div class="feature-grid wiring-grid" *ngIf="activePill === 'Wiring' || activePill === 'Diagrams'">
+        <div class="feature-grid wiring-grid" *ngIf="viewMode === 'wiring'">
             <div class="wiring-card" *ngFor="let diagram of filteredArticles"
                 (click)="expandImage(diagram.url, diagram.title)">
                 <div class="thumbnail-wrapper">
@@ -210,7 +208,7 @@
         </div>
 
         <!-- Labor Times -->
-        <div class="feature-list labor-list" *ngIf="activePill === 'Labor'">
+        <div class="feature-list labor-list" *ngIf="viewMode === 'labor'">
             <div class="labor-table-card">
                 <table class="cyber-table">
                     <thead>
@@ -240,7 +238,7 @@
         </div>
 
         <!-- Maintenance View -->
-        <div class="feature-list maintenance-list" *ngIf="activePill === 'Maintenance'">
+        <div class="feature-list maintenance-list" *ngIf="viewMode === 'maintenance'">
             <div class="maintenance-section">
                 <h3><i class="fas fa-calendar-alt"></i> Scheduled Maintenance (30k Miles)</h3>
                 <div class="maintenance-grid">
@@ -278,7 +276,7 @@
         </div>
 
         <!-- Updates / Track Changes -->
-        <div class="feature-list updates-list" *ngIf="activePill === 'Updates'">
+        <div class="feature-list updates-list" *ngIf="viewMode === 'updates'">
             <div class="updates-header">
                 <label>Select Quarter:</label>
                 <select [(ngModel)]="selectedQuarter" (change)="loadDeltaReport(selectedQuarter)">

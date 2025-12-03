@@ -397,6 +397,9 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             });
     }
 
+    // View State
+    viewMode: 'articles' | 'dtcs' | 'tsbs' | 'wiring' | 'labor' | 'maintenance' | 'updates' = 'articles';
+
     selectPill(pill: string) {
         this.activePill = pill;
         this.error = null;
@@ -411,63 +414,78 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             case 'DTCs':
             case 'Diagnostic Codes':
             case 'Diagnostic Trouble Codes':
+                this.viewMode = 'dtcs';
                 this.loadDtcs();
                 break;
             case 'TSBs':
             case 'Service Bulletins':
             case 'Technical Service Bulletins':
+                this.viewMode = 'tsbs';
                 this.loadTsbs();
                 break;
             case 'Diagrams':
+                this.viewMode = 'wiring';
                 this.loadDiagrams();
                 break;
             case 'Wiring':
             case 'Wiring Diagrams':
+                this.viewMode = 'wiring';
                 this.loadWiring();
                 break;
             case 'Labor':
             case 'Labor Times':
+                this.viewMode = 'labor';
                 this.loadLabor();
                 break;
             case 'Procedures':
             case 'Repair Procedures':
+                this.viewMode = 'articles';
                 this.loadProcedures();
                 break;
             case 'Specs':
             case 'Specifications':
+                this.viewMode = 'articles';
                 this.loadSpecs();
                 break;
             case 'Updates':
             case 'Track Changes':
+                this.viewMode = 'updates';
                 this.loadTrackChanges();
                 break;
             case 'Maintenance':
             case 'Maintenance Schedules':
+                this.viewMode = 'maintenance';
                 this.loadMaintenance();
                 break;
             case 'Brakes':
             case 'Brake Service':
+                this.viewMode = 'articles';
                 this.loadBrakeService();
                 break;
             case 'HVAC':
             case 'A/C & Heater':
             case 'Air Conditioning':
+                this.viewMode = 'articles';
                 this.loadAcHeater();
                 break;
             case 'TPMS':
             case 'Tire Pressure':
+                this.viewMode = 'articles';
                 this.loadTpms();
                 break;
             case 'Relearn':
             case 'Computer Relearn':
+                this.viewMode = 'articles';
                 this.loadRelearn();
                 break;
             case 'Lamp Reset':
             case 'Maintenance Lamp':
+                this.viewMode = 'articles';
                 this.loadLampReset();
                 break;
             case 'Battery':
             case 'Battery Service':
+                this.viewMode = 'articles';
                 this.loadBattery();
                 break;
             case 'Suspension':
