@@ -22,7 +22,7 @@ export class VehicleSelectorComponent implements OnInit {
 
     // Selection State
     currentStep: SelectionStep = 'year';
-    
+
     // Selected Values
     selectedYear: string | null = null;
     selectedMake: VehicleOption | null = null;
@@ -129,6 +129,7 @@ export class VehicleSelectorComponent implements OnInit {
 
     onMakeSelect(make: VehicleOption) {
         this.selectedMake = make;
+        this.selectedContentSource = make.label; // Set contentSource to the Make name
         this.currentStep = 'model';
         if (this.selectedYear) {
             this.loadModels(this.selectedYear, make.label);
@@ -169,7 +170,7 @@ export class VehicleSelectorComponent implements OnInit {
 
     finalizeSelection(vehicleId: string, modelName: string) {
         if (!this.selectedYear || !this.selectedMake) return;
-        
+
         this.saveToRecentVehicles(vehicleId, this.selectedYear, this.selectedMake.label, modelName, this.selectedContentSource);
         this.navigateToVehicle(vehicleId, this.selectedYear, this.selectedMake.label, modelName, this.selectedContentSource);
     }
@@ -205,7 +206,7 @@ export class VehicleSelectorComponent implements OnInit {
         vehicles.unshift(vehicle);
         // Limit to 10
         vehicles = vehicles.slice(0, 10);
-        
+
         this.recentVehicles = vehicles;
         sessionStorage.setItem('selectedVehicles', JSON.stringify(vehicles));
     }

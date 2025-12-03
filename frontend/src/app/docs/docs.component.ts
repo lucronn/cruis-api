@@ -335,28 +335,60 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loading = true;
         this.error = null;
 
+        // Since /articles/v2 is broken on the Motor API, use static filter tabs
+        // Each tab will call its own dedicated endpoint when clicked
+        this.filterTabs = [
+            { name: 'All', type: 'all' },
+            { name: 'Procedures', type: 'procedures' },
+            { name: 'Labor', type: 'labor' },
+            { name: 'DTCs', type: 'dtcs' },
+            { name: 'TSBs', type: 'tsbs' },
+            { name: 'Specs', type: 'specs' },
+            { name: 'Wiring', type: 'wiring' },
+            { name: 'Diagrams', type: 'diagrams' },
+            { name: 'Maintenance', type: 'maintenance' }
+        ];
+
+        // Build pill filters from static filterTabs
+        this.pillFilters = this.filterTabs.map(tab => tab.name);
+
+        // Try to load from /articles/v2, but don't fail if it errors
         this.motorApi.getArticles(this.contentSource, this.vehicleId, searchTerm)
             .pipe(
                 catchError(err => {
-                    console.error('Error loading articles:', err);
-                    this.error = 'Failed to load articles. Please try again.';
+                    console.warn('Could not load /articles/v2, will use individual endpoints instead:', err);
+                    // Return empty but don't set this.error - we'll use individual endpoints
                     return of({ body: { articleDetails: [], filterTabs: [] } });
                 })
             )
             .subscribe(response => {
+                // If we got data from /articles/v2, use it for the "All" tab
                 this.articles = response.body?.articleDetails || [];
-                this.filterTabs = response.body?.filterTabs || [];
 
-                // Build pill filters from API filterTabs
-                this.pillFilters = this.filterTabs
-                    .map(tab => tab.name)
-                    .filter(name => name); // Filter out any null/undefined names
+                // If API provided filterTabs, merge with our static ones
+                const apiFilterTabs = response.body?.filterTabs || [];
+                if (apiFilterTabs.length > 0) {
+                    // Merge API tabs with static tabs, preferring API tabs
+                    const apiTabNames = apiFilterTabs.map((t: any) => t.name);
+                    this.filterTabs = [
+                        ...apiFilterTabs,
+                        ...this.filterTabs.filter(t => !apiTabNames.includes(t.name))
+                    ];
+                    this.pillFilters = this.filterTabs.map(tab => tab.name);
+                }
 
                 // Initialize expanded state for accordions
                 this.articles.forEach(a => a.expanded = false);
 
-                this.filterArticlesByPill();
                 this.loading = false;
+
+                // If we're on "All" tab and have no articles, auto-select first available data tab
+                if (this.activePill === 'All' && this.articles.length === 0) {
+                    // Auto-select "Procedures" as default if "All" has no data
+                    this.selectPill('Procedures');
+                } else {
+                    this.filterArticlesByPill();
+                }
 
                 const aid = this.route.snapshot.queryParams['articleId'];
                 if (aid && !this.viewingArticle) {
