@@ -6,6 +6,7 @@ import { catchError, switchMap, map } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { UiService } from '../services/ui.service';
+import { trigger, state, style, transition, animate } from '@angular/animations';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
@@ -21,7 +22,18 @@ interface ArticleCategory {
 @Component({
     selector: 'app-docs',
     templateUrl: './docs.component.html',
-    styleUrls: ['./docs.component.scss']
+    styleUrls: ['./docs.component.scss'],
+    animations: [
+        trigger('slideDown', [
+            transition(':enter', [
+                style({ transform: 'translateY(-100%)' }),
+                animate('300ms ease-out', style({ transform: 'translateY(0)' }))
+            ]),
+            transition(':leave', [
+                animate('300ms ease-in', style({ transform: 'translateY(-100%)' }))
+            ])
+        ])
+    ]
 })
 export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChild('miniCarContainer') miniCarContainer!: ElementRef;
@@ -44,7 +56,8 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Search filter
     searchQuery: string = '';
-    showSearchSheet = false; // For FAB search
+    showSearch = false; // For sticky search overlay
+
 
     // Article viewing
     viewingArticle: any = null;
@@ -184,6 +197,11 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     ) { }
 
     ngOnInit() {
+        // Subscribe to search overlay trigger from bottom nav
+        this.uiService.searchOpen$.subscribe(isOpen => {
+            this.showSearch = isOpen;
+        });
+
         this.route.queryParams.subscribe(params => {
             const vid = params['vehicleId'];
             const aid = params['articleId'];
@@ -910,15 +928,17 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         article.expanded = !article.expanded;
     }
 
-    toggleSearchSheet() {
-        this.showSearchSheet = !this.showSearchSheet;
-        if (this.showSearchSheet) {
-            setTimeout(() => {
-                const input = document.querySelector('.bottom-search-input') as HTMLElement;
-                if (input) input.focus();
-            }, 100);
-        }
+    openSearch() {
+        this.showSearch = true;
     }
+
+    closeSearch() {
+        this.showSearch = false;
+        this.uiService.closeSearch();
+        this.searchQuery = '';
+        this.filterArticlesByPill();
+    }
+
 
     onSearchInput() {
         if (!this.searchQuery.trim()) {

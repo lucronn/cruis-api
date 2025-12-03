@@ -1,26 +1,13 @@
 <div class="docs-container">
     <!-- HUD Header -->
-    <div class="hud-header" [class.collapsed]="searchFocused || showSearchSheet">
+    <div class="hud-header" [class.collapsed]="searchFocused || showSearch">
         <div class="hud-top-row">
 
             <h1 class="vehicle-title">{{ vehicleName }}</h1>
             <div class="mini-car-wrapper" #miniCarContainer></div>
         </div>
 
-        <!-- Integrated Search Bar -->
-        <div class="integrated-search-bar">
-            <div class="search-field">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" placeholder="Search procedures, specs, wiring..." [(ngModel)]="searchQuery"
-                    (ngModelChange)="onSearchInput()" (focus)="onSearchFocus()" (blur)="onSearchBlur()">
-                <button *ngIf="searchQuery" class="clear-btn" (click)="clearSearch()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="search-stats" *ngIf="searchQuery">
-                <span>{{ filteredArticles.length }} results</span>
-            </div>
-        </div>
+
 
         <!-- Stat Carousel (Collapsible) -->
         <div class="stat-carousel" [class.hidden]="searchFocused || searchQuery">
@@ -370,23 +357,23 @@
 
 
 
-    <!-- Bottom Search Sheet -->
-    <div class="bottom-search-sheet" [class.active]="showSearchSheet">
-        <div class="search-header">
-            <h3>Global Search</h3>
-            <button class="close-sheet" (click)="toggleSearchSheet()">
+    <!-- Sticky Search Overlay -->
+    <div class="sticky-search-overlay" *ngIf="showSearch" [@slideDown]>
+        <div class="search-bar-sticky">
+            <button class="back-btn" (click)="closeSearch()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="search-input-container">
+                <i class="fas fa-search search-icon"></i>
+                <input #searchInput type="text" placeholder="Search procedures, specs, wiring..."
+                    [(ngModel)]="searchQuery" (ngModelChange)="onSearchInput()" autofocus>
+            </div>
+            <button *ngIf="searchQuery" class="clear-btn" (click)="clearSearch()">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        <div class="search-input-wrapper">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" class="bottom-search-input" placeholder="Search procedures, parts, specs..."
-                [(ngModel)]="searchQuery" (ngModelChange)="onSearchInput()" (focus)="onSearchFocus()"
-                (blur)="onSearchBlur()">
-        </div>
-        <div class="search-feedback" *ngIf="searchQuery">
-            <p>Found <span class="highlight">{{ filteredArticles.length }}</span> results</p>
-            <button class="clear-search-btn" (click)="clearSearch()">CLEAR</button>
+        <div class="search-results-info" *ngIf="searchQuery">
+            <span>{{ filteredArticles.length }} results</span>
         </div>
     </div>
 
