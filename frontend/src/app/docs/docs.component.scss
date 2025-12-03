@@ -605,6 +605,13 @@ $text-secondary: #a0a0a0;
             align-items: center;
             gap: 8px;
             font-size: 16px;
+            padding: 12px; // Larger touch target
+            cursor: pointer;
+            transition: color 0.2s;
+
+            &:hover {
+                color: $neon-cyan;
+            }
         }
     }
 
@@ -2161,6 +2168,7 @@ $text-secondary: #a0a0a0;
         opacity: 1;
     }
 }
+
 // Sticky Search Overlay
 .sticky-search-overlay {
     position: fixed;
@@ -2191,7 +2199,8 @@ $text-secondary: #a0a0a0;
             justify-content: center;
             transition: color 0.2s;
 
-            &:hover, &:active {
+            &:hover,
+            &:active {
                 color: $neon-cyan;
             }
         }
@@ -2244,7 +2253,8 @@ $text-secondary: #a0a0a0;
             font-size: 18px;
             transition: color 0.2s;
 
-            &:hover, &:active {
+            &:hover,
+            &:active {
                 color: #fff;
             }
         }
