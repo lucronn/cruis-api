@@ -164,7 +164,7 @@ export class MotorApiService {
     getTsbs(contentSource: string, vehicleId: string): Observable<any> {
         return this.http.get<TsbsResponse>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/tsbs`
-        ).pipe(map(response => response.body));
+        );
     }
 
     /**
@@ -182,7 +182,7 @@ export class MotorApiService {
     getWiringDiagrams(contentSource: string, vehicleId: string): Observable<any> {
         return this.http.get<WiringDiagramsResponse>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/wiring`
-        ).pipe(map(response => response.body));
+        );
     }
 
     /**
@@ -191,7 +191,7 @@ export class MotorApiService {
     getComponentLocationsV3(contentSource: string, vehicleId: string): Observable<any> {
         const url = `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/components`;
         console.log('MotorApiService: Fetching component locations from:', url);
-        return this.http.get<ComponentsResponse>(url).pipe(map(response => response.body));
+        return this.http.get<ComponentsResponse>(url);
     }
 
     /**
@@ -200,7 +200,7 @@ export class MotorApiService {
     getLaborTimes(contentSource: string, vehicleId: string): Observable<any> {
         return this.http.get<any>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/labor-times`
-        ).pipe(map(response => response.body));
+        );
     }
 
     // ============================================================
@@ -214,7 +214,7 @@ export class MotorApiService {
     getProcedures(contentSource: string, vehicleId: string): Observable<any> {
         return this.http.get<ProceduresResponse>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/procedures`
-        ).pipe(map(response => response.body));
+        );
     }
 
     /**
@@ -223,7 +223,7 @@ export class MotorApiService {
     getDiagrams(contentSource: string, vehicleId: string): Observable<any> {
         return this.http.get<any>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/diagrams`
-        ).pipe(map(response => response.body));
+        );
     }
 
     /**
@@ -233,7 +233,7 @@ export class MotorApiService {
     getSpecs(contentSource: string, vehicleId: string): Observable<any> {
         return this.http.get<SpecsResponse>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/specs`
-        ).pipe(map(response => response.body));
+        );
     }
 
     /**
@@ -251,7 +251,7 @@ export class MotorApiService {
     getLabor(contentSource: string, vehicleId: string): Observable<any> {
         return this.http.get<any>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/labor`
-        ).pipe(map(response => response.body));
+        );
     }
 
     /**
@@ -269,7 +269,7 @@ export class MotorApiService {
     getBrakeService(contentSource: string, vehicleId: string): Observable<any> {
         return this.http.get<any>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/brake-service`
-        ).pipe(map(response => response.body));
+        );
     }
 
     /**
@@ -278,7 +278,7 @@ export class MotorApiService {
     getAcHeater(contentSource: string, vehicleId: string): Observable<any> {
         return this.http.get<any>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/ac-heater`
-        ).pipe(map(response => response.body));
+        );
     }
 
     /**
@@ -287,7 +287,7 @@ export class MotorApiService {
     getTpms(contentSource: string, vehicleId: string): Observable<any> {
         return this.http.get<any>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/tpms`
-        ).pipe(map(response => response.body));
+        );
     }
 
     /**
@@ -296,7 +296,7 @@ export class MotorApiService {
     getRelearn(contentSource: string, vehicleId: string): Observable<any> {
         return this.http.get<any>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/relearn`
-        ).pipe(map(response => response.body));
+        );
     }
 
     /**
@@ -305,7 +305,7 @@ export class MotorApiService {
     getLampReset(contentSource: string, vehicleId: string): Observable<any> {
         return this.http.get<any>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/lamp-reset`
-        ).pipe(map(response => response.body));
+        );
     }
 
     /**
@@ -314,7 +314,7 @@ export class MotorApiService {
     getBattery(contentSource: string, vehicleId: string): Observable<any> {
         return this.http.get<any>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/battery`
-        ).pipe(map(response => response.body));
+        );
     }
 
     /**
@@ -323,7 +323,7 @@ export class MotorApiService {
     getSteeringSuspension(contentSource: string, vehicleId: string): Observable<any> {
         return this.http.get<any>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/steering-suspension`
-        ).pipe(map(response => response.body));
+        );
     }
 
     /**
@@ -332,7 +332,7 @@ export class MotorApiService {
     getAirbag(contentSource: string, vehicleId: string): Observable<any> {
         return this.http.get<any>(
             `${this.baseUrl}/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/airbag`
-        ).pipe(map(response => response.body));
+        );
     }
 
     // ============================================================

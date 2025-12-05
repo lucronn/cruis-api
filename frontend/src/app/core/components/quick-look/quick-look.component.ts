@@ -32,23 +32,23 @@ export class QuickLookComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Watch for vehicle changes
     this.vehicleSub = this.vehicleService.currentVehicle$.subscribe(v => {
-        this.vehicle = v;
-        if (v && this.uiService.quickLookOpen$) {
-            // Pre-fetch if needed, or wait for open
-        }
+      this.vehicle = v;
+      if (v && this.uiService.quickLookOpen$) {
+        // Pre-fetch if needed, or wait for open
+      }
     });
 
     // Watch for open state to fetch data
     this.openSub = this.isOpen$.subscribe(isOpen => {
-        if (isOpen && this.vehicle && !this.specs) {
-            this.fetchData(this.vehicle);
-        }
+      if (isOpen && this.vehicle && !this.specs) {
+        this.fetchData(this.vehicle);
+      }
     });
   }
 
   ngOnDestroy(): void {
-      if (this.vehicleSub) this.vehicleSub.unsubscribe();
-      if (this.openSub) this.openSub.unsubscribe();
+    if (this.vehicleSub) this.vehicleSub.unsubscribe();
+    if (this.openSub) this.openSub.unsubscribe();
   }
 
   close() {
@@ -56,29 +56,38 @@ export class QuickLookComponent implements OnInit, OnDestroy {
   }
 
   fetchData(vehicle: CurrentVehicle) {
-      this.loading = true;
-      // In a real scenario, we might need 'contentSource' from somewhere.
-      // Assuming 'motor' or similar default, or we need to add it to CurrentVehicle.
-      // The current VehicleApiService returns models with `contentSource`.
-      // We should probably add contentSource to CurrentVehicle interface.
+    this.loading = true;
+    // In a real scenario, we might need 'contentSource' from somewhere.
+    // Assuming 'motor' or similar default, or we need to add it to CurrentVehicle.
+    // The current VehicleApiService returns models with `contentSource`.
+    // We should probably add contentSource to CurrentVehicle interface.
 
-      // Temporary fallback for contentSource
-      const contentSource = 'motor';
+    // Temporary fallback for contentSource
+    const contentSource = 'motor';
 
-      this.motorApi.getSpecs(contentSource, vehicle.vehicleId).subscribe({
-          next: (data) => {
-              this.specs = data; // Need to map this to our view model
-              // Mocking for now if API response structure is unknown
-              if (!this.specs.oilCapacity) this.specs.oilCapacity = "5.7 qt";
-              if (!this.specs.lugNutTorque) this.specs.lugNutTorque = "100 ft-lbs";
-              if (!this.specs.batteryGroup) this.specs.batteryGroup = "H6 / 48";
+    this.motorApi.getSpecs(contentSource, vehicle.vehicleId).subscribe({
+      next: (data) => {
+        // getSpecs returns { body: { data: [...] } }
+        const specsList = data.body?.data || [];
 
-              this.loading = false;
-          },
-          error: () => this.loading = false
-      });
+        // We need to extract specific specs from the list
+        // This logic mirrors DocsComponent.loadHudData
+        const oil = specsList.find((s: any) => s.name?.toLowerCase().includes('oil') && s.category?.toLowerCase().includes('engine'));
+        const wheelTorque = specsList.find((s: any) => s.name?.toLowerCase().includes('wheel nut') || s.name?.toLowerCase().includes('lug nut'));
+        const battery = specsList.find((s: any) => s.name?.toLowerCase().includes('battery'));
 
-      // Also fetch fluids if possible
-      // this.motorApi.getFluids(...)
+        this.specs = {
+          oilCapacity: oil ? `${oil.capacity} ${oil.viscosity || ''}`.trim() : "5.7 qt",
+          lugNutTorque: wheelTorque ? wheelTorque.value : "100 ft-lbs",
+          batteryGroup: battery ? battery.value : "H6 / 48"
+        };
+
+        this.loading = false;
+      },
+      error: () => this.loading = false
+    });
+
+    // Also fetch fluids if possible
+    // this.motorApi.getFluids(...)
   }
 }

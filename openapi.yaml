@@ -2451,7 +2451,7 @@ components:
           properties:
             total:
               type: integer
-            dtcs:
+            data:
               type: array
               items:
                 type: object
@@ -2477,7 +2477,7 @@ components:
           properties:
             total:
               type: integer
-            tsbs:
+            data:
               type: array
               items:
                 type: object
@@ -2505,7 +2505,7 @@ components:
               type: integer
             allDiagramsTotal:
               type: integer
-            wiringDiagrams:
+            data:
               type: array
               items:
                 $ref: '#/components/schemas/Diagram'
@@ -2520,7 +2520,7 @@ components:
           properties:
             total:
               type: integer
-            componentLocations:
+            data:
               type: array
               items:
                 $ref: '#/components/schemas/Diagram'
@@ -2535,7 +2535,7 @@ components:
           properties:
             total:
               type: integer
-            diagrams:
+            data:
               type: array
               items:
                 $ref: '#/components/schemas/Diagram'
@@ -2566,7 +2566,7 @@ components:
           properties:
             total:
               type: integer
-            procedures:
+            data:
               type: array
               items:
                 type: object
@@ -2594,7 +2594,7 @@ components:
           properties:
             total:
               type: integer
-            specs:
+            data:
               type: array
               items:
                 type: object

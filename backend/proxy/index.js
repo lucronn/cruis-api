@@ -977,7 +977,7 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/dtcs', as
       header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
       body: {
         total: dtcTab ? dtcTab.articlesCount : dtcArticles.length,
-        dtcs: dtcArticles.map(a => ({
+        data: dtcArticles.map(a => ({
           id: a.id,
           code: a.code || '',
           description: a.description || a.title || '',
@@ -1012,7 +1012,7 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/tsbs', as
       header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
       body: {
         total: result.total,
-        tsbs: result.articles.map(a => ({
+        data: result.articles.map(a => ({
           id: a.id,
           bulletinNumber: a.bulletinNumber || '',
           title: a.title,
@@ -1045,7 +1045,7 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/procedure
       header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
       body: {
         total: result.total,
-        procedures: result.articles
+        data: result.articles
       }
     });
 
@@ -1072,7 +1072,7 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/diagrams'
       header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
       body: {
         total: result.total,
-        diagrams: result.articles
+        data: result.articles
       }
     });
 
@@ -1099,7 +1099,7 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/specs', a
       header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
       body: {
         total: result.total,
-        specs: result.articles
+        data: result.articles
       }
     });
 
@@ -1126,12 +1126,7 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/labor', a
       header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
       body: {
         total: result.total,
-        laborOperations: result.articles.map(l => ({
-          id: l.id,
-          title: l.title,
-          subtitle: l.subtitle,
-          bucket: l.bucket
-        }))
+        data: result.articles
       }
     });
 
@@ -1158,7 +1153,7 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/brake-ser
       header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
       body: {
         total: result.total,
-        procedures: result.articles
+        data: result.articles
       }
     });
 
@@ -1185,7 +1180,7 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/ac-heater
       header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
       body: {
         total: result.total,
-        procedures: result.articles
+        data: result.articles
       }
     });
 
@@ -1212,7 +1207,7 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/tpms', as
       header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
       body: {
         total: result.total,
-        procedures: result.articles
+        data: result.articles
       }
     });
 
@@ -1239,7 +1234,7 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/relearn',
       header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
       body: {
         total: result.total,
-        procedures: result.articles
+        data: result.articles
       }
     });
 
@@ -1266,7 +1261,7 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/lamp-rese
       header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
       body: {
         total: result.total,
-        procedures: result.articles
+        data: result.articles
       }
     });
 
@@ -1293,7 +1288,7 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/battery',
       header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
       body: {
         total: result.total,
-        procedures: result.articles
+        data: result.articles
       }
     });
 
@@ -1320,7 +1315,7 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/steering-
       header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
       body: {
         total: result.total,
-        procedures: result.articles
+        data: result.articles
       }
     });
 
@@ -1347,7 +1342,7 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/airbag', 
       header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
       body: {
         total: result.total,
-        procedures: result.articles
+        data: result.articles
       }
     });
 
@@ -1366,27 +1361,18 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/fluids', 
 
     const credentials = await ensureAuthenticated();
 
-    const params = new URLSearchParams();
-    if (motorVehicleId) params.append('motorVehicleId', motorVehicleId);
+    // Use 'Fluid' to match 'Fluids', 'Fluid Specs', etc.
+    const result = await fetchArticlesByBucket(credentials, contentSource, vehicleId, motorVehicleId, 'Fluid');
 
-    const targetUrl = `https://sites.motor.com/m1/api/source/${contentSource}/vehicle/${encodeURIComponent(vehicleId)}/fluids?${params}`;
+    console.log(`[FLUIDS] Found ${result.articles.length} fluids`);
 
-    const response = await axios({
-      method: 'GET',
-      url: targetUrl,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-        'Accept': 'application/json',
-        'Cookie': credentials._cookieString,
-        'X-Requested-With': 'XMLHttpRequest',
-        'Referer': 'https://sites.motor.com/m1/vehicles'
-      },
-      timeout: 30000,
-      validateStatus: () => true
+    res.json({
+      header: { status: 'OK', statusCode: 200, date: new Date().toUTCString() },
+      body: {
+        total: result.total,
+        data: result.articles
+      }
     });
-
-    console.log(`[FLUIDS] Response: ${response.status}`);
-    res.status(response.status).json(response.data);
 
   } catch (error) {
     console.error('[FLUIDS] Error:', error.message);
@@ -1526,7 +1512,7 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/wiring', 
       body: {
         total: wiringDiagrams.length,
         allDiagramsTotal: result.total,
-        wiringDiagrams: wiringDiagrams
+        data: wiringDiagrams
       }
     });
 
@@ -1561,7 +1547,7 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/component
       body: {
         total: componentDiagrams.length,
         allDiagramsTotal: result.total,
-        componentLocations: componentDiagrams
+        data: componentDiagrams
       }
     });
 
@@ -1591,7 +1577,7 @@ app.get('/api/motor-proxy/api/source/:contentSource/vehicle/:vehicleId/labor-tim
       body: {
         total: result.total,
         note: 'Labor times are associated with individual procedures. Use /labor/{articleId} to get labor time for a specific article.',
-        laborOperations: result.articles.map(a => ({
+        data: result.articles.map(a => ({
           id: a.id,
           title: a.title,
           bucket: a.bucket

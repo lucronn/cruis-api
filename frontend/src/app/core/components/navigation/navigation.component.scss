@@ -32,7 +32,14 @@
     }
 
     @media (max-width: 768px) {
+        // Keep visible on mobile too, or adjust if needed.
+        // The original code hid it on mobile, assuming bottom nav takes over.
+        // If we want it ONLY on desktop:
         display: none;
+    }
+
+    @media (min-width: 769px) {
+        display: flex;
     }
 }
 

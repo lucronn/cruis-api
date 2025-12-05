@@ -41,6 +41,8 @@ fi
 # Deploy to Firebase
 echo "☁️  Deploying to Firebase..."
 
+cd backend/proxy
+
 # Determine authentication method
 AUTH_METHOD=""
 if [ -n "${FIREBASE_TOKEN:-}" ]; then

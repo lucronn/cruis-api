@@ -19,6 +19,20 @@ interface ArticleCategory {
     subCategories?: { name: string; articles: any[] }[];
 }
 
+interface UnifiedItem {
+    id: string;
+    title: string;
+    subtitle?: string;
+    label?: string; // For codes (DTC P0300), Labor Ops, TSB IDs
+    badge?: string; // For buckets, skill levels, categories
+    meta?: string; // For dates, labor times
+    icon?: string; // FontAwesome icon class
+    image?: string; // For wiring thumbnails
+    type: 'article' | 'dtc' | 'tsb' | 'wiring' | 'labor' | 'maintenance' | 'update';
+    originalData: any;
+    expanded?: boolean;
+}
+
 @Component({
     selector: 'app-docs',
     templateUrl: './docs.component.html',
@@ -26,11 +40,11 @@ interface ArticleCategory {
     animations: [
         trigger('slideDown', [
             transition(':enter', [
-                style({ transform: 'translateY(-100%)' }),
-                animate('300ms ease-out', style({ transform: 'translateY(0)' }))
+                style({ transform: 'translateY(-100%)', opacity: 0 }),
+                animate('300ms cubic-bezier(0.4, 0.0, 0.2, 1)', style({ transform: 'translateY(0)', opacity: 1 }))
             ]),
             transition(':leave', [
-                animate('300ms ease-in', style({ transform: 'translateY(-100%)' }))
+                animate('200ms cubic-bezier(0.4, 0.0, 0.2, 1)', style({ transform: 'translateY(-100%)', opacity: 0 }))
             ])
         ])
     ]
@@ -44,6 +58,9 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
     articles: any[] = [];
     filteredArticles: any[] = [];
     categories: ArticleCategory[] = [];
+
+    // Unified Data State
+    items: UnifiedItem[] = [];
 
     // API-driven Navigation State
     activePill: string = 'All';
@@ -241,7 +258,7 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
                         console.error('Error parsing stored vehicle session', e);
                     }
                 } else {
-                    this.router.navigate(['/vehicles']);
+                    this.uiService.openVehicleSelector();
                 }
             }
         });
@@ -297,8 +314,10 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
             }
 
             // 2. Torque Specs (Wheels)
-            if (specsRes && specsRes.data) {
-                const wheelTorque = specsRes.data.find((s: any) => s.name.toLowerCase().includes('wheel nut') || s.name.toLowerCase().includes('lug nut'));
+            // getSpecs returns full response { body: { data: [...] } }
+            const specsData = specsRes?.body?.data || [];
+            if (specsData.length > 0) {
+                const wheelTorque = specsData.find((s: any) => s.name.toLowerCase().includes('wheel nut') || s.name.toLowerCase().includes('lug nut'));
                 if (wheelTorque) {
                     stats.push({
                         icon: '🔧',
@@ -399,6 +418,12 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // View State
     viewMode: 'articles' | 'dtcs' | 'tsbs' | 'wiring' | 'labor' | 'maintenance' | 'updates' = 'articles';
+
+    handleCardClick(item: UnifiedItem) {
+        if (item.type === 'article') {
+            item.expanded = !item.expanded;
+        }
+    }
 
     selectPill(pill: string) {
         this.activePill = pill;
@@ -520,7 +545,7 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         );
 
         // Default to a common interval like 30k miles for initial view
-        this.motorApi.getMaintenanceByIntervals(this.contentSource, this.vehicleId, 'Mileage', 30000).subscribe(
+        this.motorApi.getMaintenanceByIntervals(this.contentSource, this.vehicleId, 'Miles', 30000).subscribe(
             (res: any) => {
                 // If filtered by interval, it might return a direct list or wrapped in data
                 // Based on other endpoints, let's assume wrapped in data if it follows the pattern
@@ -585,19 +610,24 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     loadDtcs() {
         this.loading = true;
-        this.filteredArticles = [];
         this.motorApi.getDtcs(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                const data = response?.dtcs || [];
-                this.dtcData = data;
-                this.articles = data;
-                this.filteredArticles = data;
+                const dtcs = response.body?.data || [];
+                this.items = dtcs.map((dtc: any) => ({
+                    id: dtc.id,
+                    title: dtc.description,
+                    subtitle: dtc.subtitle,
+                    label: dtc.code,
+                    badge: dtc.bucket,
+                    icon: 'fa-exclamation-triangle',
+                    type: 'dtc',
+                    originalData: dtc
+                }));
                 this.loading = false;
-                if (this.searchQuery) this.onSearchInput();
             },
             (err: any) => {
                 console.error('Error loading DTCs:', err);
-                this.error = `Failed to load Diagnostic Trouble Codes: ${err.status || 'Unknown error'}`;
+                this.error = 'Failed to load Diagnostic Trouble Codes.';
                 this.loading = false;
             }
         );
@@ -605,15 +635,20 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     loadTsbs() {
         this.loading = true;
-        this.filteredArticles = [];
         this.motorApi.getTsbs(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                const data = response?.tsbs || [];
-                this.tsbData = data;
-                this.articles = data;
-                this.filteredArticles = data;
+                const tsbs = response.body?.data || [];
+                this.items = tsbs.map((tsb: any) => ({
+                    id: tsb.id,
+                    title: tsb.title,
+                    subtitle: tsb.summary,
+                    label: tsb.id,
+                    meta: tsb.date,
+                    icon: 'fa-clipboard-list',
+                    type: 'tsb',
+                    originalData: tsb
+                }));
                 this.loading = false;
-                if (this.searchQuery) this.onSearchInput();
             },
             (err: any) => {
                 console.error('Error loading TSBs:', err);
@@ -625,15 +660,18 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     loadWiring() {
         this.loading = true;
-        this.filteredArticles = [];
         this.motorApi.getWiringDiagrams(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                const data = response?.wiringDiagrams || [];
-                this.wiringData = data;
-                this.articles = data;
-                this.filteredArticles = data;
+                const diagrams = response.body?.data || [];
+                this.items = diagrams.map((d: any) => ({
+                    id: d.id || d.url,
+                    title: d.title,
+                    image: d.thumbnail || d.url,
+                    icon: 'fa-project-diagram',
+                    type: 'wiring',
+                    originalData: d
+                }));
                 this.loading = false;
-                if (this.searchQuery) this.onSearchInput();
             },
             (err: any) => {
                 console.error('Error loading Wiring Diagrams:', err);
@@ -645,15 +683,20 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     loadLabor() {
         this.loading = true;
-        this.filteredArticles = [];
         this.motorApi.getLaborTimes(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                const data = response?.laborOperations || response?.operations || [];
-                this.laborData = data;
-                this.articles = data;
-                this.filteredArticles = data;
+                const laborOps = response.body?.data || [];
+                this.items = laborOps.map((l: any) => ({
+                    id: l.operation || l.id,
+                    title: l.description || l.title || 'Labor Operation',
+                    label: l.operation,
+                    meta: l.time ? `${l.time} Hrs` : undefined,
+                    badge: l.skillLevel,
+                    icon: 'fa-stopwatch',
+                    type: 'labor',
+                    originalData: l
+                }));
                 this.loading = false;
-                if (this.searchQuery) this.onSearchInput();
             },
             (err: any) => {
                 console.error('Error loading Labor Times:', err);
@@ -671,7 +714,16 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loading = true;
         this.motorApi.getProcedures(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                this.filteredArticles = response?.procedures || response || [];
+                const procedures = response.body?.data || [];
+                this.items = procedures.map((p: any) => ({
+                    id: p.id,
+                    title: p.title,
+                    subtitle: p.subtitle,
+                    icon: 'fa-tools',
+                    type: 'article',
+                    originalData: p,
+                    expanded: false
+                }));
                 this.loading = false;
             },
             (err: any) => {
@@ -686,7 +738,15 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loading = true;
         this.motorApi.getDiagrams(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                this.filteredArticles = response?.diagrams || response || [];
+                const diagrams = response.body?.data || [];
+                this.items = diagrams.map((d: any) => ({
+                    id: d.id || d.url,
+                    title: d.title,
+                    image: d.thumbnail || d.url,
+                    icon: 'fa-image',
+                    type: 'wiring',
+                    originalData: d
+                }));
                 this.loading = false;
             },
             (err: any) => {
@@ -699,14 +759,19 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     loadSpecs() {
         this.loading = true;
-        this.filteredArticles = [];
         this.motorApi.getSpecs(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                const data = response?.specs || response || [];
-                this.articles = data;
-                this.filteredArticles = data;
+                const specs = response.body?.data || [];
+                this.items = specs.map((s: any) => ({
+                    id: s.id,
+                    title: s.title,
+                    subtitle: s.subtitle || s.description,
+                    icon: 'fa-ruler-combined',
+                    type: 'article',
+                    originalData: s,
+                    expanded: false
+                }));
                 this.loading = false;
-                if (this.searchQuery) this.onSearchInput();
             },
             (err: any) => {
                 console.error('Error loading Specs:', err);
@@ -720,7 +785,16 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loading = true;
         this.motorApi.getBrakeService(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                this.filteredArticles = response?.articles || response?.procedures || response || [];
+                const data = response.body?.data || [];
+                this.items = data.map((p: any) => ({
+                    id: p.id,
+                    title: p.title,
+                    subtitle: p.subtitle,
+                    icon: 'fa-tools',
+                    type: 'article',
+                    originalData: p,
+                    expanded: false
+                }));
                 this.loading = false;
             },
             (err: any) => {
@@ -733,14 +807,19 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     loadAcHeater() {
         this.loading = true;
-        this.filteredArticles = [];
         this.motorApi.getAcHeater(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                const data = response?.articles || response?.procedures || response || [];
-                this.articles = data;
-                this.filteredArticles = data;
+                const data = response.body?.data || [];
+                this.items = data.map((p: any) => ({
+                    id: p.id,
+                    title: p.title,
+                    subtitle: p.subtitle,
+                    icon: 'fa-snowflake',
+                    type: 'article',
+                    originalData: p,
+                    expanded: false
+                }));
                 this.loading = false;
-                if (this.searchQuery) this.onSearchInput();
             },
             (err: any) => {
                 console.error('Error loading A/C & Heater:', err);
@@ -752,14 +831,19 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     loadTpms() {
         this.loading = true;
-        this.filteredArticles = [];
         this.motorApi.getTpms(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                const data = response?.articles || response?.procedures || response || [];
-                this.articles = data;
-                this.filteredArticles = data;
+                const data = response.body?.data || [];
+                this.items = data.map((p: any) => ({
+                    id: p.id,
+                    title: p.title,
+                    subtitle: p.subtitle,
+                    icon: 'fa-rss',
+                    type: 'article',
+                    originalData: p,
+                    expanded: false
+                }));
                 this.loading = false;
-                if (this.searchQuery) this.onSearchInput();
             },
             (err: any) => {
                 console.error('Error loading TPMS:', err);
@@ -771,14 +855,19 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     loadRelearn() {
         this.loading = true;
-        this.filteredArticles = [];
         this.motorApi.getRelearn(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                const data = response?.articles || response?.procedures || response || [];
-                this.articles = data;
-                this.filteredArticles = data;
+                const data = response.body?.data || [];
+                this.items = data.map((p: any) => ({
+                    id: p.id,
+                    title: p.title,
+                    subtitle: p.subtitle,
+                    icon: 'fa-sync',
+                    type: 'article',
+                    originalData: p,
+                    expanded: false
+                }));
                 this.loading = false;
-                if (this.searchQuery) this.onSearchInput();
             },
             (err: any) => {
                 console.error('Error loading Relearn:', err);
@@ -790,14 +879,19 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     loadLampReset() {
         this.loading = true;
-        this.filteredArticles = [];
         this.motorApi.getLampReset(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                const data = response?.articles || response?.procedures || response || [];
-                this.articles = data;
-                this.filteredArticles = data;
+                const data = response.body?.data || [];
+                this.items = data.map((p: any) => ({
+                    id: p.id,
+                    title: p.title,
+                    subtitle: p.subtitle,
+                    icon: 'fa-lightbulb',
+                    type: 'article',
+                    originalData: p,
+                    expanded: false
+                }));
                 this.loading = false;
-                if (this.searchQuery) this.onSearchInput();
             },
             (err: any) => {
                 console.error('Error loading Lamp Reset:', err);
@@ -809,14 +903,19 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     loadBattery() {
         this.loading = true;
-        this.filteredArticles = [];
         this.motorApi.getBattery(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                const data = response?.articles || response?.procedures || response || [];
-                this.articles = data;
-                this.filteredArticles = data;
+                const data = response.body?.data || [];
+                this.items = data.map((p: any) => ({
+                    id: p.id,
+                    title: p.title,
+                    subtitle: p.subtitle,
+                    icon: 'fa-car-battery',
+                    type: 'article',
+                    originalData: p,
+                    expanded: false
+                }));
                 this.loading = false;
-                if (this.searchQuery) this.onSearchInput();
             },
             (err: any) => {
                 console.error('Error loading Battery:', err);
@@ -828,14 +927,19 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     loadSteeringSuspension() {
         this.loading = true;
-        this.filteredArticles = [];
         this.motorApi.getSteeringSuspension(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                const data = response?.articles || response?.procedures || response || [];
-                this.articles = data;
-                this.filteredArticles = data;
+                const data = response.body?.data || [];
+                this.items = data.map((p: any) => ({
+                    id: p.id,
+                    title: p.title,
+                    subtitle: p.subtitle,
+                    icon: 'fa-cogs',
+                    type: 'article',
+                    originalData: p,
+                    expanded: false
+                }));
                 this.loading = false;
-                if (this.searchQuery) this.onSearchInput();
             },
             (err: any) => {
                 console.error('Error loading Steering & Suspension:', err);
@@ -849,7 +953,16 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loading = true;
         this.motorApi.getAirbag(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                this.filteredArticles = response?.articles || response?.procedures || response || [];
+                const data = response.body?.data || [];
+                this.items = data.map((p: any) => ({
+                    id: p.id,
+                    title: p.title,
+                    subtitle: p.subtitle,
+                    icon: 'fa-shield-alt',
+                    type: 'article',
+                    originalData: p,
+                    expanded: false
+                }));
                 this.loading = false;
             },
             (err: any) => {
@@ -860,51 +973,6 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         );
     }
 
-    // ============================================================
-    // CYBERPUNK FEATURES METHODS
-    // ============================================================
-
-    toggleXRayMode(article: any) {
-        this.xRayMode = !this.xRayMode;
-        this.vectorError = '';
-
-        if (this.xRayMode && article) {
-            this.loadingVector = true;
-            this.vectorIllustration = null;
-
-            // Assuming article has a GroupID or we use a default for demo
-            // In a real scenario, we'd get the GroupID from the article metadata
-            const groupId = article.groupId || 12345;
-
-            this.motorApi.getVectorIllustrations(this.contentSource, this.vehicleId, groupId).subscribe(
-                (data: any) => {
-                    // Sanitize SVG content if present
-                    if (data && data.svgContent) {
-                        data.svgContent = this.sanitizer.bypassSecurityTrustHtml(data.svgContent);
-                    }
-                    // Handle imageUrl (new backend behavior)
-                    if (data && data.imageUrl) {
-                        // Ensure URL is absolute if it's a proxy path
-                        if (data.imageUrl.startsWith('/')) {
-                            data.imageUrl = window.location.origin + data.imageUrl;
-                        }
-                    }
-
-                    if (!data || (!data.svgContent && !data.imageUrl)) {
-                        this.vectorError = 'No X-Ray schematic available for this component.';
-                    }
-
-                    this.vectorIllustration = data;
-                    this.loadingVector = false;
-                },
-                (err) => {
-                    console.error('Error loading vector illustration', err);
-                    this.vectorError = 'Failed to load X-Ray schematic.';
-                    this.loadingVector = false;
-                }
-            );
-        }
-    }
 
     loadRelatedWiring(dtc: any) {
         if (!dtc || !dtc.id) return;
@@ -944,6 +1012,19 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
                 });
             }
         }
+
+        // Map to Unified Items
+        this.items = this.filteredArticles.map(article => ({
+            id: article.id,
+            title: article.title,
+            subtitle: article.subtitle,
+            meta: article.laborTime ? `${article.laborTime} Hr` : undefined,
+            badge: article.bucket,
+            icon: 'fa-file-alt',
+            type: 'article',
+            originalData: article,
+            expanded: article.expanded
+        }));
     }
 
     // Helper to get all bucket names recursively
@@ -1103,8 +1184,8 @@ export class DocsComponent implements OnInit, AfterViewInit, OnDestroy {
         console.log('DocsComponent: Requesting component locations for vehicle:', this.vehicleId);
         this.motorApi.getComponentLocationsV3(this.contentSource, this.vehicleId).subscribe(
             (response: any) => {
-                // API V3 returns { componentLocations: [...] }
-                const locations = response?.componentLocations || response || [];
+                // API V3 returns { body: { data: [...] } }
+                const locations = response.body?.data || [];
 
                 // Filter locations relevant to the current article
                 const stopWords = ['remove', 'install', 'r&r', 'replace', 'check', 'inspect', 'the', 'a', 'an', 'for', 'of', 'with', 'and', 'to', 'in', 'on', 'at', 'assembly', 'system'];

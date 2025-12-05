@@ -38,273 +38,76 @@
 
     <!-- Main Content Area -->
     <div class="content-area">
-        <!-- Article List (Accordion Style) -->
-        <div class="article-list" *ngIf="!viewingArticle && viewMode === 'articles'">
-            <div class="accordion-card" *ngFor="let article of filteredArticles" [class.expanded]="article.expanded">
-                <div class="accordion-header" (click)="toggleAccordion(article)">
-                    <div class="accordion-title-group">
-                        <h3 class="article-title">{{ article.title }}</h3>
-                        <span class="article-subtitle" *ngIf="article.subtitle">{{ article.subtitle }}</span>
+        <!-- Unified Universal List -->
+        <div class="universal-list" *ngIf="!viewingArticle && !loading && items.length > 0">
+            <div class="universal-card" *ngFor="let item of items" [class.expanded]="item.expanded"
+                [attr.data-type]="item.type">
+
+                <!-- Card Header -->
+                <div class="card-header" (click)="handleCardClick(item)">
+                    <div class="header-main">
+                        <div class="card-icon-wrapper" *ngIf="item.icon || item.badge">
+                            <i class="fas" [ngClass]="item.icon" *ngIf="item.icon"></i>
+                            <span class="badge" *ngIf="item.badge">{{ item.badge }}</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="meta-row" *ngIf="item.label || item.meta">
+                                <span class="label-code" *ngIf="item.label">{{ item.label }}</span>
+                                <span class="meta-info" *ngIf="item.meta">{{ item.meta }}</span>
+                            </div>
+                            <h3 class="title">{{ item.title }}</h3>
+                            <p class="subtitle" *ngIf="item.subtitle">{{ item.subtitle }}</p>
+                        </div>
                     </div>
-                    <div class="accordion-meta">
-                        <span class="labor-time" *ngIf="article.laborTime">{{ article.laborTime }} Hr</span>
+                    <div class="header-action" *ngIf="item.type === 'article'">
                         <i class="fas fa-chevron-down expand-icon"></i>
                     </div>
                 </div>
 
-                <div class="accordion-body">
-                    <!-- Quick Access Info -->
-                    <div class="quick-info-grid"
-                        *ngIf="article.torqueSpecs || article.partNumber || article.description">
-                        <div class="info-item" *ngIf="article.torqueSpecs">
-                            <span class="info-label">Torque Spec:</span>
-                            <span class="info-value">{{ article.torqueSpecs }}</span>
+                <!-- Media (Wiring) -->
+                <div class="card-media" *ngIf="item.type === 'wiring' && item.image"
+                    (click)="expandImage(item.image, item.title)">
+                    <img [src]="item.image" alt="Diagram">
+                    <div class="overlay"><i class="fas fa-search-plus"></i></div>
+                </div>
+
+                <!-- Expanded Body (Article) -->
+                <div class="card-body" *ngIf="item.expanded && item.type === 'article'">
+                    <div class="quick-info-grid" *ngIf="item.originalData.torqueSpecs || item.originalData.partNumber">
+                        <div class="info-item" *ngIf="item.originalData.torqueSpecs">
+                            <span class="info-label">Torque:</span>
+                            <span class="info-value">{{ item.originalData.torqueSpecs }}</span>
                         </div>
-                        <div class="info-item" *ngIf="article.partNumber">
+                        <div class="info-item" *ngIf="item.originalData.partNumber">
                             <span class="info-label">Part #:</span>
-                            <span class="info-value">{{ article.partNumber }}</span>
-                        </div>
-                        <div class="info-item" *ngIf="article.description">
-                            <span class="info-label">Info:</span>
-                            <span class="info-value">{{ article.description }}</span>
+                            <span class="info-value">{{ item.originalData.partNumber }}</span>
                         </div>
                     </div>
-
-                    <!-- Action Buttons -->
                     <div class="action-buttons">
-                        <button class="action-btn primary" (click)="viewArticle(article)">
+                        <button class="action-btn primary" (click)="viewArticle(item.originalData)">
                             <i class="fas fa-eye"></i> VIEW
                         </button>
-                        <button class="action-btn secondary glow-cyan" (click)="toggleXRayMode(article)"
-                            *ngIf="activePill !== 'Specs' && activePill !== 'Specifications'">
-                            <i class="fas fa-microchip"></i> X-RAY MODE
-                        </button>
+
                     </div>
+                </div>
 
-                    <!-- X-Ray SVG Container -->
-                    <div class="xray-container" *ngIf="xRayMode">
-                        <div class="xray-header">
-                            <span class="xray-label">VECTOR SCHEMATIC // GROUP {{ vectorIllustration?.groupId ||
-                                'LOADING' }}</span>
-                            <div class="xray-controls">
-                                <i class="fas fa-search-plus"></i>
-                                <i class="fas fa-expand"></i>
-                            </div>
-                        </div>
-
-                        <div class="loading-state" *ngIf="loadingVector">
-                            <div class="cyber-spinner"></div>
-                            <p>Scanning schematics...</p>
-                        </div>
-
-                        <div class="error-state" *ngIf="vectorError">
-                            <i class="fas fa-exclamation-circle"></i>
-                            <p>{{ vectorError }}</p>
-                        </div>
-
-                        <div class="vector-diagram-svg" *ngIf="vectorIllustration && !loadingVector">
-                            <img *ngIf="vectorIllustration.imageUrl" [src]="vectorIllustration.imageUrl"
-                                alt="Component Location" class="xray-image">
-                            <div *ngIf="vectorIllustration.svgContent" [innerHTML]="vectorIllustration.svgContent">
-                            </div>
-                        </div>
-                    </div>
+                <!-- Actions (DTC/TSB) -->
+                <div class="card-actions" *ngIf="item.type === 'dtc' || item.type === 'tsb'">
+                    <button class="action-btn small" (click)="viewArticle(item.originalData)">View Details</button>
                 </div>
             </div>
         </div>
 
         <!-- Empty State -->
-        <div class="empty-state"
-            *ngIf="filteredArticles.length === 0 && !loading && !viewingArticle && viewMode === 'articles'">
+        <div class="empty-state" *ngIf="items.length === 0 && !loading && !viewingArticle">
             <i class="fas fa-search"></i>
-            <p>No procedures found for "{{ activePill }}"</p>
+            <p>No items found.</p>
         </div>
 
         <!-- Loading State -->
         <div class="loading-state" *ngIf="loading">
             <div class="spinner"></div>
-            <p>Loading vehicle data...</p>
-        </div>
-
-        <!-- DTC List -->
-        <div class="feature-list dtc-list" *ngIf="viewMode === 'dtcs'">
-            <div class="feature-card dtc-card" *ngFor="let dtc of filteredArticles">
-                <div class="card-header">
-                    <span class="code">{{ dtc.code }}</span>
-                    <span class="bucket-badge">{{ dtc.bucket }}</span>
-                </div>
-                <h4 class="dtc-description">{{ dtc.description }}</h4>
-                <p class="dtc-subtitle" *ngIf="dtc.subtitle">{{ dtc.subtitle }}</p>
-
-                <div class="dtc-actions">
-                    <button class="action-btn small" (click)="viewArticle(dtc)">View Diagnostics</button>
-                    <button class="action-btn small secondary" (click)="loadRelatedWiring(dtc)">
-                        <i class="fas fa-project-diagram"></i> Linked Intel
-                    </button>
-                </div>
-
-                <!-- Linked Intelligence Graph -->
-                <div class="linked-intel-graph" *ngIf="relatedWiring && relatedWiring.dtcId === dtc.id">
-                    <div class="intel-node root">
-                        <span class="node-label">DTC {{ dtc.code }}</span>
-                    </div>
-                    <div class="intel-connector"></div>
-                    <div class="intel-node target" (click)="expandImage(relatedWiring.url, relatedWiring.title)">
-                        <span class="node-icon"><i class="fas fa-bolt"></i></span>
-                        <span class="node-label">WIRING DIAGRAM</span>
-                        <span class="node-sub">{{ relatedWiring.title }}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="empty-state" *ngIf="filteredArticles.length === 0 && !loading">
-                <i class="fas fa-exclamation-triangle"></i>
-                <p>No DTCs found.</p>
-            </div>
-            <div class="loading-state" *ngIf="loading">
-                <div class="spinner"></div>
-                <p>Loading DTCs...</p>
-            </div>
-        </div>
-
-        <!-- TSB List -->
-        <div class="feature-list tsb-list" *ngIf="viewMode === 'tsbs'">
-            <div class="feature-card tsb-card" *ngFor="let tsb of filteredArticles">
-                <div class="card-header">
-                    <span class="bulletin-id">{{ tsb.id }}</span>
-                    <span class="date">{{ tsb.date }}</span>
-                </div>
-                <h3 class="title">{{ tsb.title }}</h3>
-                <p class="summary">{{ tsb.summary }}</p>
-                <button class="action-btn small" (click)="viewArticle(tsb)">View Bulletin</button>
-            </div>
-            <div class="empty-state" *ngIf="filteredArticles.length === 0 && !loading">
-                <i class="fas fa-clipboard-list"></i>
-                <p>No TSBs found.</p>
-            </div>
-            <div class="loading-state" *ngIf="loading">
-                <div class="spinner"></div>
-                <p>Loading TSBs...</p>
-            </div>
-        </div>
-
-        <!-- Wiring Diagrams -->
-        <div class="feature-grid wiring-grid" *ngIf="viewMode === 'wiring'">
-            <div class="wiring-card" *ngFor="let diagram of filteredArticles"
-                (click)="expandImage(diagram.url, diagram.title)">
-                <div class="thumbnail-wrapper">
-                    <img [src]="diagram.thumbnail || diagram.url" alt="Wiring Diagram">
-                    <div class="overlay"><i class="fas fa-search-plus"></i></div>
-                </div>
-                <p class="title">{{ diagram.title }}</p>
-            </div>
-            <div class="empty-state" *ngIf="filteredArticles.length === 0 && !loading">
-                <i class="fas fa-project-diagram"></i>
-                <p>No wiring diagrams found.</p>
-            </div>
-            <div class="loading-state" *ngIf="loading">
-                <div class="spinner"></div>
-                <p>Loading Diagrams...</p>
-            </div>
-        </div>
-
-        <!-- Labor Times -->
-        <div class="feature-list labor-list" *ngIf="viewMode === 'labor'">
-            <div class="labor-table-card">
-                <table class="cyber-table">
-                    <thead>
-                        <tr>
-                            <th>Operation</th>
-                            <th>Time (Hrs)</th>
-                            <th>Skill</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let labor of filteredArticles">
-                            <td>{{ labor.operation }}</td>
-                            <td class="time">{{ labor.time }}</td>
-                            <td>{{ labor.skillLevel }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="empty-state" *ngIf="(!laborData || laborData.length === 0) && !loading">
-                <i class="fas fa-stopwatch"></i>
-                <p>No labor times found.</p>
-            </div>
-            <div class="loading-state" *ngIf="loading">
-                <div class="spinner"></div>
-                <p>Loading Labor Times...</p>
-            </div>
-        </div>
-
-        <!-- Maintenance View -->
-        <div class="feature-list maintenance-list" *ngIf="viewMode === 'maintenance'">
-            <div class="maintenance-section">
-                <h3><i class="fas fa-calendar-alt"></i> Scheduled Maintenance (30k Miles)</h3>
-                <div class="maintenance-grid">
-                    <div class="maint-card" *ngFor="let item of maintenanceData.intervals">
-                        <div class="maint-icon"><i class="fas fa-wrench"></i></div>
-                        <div class="maint-info">
-                            <h4>{{ item.serviceName }}</h4>
-                            <p>{{ item.action }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="maintenance-section">
-                <h3><i class="fas fa-tachometer-alt"></i> Indicator Based</h3>
-                <div class="maintenance-grid">
-                    <div class="maint-card" *ngFor="let item of maintenanceData.indicators">
-                        <div class="maint-icon warning"><i class="fas fa-exclamation-triangle"></i></div>
-                        <div class="maint-info">
-                            <h4>{{ item.indicatorName }}</h4>
-                            <p>{{ item.description }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="loading-state" *ngIf="loading">
-                <div class="spinner"></div>
-                <p>Loading Maintenance Schedules...</p>
-            </div>
-            <div class="empty-state"
-                *ngIf="maintenanceData.intervals.length === 0 && maintenanceData.indicators.length === 0 && !loading">
-                <i class="fas fa-calendar-times"></i>
-                <p>No maintenance schedules found for this vehicle.</p>
-            </div>
-        </div>
-
-        <!-- Updates / Track Changes -->
-        <div class="feature-list updates-list" *ngIf="viewMode === 'updates'">
-            <div class="updates-header">
-                <label>Select Quarter:</label>
-                <select [(ngModel)]="selectedQuarter" (change)="loadDeltaReport(selectedQuarter)">
-                    <option *ngFor="let q of trackChangeQuarters" [value]="q">{{ q }}</option>
-                </select>
-            </div>
-
-            <div class="updates-feed">
-                <div class="update-card" *ngFor="let delta of trackChangeDeltas">
-                    <div class="update-type" [class.added]="delta.type === 'ADD'"
-                        [class.modified]="delta.type === 'MODIFY'">
-                        {{ delta.type }}
-                    </div>
-                    <div class="update-content">
-                        <h4>{{ delta.entityType }} - {{ delta.entityId }}</h4>
-                        <p>{{ delta.description }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="empty-state" *ngIf="filteredArticles.length === 0 && !loading">
-                <i class="fas fa-history"></i>
-                <p>No updates found for this quarter.</p>
-            </div>
-            <div class="loading-state" *ngIf="loading">
-                <div class="spinner"></div>
-                <p>Loading Update History...</p>
-            </div>
+            <p>Loading data...</p>
         </div>
 
         <!-- Article Viewer -->

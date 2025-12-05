@@ -2,7 +2,7 @@
   "hosting": [
     {
       "target": "autolib",
-      "public": "motorproxy/dist/motor-m1-app",
+      "public": "../frontend/dist/motor-m1-app",
       "ignore": [
         "firebase.json",
         "**/.*",
@@ -60,7 +60,7 @@
   ],
   "functions": [
     {
-      "source": "motorproxy/functions",
+      "source": "../backend/proxy",
       "codebase": "motorproxy",
       "ignore": [
         "node_modules",

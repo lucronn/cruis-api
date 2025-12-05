@@ -8,7 +8,7 @@ import { FormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { VehicleSelectorComponent } from './vehicle-selector/vehicle-selector.component';
+
 import { DocsComponent } from './docs/docs.component';
 import { SearchComponent } from './search/search.component';
 import { DiagnosticsComponent } from './diagnostics/diagnostics.component';
@@ -23,7 +23,7 @@ import { SearchOverlayComponent } from './core/components/search-overlay/search-
   declarations: [
     AppComponent,
     DashboardComponent,
-    VehicleSelectorComponent,
+
     DocsComponent,
     SearchComponent,
     DiagnosticsComponent,
